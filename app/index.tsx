@@ -13,12 +13,12 @@ const SplashScreen = () => {
     const timer = setTimeout(() => {
       Animated.timing(fadeAnim, {
         toValue: 0,
-        duration: 300,
+        duration: 200,
         useNativeDriver: true,
       }).start(() => {
         router.replace("/auth/Login");
       });
-    }, 3000);
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, [fadeAnim, router]);
