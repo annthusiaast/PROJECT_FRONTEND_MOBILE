@@ -1,45 +1,61 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-import { Platform } from 'react-native';
+import { Tabs } from "expo-router";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { Home, ClipboardList, Scale, FileText, User } from "lucide-react-native";
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
+export default function TabsLayout() {
   return (
+  <GestureHandlerRootView style={{ flex: 1 }}>
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
-          },
-          default: {},
-        }),
-      }}>
+        tabBarActiveTintColor: '#1111e0ff',
+        tabBarInactiveTintColor: '#0b0b68ff',
+        tabBarStyle: { backgroundColor: '#f8f8fbff', height: 100, paddingBottom: 10, paddingTop: 10 },
+      }}
+    >
       <Tabs.Screen
-        name="index"
+        name="Home"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: "Home",
+          tabBarLabelStyle: { fontSize: 12 },
+          tabBarIcon: ({ color }) => <Home color={color} size={28} />,
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="Tasks"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: "Tasks",
+          tabBarLabelStyle: { fontSize: 12 },
+          tabBarIcon: ({ color }) => <ClipboardList color={color} size={28} />,
+        }}
+      />
+      <Tabs.Screen
+        name="Cases"
+        options={{
+          title: "Cases",
+          tabBarLabelStyle: { fontSize: 12 },
+          tabBarIcon: ({ color }) => <Scale color={color} size={28} />,
+        }}
+      />
+      <Tabs.Screen
+        name="Documents"
+        options={{
+          title: "Documents",
+          tabBarLabelStyle: { fontSize: 12 },
+          tabBarIcon: ({ color }) => <FileText color={color} size={28} />,
+        }}
+      />
+      <Tabs.Screen
+        name="Profile"
+        options={{
+          title: "Profile",
+          tabBarLabelStyle: { fontSize: 12 },
+          tabBarIcon: ({ color }) => <User color={color} size={28} />,
         }}
       />
     </Tabs>
+    </GestureHandlerRootView>
+
   );
 }
