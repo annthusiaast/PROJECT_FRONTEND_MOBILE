@@ -25,7 +25,7 @@ const Tasks = () => {
 
           {/* Header with Notification */}
           <View style={styles.headerWrapper}>
-            <Text style={styles.headerContainer}>Documents</Text>
+            <Text style={styles.headerContainer}>Tasks</Text>
             <TouchableOpacity
               onPress={() => alert("Notifications Clicked!")}
               style={{ marginTop: 15 }}
