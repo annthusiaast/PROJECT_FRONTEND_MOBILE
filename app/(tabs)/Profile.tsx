@@ -5,9 +5,9 @@ import React, { useState } from "react";
 import { Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { initialProfile } from "@/constants/sample_data";
 import { styles } from "@/constants/styles/(tabs)/profile_styles";
+import { today } from "@/constants/sample_data";
+import images from '@/constants/images';
 
-// profile image
-import myProfilePic from "@/assets/images/Joseph_prof.png";
 
 function Profile() {
   const router = useRouter();
@@ -67,8 +67,7 @@ function Profile() {
       {/* Date & Notification */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.dateText}>Friday, March 21</Text>
-          <Text style={styles.profileContainer}>Profile</Text>
+          <Text style={styles.headerDate}>{today}</Text>
         </View>
         <Feather
           name="bell"
@@ -81,7 +80,7 @@ function Profile() {
       {/* Profile Section */}
       <View style={styles.profileCard}>
         {/* Profile Picture */}
-        <Image source={myProfilePic} style={styles.avatar} />
+        <Image source={images.JosephPic} style={styles.avatar} />
 
         {/* Name (Locked) */}
         <Text style={styles.name}>{profile.name}</Text>
