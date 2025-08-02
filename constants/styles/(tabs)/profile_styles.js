@@ -2,6 +2,15 @@ import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
 
+    // Date Header
+  headerDate: {
+    fontSize: 12,
+    color: '#555',
+    marginTop: 40,
+    marginLeft: 15,
+    marginBottom: -25,
+  },
+
     // ====== Container ======
     container: {
         flex: 1,

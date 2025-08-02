@@ -7,6 +7,7 @@ export const styles = StyleSheet.create({
     justifyContent: "center", // centers vertically
     alignItems: "center", // centers horizontally
     paddingHorizontal: 20,
+    paddingBottom: 70,
   },
 
   logo: {
