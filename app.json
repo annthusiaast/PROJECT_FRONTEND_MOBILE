@@ -4,7 +4,7 @@
     "slug": "legal_vault_mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/light_logo.png",
+    "icon": "./assets/images/dark_logo.jpg",
     "scheme": "legalvaultmobile",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -13,23 +13,20 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/light_logo.png",
-        "backgroundColor": "#FFFFFF"  // ✅ Added to prevent default gray/black background
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true
     },
     "web": {
       "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "output": "static"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
-        {
-          
-        }
+        {}
       ]
     ],
     "experiments": {
