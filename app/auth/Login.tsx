@@ -16,7 +16,7 @@ const Login = () => {
   const router = useRouter();
 
   return (
-    <View>
+    <View style={styles.container}>
       {/* Logo */}
       <Image
         source={images.legalVaultLogo}
@@ -25,9 +25,8 @@ const Login = () => {
       />
 
       {/* Username & Password Input */}
-      <View style={styles.User_Pass_View}>
-
-        {/* Email Field with User Icon */}
+      <View style={styles.formContainer}>
+        {/* Email Field */}
         <View style={styles.inputContainer}>
           <User size={20} color="#9A8478" style={styles.leftIcon} />
           <TextInput
@@ -40,7 +39,7 @@ const Login = () => {
           />
         </View>
 
-        {/* Password Field with Lock Icon and Eye Toggle */}
+        {/* Password Field */}
         <View style={styles.inputContainer}>
           <Lock size={20} color="#9A8478" style={styles.leftIcon} />
           <TextInput
@@ -60,28 +59,22 @@ const Login = () => {
           </TouchableOpacity>
         </View>
 
-      </View>
-
-      {/* Remember Me and Forgot Password */}
-      <View style={styles.Remember_Forgot_View}>
-        {/* Checkbox */}
-        <View style={styles.checkbox}>
-          <Checkbox
-            value={remember}
-            onValueChange={setRemember}
-            color={remember ? '#173B7E' : undefined}
-          />
-          <Text style={styles.textRemember}>Remember Me</Text>
+        {/* Remember Me + Forgot Password */}
+        <View style={styles.Remember_Forgot_View}>
+          <View style={styles.checkbox}>
+            <Checkbox
+              value={remember}
+              onValueChange={setRemember}
+              color={remember ? '#173B7E' : undefined}
+            />
+            <Text style={styles.textRemember}>Remember Me</Text>
+          </View>
+          <TouchableOpacity>
+            <Text style={styles.textForgot}>Forgot Password?</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* Forgot Password */}
-        <TouchableOpacity>
-          <Text style={styles.textForgot}>Forgot Password?</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Login Button */}
-      <View>
+        {/* Login Button */}
         <TouchableOpacity onPress={() => router.push('/(tabs)/Home')} style={styles.loginButton}>
           <LinearGradient
             colors={['#173B7E', '#1A4C9D']}
