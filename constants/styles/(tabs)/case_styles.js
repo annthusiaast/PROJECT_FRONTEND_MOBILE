@@ -57,6 +57,7 @@ export const styles = StyleSheet.create({
   taskButtonAlignments: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     marginHorizontal: 10,
     marginTop: 10
   },

@@ -41,6 +41,8 @@ export const styles = StyleSheet.create({
         marginTop: -5,
         marginLeft: 16,
         width: '91%',
+        height: 48, 
+        
     },
     searchInput: {
         flex: 1,

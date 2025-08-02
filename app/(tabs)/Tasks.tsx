@@ -9,7 +9,6 @@ import { Keyboard, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpa
 
 const Tasks = () => {
   const [activeTab, setActiveTab] = useState<'active' | 'completed' | 'create'>('active');
-  const [priorityFilter, setPriorityFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all');
 
   return (
     <KeyboardAvoidingView
