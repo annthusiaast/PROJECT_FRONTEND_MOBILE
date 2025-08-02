@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "legal_vault_mobile",
+    "name": "Legal Vault",
     "slug": "legal_vault_mobile",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -13,8 +13,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/images/light_logo.png",
       },
       "edgeToEdgeEnabled": true
     },
