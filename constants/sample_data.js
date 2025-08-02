@@ -146,4 +146,8 @@ export const documents = [
     size: "3.5 MB",
     type: "Pleading",
   },
+
 ];
+
+  export const CASE_FILTERS = ["All Cases", "Case A", "Case B", "Case C"];
+  export const DOC_TYPES = ["All Types", "Pleading", "Contract", "Evidence"];

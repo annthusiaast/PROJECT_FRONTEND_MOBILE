@@ -1,68 +1,57 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
-import { User, Calendar } from "lucide-react-native";
-import { getPriority, formatDueDate, task as rawTask } from "@/constants/sample_data";
+import { User } from "lucide-react-native";
+import { task as rawTask } from "@/constants/sample_data";
 import { styles } from "@/constants/styles/(tabs)/tasksBtn_styles";
 
-type Priority = "all" | "pending" | "processing" | "completed";
-
-type Task = {
-  id: number;
-  title: string;
-  description: string;
-  assignedTo: string;
-  dueDate: string;
-  status?: Priority; 
-};
-
-const task: Task[] = rawTask as Task[];
+const task = rawTask;
 
 const AllCase = () => {
-  const [priorityFilter, setPriorityFilter] = useState<Priority>("all");
+  const [statusFilter, setStatusFilter] = useState("all");
 
-  const priorityColors: Record<Priority, string> = {
+  const statusColors = {
     all: "#000000",
     pending: "#656162ff",
     processing: "#d5441bff",
     completed: "#0c8744ff",
   };
 
-  //Filter Tasks safely
-  const filteredTasks = task.filter(
-    (t) => priorityFilter === "all" || t.status === priorityFilter
-  );
+  // ✅ Filtering works exactly like in ActiveTask
+  const filteredTasks = task.filter((t) => {
+    const status = t.status || "pending";
+    return statusFilter === "all" || statusFilter === status;
+  });
 
   return (
     <View style={{ flex: 1, padding: 10 }}>
-      
-      {/* === FILTER BUTTONS === */}
+      {/* === STATUS FILTER BUTTONS === */}
       <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 15 }}>
-        {(Object.keys(priorityColors) as Array<Priority>).map((p) => (
+        {Object.keys(statusColors).map((s) => (
           <TouchableOpacity
-            key={p}
+            key={s}
             style={[
               styles.priorityBtn,
               {
-                borderColor: priorityColors[p],
-                backgroundColor: priorityFilter === p ? priorityColors[p] : "transparent",
+                borderColor: statusColors[s],
+                backgroundColor: statusFilter === s ? statusColors[s] : "transparent",
               },
             ]}
-            onPress={() => setPriorityFilter(p)}
+            onPress={() => setStatusFilter(s)}
             activeOpacity={0.7}
           >
             <Text
               style={[
                 styles.priorityBtnText,
-                { color: priorityFilter === p ? "#fff" : "#000" },
+                { color: statusFilter === s ? "#fff" : "#000" },
               ]}
             >
-              {p.toUpperCase()}
+              {s.toUpperCase()}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      {/* === TASK LIST === */}
+      {/* === CASE CARDS === */}
       <ScrollView showsVerticalScrollIndicator={false}>
         {filteredTasks.length === 0 ? (
           <Text style={{ textAlign: "center", color: "#777", marginTop: 20 }}>
@@ -70,21 +59,19 @@ const AllCase = () => {
           </Text>
         ) : (
           filteredTasks.map((t) => {
-            //  Safely handle missing status
-            const priority: Priority = t.status || "pending";
+            const status = t.status || "pending";
 
             return (
               <View key={t.id} style={styles.taskCard}>
-                
-                {/* Priority Badge */}
+                {/* Status Badge */}
                 <View
                   style={[
                     styles.priorityBadge,
-                    { backgroundColor: priorityColors[priority] || "#000" },
+                    { backgroundColor: statusColors[status] || "#000" },
                   ]}
                 >
                   <Text style={styles.priorityBadgeText}>
-                    {(priority || "pending").toUpperCase()}
+                    {status.toUpperCase()}
                   </Text>
                 </View>
 

@@ -14,12 +14,12 @@ const Dashboard = () => {
   };
 
   //  Delete Individual Activity
-  const deleteActivity = (id: number) => {
+  const deleteActivity = (id) => {
     setRecentActivity(prev => prev.filter(item => item.id !== id));
   };
 
   //  Right Action (Trash Icon) when Swiping
-  const renderRightActions = (id: number) => (
+  const renderRightActions = (id) => (
     <TouchableOpacity
       style={styles.trashIcon}
       onPress={() => deleteActivity(id)}

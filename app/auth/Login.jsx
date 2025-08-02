@@ -26,6 +26,7 @@ const Login = () => {
 
       {/* Username & Password Input */}
       <View style={styles.formContainer}>
+
         {/* Email Field */}
         <View style={styles.inputContainer}>
           <User size={20} color="#9A8478" style={styles.leftIcon} />

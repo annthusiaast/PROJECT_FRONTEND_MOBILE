@@ -4,7 +4,7 @@
     "slug": "legal_vault_mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/light_logo.png",
     "scheme": "legalvaultmobile",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,

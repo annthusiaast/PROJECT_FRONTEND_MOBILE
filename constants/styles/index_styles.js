@@ -3,13 +3,18 @@ import { StyleSheet } from "react-native";
 export const styles = StyleSheet.create({
 
  animatedView: {
-    justifyContent: 'center', 
-    alignItems: 'center',
- },
+  position: "absolute",  
+  top: 0,                
+  left: 0,
+  right: 0,
+  justifyContent: "flex-start", 
+  alignItems: "center",
+},
 
-  image: {
-   width: 500,
-   height: 400,
-   marginTop: 180,
-  },
+image: {
+  width: 500,
+  height: 400,
+  marginTop: 200,   
+},
+
 });

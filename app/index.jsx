@@ -23,20 +23,11 @@ const SplashScreen = () => {
     return () => clearTimeout(timer);
   }, [fadeAnim, router]);
 
- return (
-  <Animated.View
-    style={[styles.animatedView, { opacity: fadeAnim }]}
-    className="flex-1 bg-white"
-  >
-    <Image
-      source={images.logo}
-      resizeMode="contain"
-      style={styles.image}
-    />
-  </Animated.View>
-
-
-);
-}
+  return (
+    <Animated.View style={[styles.animatedView, { opacity: fadeAnim, flex: 1}]}>
+      <Image source={images.logo} resizeMode="contain" style={styles.image} />
+    </Animated.View>
+  );
+};
 
 export default SplashScreen;

@@ -17,9 +17,7 @@ import {
 } from "react-native";
 
 const Cases = () => {
-  const [caseTab, setcaseTab] = useState<
-    "All Case" | "View Clients" | "+Add New Case"
-  >("All Case");
+  const [caseTab, setcaseTab] = useState("All Case"); 
 
   return (
     <KeyboardAvoidingView
@@ -28,9 +26,7 @@ const Cases = () => {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={{ flex: 1 }}>
-          <ScrollView
-            contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
-          >
+          <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}>
             {/* Header Date */}
             <Text style={styles.headerDate}>{today}</Text>
 
@@ -55,9 +51,8 @@ const Cases = () => {
               />
             </View>
 
-            {/* ==== Tab Buttons (Left & Right Alignment) ==== */}
+            {/* ==== Tab Buttons ==== */}
             <View style={styles.taskButtonAlignments}>
-              {/* Left Buttons */}
               <View style={{ flexDirection: "row" }}>
                 {["All Case", "+Add New Case"].map((tab) => (
                   <TouchableOpacity
@@ -67,7 +62,7 @@ const Cases = () => {
                       caseTab === tab && styles.taskButtonPressed,
                       { marginRight: 8 },
                     ]}
-                    onPress={() => setcaseTab(tab as any)}
+                    onPress={() => setcaseTab(tab)}
                     activeOpacity={0.7}
                   >
                     <Text
@@ -82,7 +77,6 @@ const Cases = () => {
                 ))}
               </View>
 
-              {/* Right Button */}
               <TouchableOpacity
                 style={[
                   styles.taskButton,

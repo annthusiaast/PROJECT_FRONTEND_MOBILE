@@ -1,5 +1,17 @@
 import React, { useState, useRef } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Modal, Pressable, KeyboardAvoidingView, Platform, findNodeHandle, UIManager, } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  Modal,
+  Pressable,
+  KeyboardAvoidingView,
+  Platform,
+  findNodeHandle,
+  UIManager,
+} from "react-native";
 import { Calendar } from "react-native-calendars";
 import { ChevronDown } from "lucide-react-native";
 import { sampleCases, teamMembers } from "@/constants/sample_data";
@@ -10,36 +22,32 @@ const CreateTask = () => {
   const [description, setDescription] = useState("");
   const [relatedCase, setRelatedCase] = useState("Select Case");
   const [assignee, setAssignee] = useState("Select Team Member");
-  const [priority, setPriority] = useState("Medium");
   const [dueDate, setDueDate] = useState(new Date());
   const [showCalendar, setShowCalendar] = useState(false);
-  const [modalType, setModalType] = useState<"case" | "assignee" | "priority" | null>(null);
-
- 
+  const [modalType, setModalType] = useState(null);
   const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 20, right: 20 });
 
-  const buttonRefs: any = {
+  const buttonRefs = {
     case: useRef(null),
     assignee: useRef(null),
-    priority: useRef(null),
   };
 
-  const measureDropdown = (type: "case" | "assignee" | "priority") => {
+  /** === MEASURE DROPDOWN POSITION === */
+  const measureDropdown = (type) => {
     const handle = findNodeHandle(buttonRefs[type].current);
     if (handle) {
       UIManager.measure(handle, (_x, _y, width, height, pageX, pageY) => {
-
-        // Set top and left only (keep right fixed as default)
         setDropdownPos({ top: pageY + height, left: pageX, right: 20 });
         setModalType(type);
       });
     }
   };
 
-  const DropdownButton = ({ value, onPress, type, style }: any) => (
+  /** === DROPDOWN BUTTON COMPONENT === */
+  const DropdownButton = ({ value, onPress, type }) => (
     <TouchableOpacity
       ref={buttonRefs[type]}
-      style={[styles.dropdownPosition, style]}
+      style={styles.dropdownPosition}
       onPress={onPress}
     >
       <Text style={{ color: "#101111ff" }}>{value}</Text>
@@ -47,18 +55,20 @@ const CreateTask = () => {
     </TouchableOpacity>
   );
 
-  const DropdownModal = ({ visible, options, onSelect, isAssignee = false }: any) => (
+  /** === GENERIC DROPDOWN MODAL === */
+  const DropdownModal = ({ visible, options, onSelect, isAssignee }) => (
     <Modal visible={visible} transparent animationType="fade">
-      <Pressable style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.3)" }} onPress={() => setModalType(null)}>
+      <Pressable
+        style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.3)" }}
+        onPress={() => setModalType(null)}
+      >
         <View
           style={[
             styles.dropdownModal,
-            {
-              top: dropdownPos.top, left: dropdownPos.left, right: dropdownPos.right, width: 200, 
-            },
+            { top: dropdownPos.top, left: dropdownPos.left, right: dropdownPos.right, width: 200 },
           ]}
         >
-          {options.map((opt: any, index: number) => (
+          {options.map((opt, index) => (
             <TouchableOpacity
               key={index}
               style={{ padding: 12, flexDirection: "row", justifyContent: "space-between" }}
@@ -67,8 +77,12 @@ const CreateTask = () => {
                 setModalType(null);
               }}
             >
-              <Text style={{ fontSize: 16, color: "#114d89" }}>{isAssignee ? opt.name : opt}</Text>
-              {isAssignee && <Text style={{ fontSize: 14, color: "#666" }}>{opt.role}</Text>}
+              <Text style={{ fontSize: 16, color: "#114d89" }}>
+                {isAssignee ? opt.name : opt}
+              </Text>
+              {isAssignee && (
+                <Text style={{ fontSize: 14, color: "#666" }}>{opt.role}</Text>
+              )}
             </TouchableOpacity>
           ))}
         </View>
@@ -77,9 +91,13 @@ const CreateTask = () => {
   );
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
       <ScrollView style={{ flex: 1, padding: 15 }} keyboardShouldPersistTaps="handled">
-        {/* Task Title */}
+
+        {/* === TASK TITLE === */}
         <Text style={{ fontWeight: "bold", fontSize: 14, marginBottom: 5 }}>Task Title</Text>
         <TextInput
           style={styles.TitlePlaceholder}
@@ -88,7 +106,7 @@ const CreateTask = () => {
           onChangeText={setTaskTitle}
         />
 
-        {/* Description */}
+        {/* === DESCRIPTION === */}
         <Text style={{ fontWeight: "bold", fontSize: 14, marginBottom: 5 }}>Description</Text>
         <TextInput
           style={styles.DescriptionPlaceholder}
@@ -98,7 +116,7 @@ const CreateTask = () => {
           multiline
         />
 
-        {/* Related Case & Due Date */}
+        {/* === RELATED CASE + DUE DATE === */}
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
           <View style={{ flex: 1, marginRight: 5 }}>
             <Text style={{ fontWeight: "bold", fontSize: 14, marginBottom: 5 }}>Related Case</Text>
@@ -107,23 +125,23 @@ const CreateTask = () => {
 
           <View style={{ flex: 1, marginLeft: 5 }}>
             <Text style={{ fontWeight: "bold", fontSize: 14, marginBottom: 5 }}>Due Date</Text>
-            <TouchableOpacity
-              style={styles.dueDateDropdown}
-              onPress={() => setShowCalendar(true)}
-            >
+            <TouchableOpacity style={styles.dueDateDropdown} onPress={() => setShowCalendar(true)}>
               <Text>{dueDate.toLocaleDateString()}</Text>
               <ChevronDown size={18} color="#114d89" />
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* Calendar Modal */}
+        {/* === CALENDAR MODAL === */}
         <Modal visible={showCalendar} transparent animationType="slide">
-          <Pressable style={{ flex: 1, justifyContent: "center", alignItems: "center" }} onPress={() => setShowCalendar(false)}>
-            <View
-              style={styles.calendarModal}
-            >
-              <Text style={{ fontWeight: "bold", fontSize: 16, color: "#114d89", marginBottom: 10 }}>Select Due Date</Text>
+          <Pressable
+            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+            onPress={() => setShowCalendar(false)}
+          >
+            <View style={styles.calendarModal}>
+              <Text style={{ fontWeight: "bold", fontSize: 16, color: "#114d89", marginBottom: 10 }}>
+                Select Due Date
+              </Text>
               <Calendar
                 onDayPress={(day) => {
                   setDueDate(new Date(day.dateString));
@@ -147,21 +165,19 @@ const CreateTask = () => {
           </Pressable>
         </Modal>
 
-        {/* Assign To */}
+        {/* === ASSIGNEE === */}
         <Text style={{ fontWeight: "bold", fontSize: 14, marginBottom: 5 }}>Assign To</Text>
         <DropdownButton value={assignee} onPress={() => measureDropdown("assignee")} type="assignee" />
 
-        {/* Submit */}
-        <TouchableOpacity
-          style={styles.taskCreatedBtn}
-          onPress={() => alert("Task Created!")}
-        >
+        {/* === SUBMIT BUTTON === */}
+        <TouchableOpacity style={styles.taskCreatedBtn} onPress={() => alert("Task Created!")}>
           <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>Create Task</Text>
         </TouchableOpacity>
 
-        {/* Dropdown Modals */}
+        {/* === DROPDOWN MODALS === */}
         <DropdownModal visible={modalType === "case"} options={sampleCases} onSelect={setRelatedCase} />
         <DropdownModal visible={modalType === "assignee"} options={teamMembers} onSelect={setAssignee} isAssignee />
+
       </ScrollView>
     </KeyboardAvoidingView>
   );

@@ -5,10 +5,19 @@ import { today } from "@/constants/sample_data";
 import { styles } from "@/constants/styles/(tabs)/tasks_styles";
 import { Bell, Search } from 'lucide-react-native';
 import React, { useState } from 'react';
-import { Keyboard, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View
+} from "react-native";
 
 const Tasks = () => {
-  const [activeTab, setActiveTab] = useState<'active' | 'completed' | 'create'>('active');
+  const [activeTab, setActiveTab] = useState('active');
 
   return (
     <KeyboardAvoidingView
@@ -16,7 +25,6 @@ const Tasks = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        {/* ✅ Use a single non-scrollable container */}
         <View style={{ flex: 1, paddingHorizontal: 10 }}>
 
           {/* Header Date */}
@@ -36,7 +44,11 @@ const Tasks = () => {
           {/* Search Input */}
           <View style={styles.searchInputContainer}>
             <Search size={20} color="#999" />
-            <TextInput style={styles.searchInput} placeholder="Search..." placeholderTextColor="#999" />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search..."
+              placeholderTextColor="#999"
+            />
           </View>
 
           {/* ==== Tab Buttons ==== */}
@@ -45,7 +57,7 @@ const Tasks = () => {
               <TouchableOpacity
                 key={tab}
                 style={[styles.taskButton, activeTab === tab && styles.taskButtonPressed]}
-                onPress={() => setActiveTab(tab as any)}
+                onPress={() => setActiveTab(tab)}
                 activeOpacity={0.7}
               >
                 <Text style={[styles.taskButtonText, activeTab === tab && styles.taskButtonTextPressed]}>

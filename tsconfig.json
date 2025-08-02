@@ -13,5 +13,5 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-, "constants/sample_data.js"  ]
+, "constants/sample_data.js", "app/(tabs)/_layout.jsx", "app/(tabs)/Cases.jsx", "app/(tabs)/Documents.jsx", "app/(tabs)/Home.jsx", "app/(tabs)/Profile.jsx", "app/(tabs)/Tasks.jsx", "app/auth/Login.jsx", "app/_layout.jsx", "app/index.jsx", "components/active-task.jsx", "components/all-case.jsx", "components/completed-task.jsx", "components/create-task.jsx", "components/protected-route.jsx", "context/auth-context.jsx"  ]
 }
