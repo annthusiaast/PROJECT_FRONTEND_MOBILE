@@ -3,41 +3,32 @@ import { StyleSheet } from "react-native";
 export const styles = StyleSheet.create({
 
     // Date Header
-  headerDate: {
-    fontSize: 12,
-    color: '#555',
-    marginTop: 40,
-    marginLeft: 15,
-    marginBottom: -25,
-  },
-
-    // ====== Container ======
-    container: {
-        flex: 1,
-        backgroundColor: "#fff",
-        paddingHorizontal: 16
-    },
-
-    // ====== Header ======
-    header: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        marginTop: 40,
-        alignItems: "center"
-    },
-    dateText: {
+    headerDate: {
         fontSize: 12,
-        color: "#555"
+        color: '#555',
+        marginTop: 20,
+        marginLeft: 2,
+        marginBottom: -25,
     },
 
-    // ======Profile title ======
-    profileContainer: {
+    //Dashboard title
+    headerContainer: {
         color: '#1d1d66ff',
         fontSize: 24,
         fontWeight: 'bold',
         fontFamily: 'Sans-serif',
-        padding: 5,
-        marginLeft: -5,
+        marginTop: 10,
+        padding: 7,
+        marginLeft: -25,
+    },
+
+    //Notification Icon
+    headerWrapper: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingVertical: 10,
     },
 
     // ====== Profile Card ======
@@ -179,4 +170,5 @@ export const styles = StyleSheet.create({
         fontWeight: "bold",
         fontSize: 14
     },
+
 });
