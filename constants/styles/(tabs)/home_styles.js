@@ -52,7 +52,9 @@ export const styles = StyleSheet.create({
     marginTop: -5,
     marginLeft: 16,
     width: '91%',
+    height: 48,
   },
+
   searchInput: {
     flex: 1,
     marginLeft: 8,
@@ -136,22 +138,24 @@ export const styles = StyleSheet.create({
   },
 
   activityItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 8,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#114d89ff',
-    // elevation: 20,              // shadow for Android
-    shadowColor: '#000',       // shadow for iOS
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 1 },
-    shadowRadius: 2,
-  },
+  flexDirection: 'row',
+  alignItems: 'center',
+  borderRadius: 8,
+  padding: 10,
+  borderWidth: 1,
+  borderColor: '#103a63',    // solid color for Android
+  backgroundColor: '#fff',   // required for proper shadow rendering
+  elevation: 5,              // shadow for Android
+  shadowColor: '#002',       // shadow for iOS
+  shadowOpacity: 0.05,
+  shadowOffset: { width: 0, height: 1 },
+  shadowRadius: 2,
+},
+
 
   activityTextWrapper: {
     flex: 1,
-    marginLeft: 10,           // ✅ space after the icon
+    marginLeft: 10,           // space after the icon
   },
 
   activityText: {

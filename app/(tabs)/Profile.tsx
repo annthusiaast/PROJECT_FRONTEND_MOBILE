@@ -3,12 +3,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { initialProfile } from "../../constants/sample_data";
-import { styles } from "../../constants/styles/(tabs)/profile_styles";
-
+import { initialProfile } from "@/constants/sample_data";
+import { styles } from "@/constants/styles/(tabs)/profile_styles";
 
 // profile image
-import myProfilePic from "../../assets/images/Joseph_prof.png";
+import myProfilePic from "@/assets/images/Joseph_prof.png";
 
 function Profile() {
   const router = useRouter();
@@ -16,16 +15,37 @@ function Profile() {
   // State for user info
   const [profile, setProfile] = useState(initialProfile);
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState(profile);
+
+  // Only allow editing of contact info, not name or role
+  const [editData, setEditData] = useState({
+    email: initialProfile.email,
+    phone: initialProfile.phone,
+    address: initialProfile.address,
+    department: initialProfile.department,
+  });
 
   const handleSave = () => {
-    setProfile(editData);
+    // Merge updated contact info back into profile, keep name & role untouched
+    const updatedProfile = { 
+      ...profile, 
+      email: editData.email,
+      phone: editData.phone,
+      address: editData.address,
+      department: editData.department
+    };
+    setProfile(updatedProfile);
     setIsEditing(false);
     Alert.alert("Profile Updated", "Your profile changes have been saved.");
   };
 
   const handleCancel = () => {
-    setEditData(profile);
+    // Reset edit data to current profile info
+    setEditData({
+      email: profile.email,
+      phone: profile.phone,
+      address: profile.address,
+      department: profile.department
+    });
     setIsEditing(false);
   };
 
@@ -58,31 +78,16 @@ function Profile() {
         />
       </View>
 
-
       {/* Profile Section */}
       <View style={styles.profileCard}>
         {/* Profile Picture */}
         <Image source={myProfilePic} style={styles.avatar} />
 
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.name}
-            onChangeText={(text) => setEditData({ ...editData, name: text })}
-          />
-        ) : (
-          <Text style={styles.name}>{profile.name}</Text>
-        )}
+        {/* Name (Locked) */}
+        <Text style={styles.name}>{profile.name}</Text>
 
-        {isEditing ? (
-          <TextInput
-            style={styles.input}
-            value={editData.role}
-            onChangeText={(text) => setEditData({ ...editData, role: text })}
-          />
-        ) : (
-          <Text style={styles.role}>{profile.role}</Text>
-        )}
+        {/* Role (Locked) */}
+        <Text style={styles.role}>{profile.role}</Text>
 
         {!isEditing ? (
           <TouchableOpacity style={styles.editBtn} onPress={() => setIsEditing(true)}>
@@ -101,8 +106,9 @@ function Profile() {
         )}
       </View>
 
-      {/* Contact Information */}
+      {/* Contact Information (Editable) */}
       <View style={styles.infoCard}>
+        {/* Email */}
         <View style={styles.infoRow}>
           <MaterialIcons name="email" size={20} color="#0B3D91" />
           {isEditing ? (
@@ -119,6 +125,7 @@ function Profile() {
           )}
         </View>
 
+        {/* Phone */}
         <View style={styles.infoRow}>
           <Feather name="phone" size={20} color="#0B3D91" />
           {isEditing ? (
@@ -135,6 +142,7 @@ function Profile() {
           )}
         </View>
 
+        {/* Address */}
         <View style={styles.infoRow}>
           <Feather name="map-pin" size={20} color="#0B3D91" />
           {isEditing ? (
@@ -151,6 +159,7 @@ function Profile() {
           )}
         </View>
 
+        {/* Department */}
         <View style={styles.infoRow}>
           <FontAwesome5 name="building" size={18} color="#0B3D91" />
           {isEditing ? (

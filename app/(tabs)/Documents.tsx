@@ -52,7 +52,7 @@ const Documents = () => {
 
           {/* Tabs */}
           <View style={{ flexDirection: "row", marginRight: 15, marginLeft: 14, marginTop: 15 }}>
-            {["Recent", "All Files", "Shared"].map((tab) => (
+            {["Recent", "All Files"].map((tab) => (
               <TouchableOpacity
                 key={tab}
                 onPress={() => setActiveTab(tab)}
