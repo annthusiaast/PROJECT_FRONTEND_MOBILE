@@ -15,6 +15,7 @@ import {
   TouchableWithoutFeedback,
   View
 } from "react-native";
+import { ScrollView } from 'react-native-gesture-handler';
 
 const Tasks = () => {
   const [activeTab, setActiveTab] = useState('active');

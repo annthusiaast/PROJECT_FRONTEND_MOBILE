@@ -1,5 +1,6 @@
 import AddNewCase from "@/components/add-new-case";
 import AllCase from "@/components/all-case";
+import ViewClients from "@/components/view-clients";
 import { today } from "@/constants/sample_data";
 import { styles } from "@/constants/styles/(tabs)/case_styles";
 import { Bell, Search } from "lucide-react-native";
@@ -20,13 +21,15 @@ const Cases = () => {
   const [caseTab, setcaseTab] = useState("All Case"); 
 
   return (
+
+    <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}>
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={{ flex: 1 }}>
-          <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}>
+
             {/* Header Date */}
             <Text style={styles.headerDate}>{today}</Text>
 
@@ -100,11 +103,14 @@ const Cases = () => {
             <View style={{ flex: 1 }}>
               {caseTab === "All Case" && <AllCase />}
               {caseTab === "+Add New Case" && <AddNewCase />}
+              {caseTab === "View Clients" && <ViewClients />}
+
             </View>
-          </ScrollView>
         </View>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
+    </ScrollView>
+
   );
 };
 

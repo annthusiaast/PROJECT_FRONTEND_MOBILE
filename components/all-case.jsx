@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { User } from "lucide-react-native";
-import { task as rawTask } from "@/constants/sample_data";
+import { allCases as rawallCases } from "@/constants/sample_data";
 import { styles } from "@/constants/styles/(tabs)/tasksBtn_styles";
 
-const task = rawTask;
+const allCases = rawallCases;
 
 const AllCase = () => {
   const [statusFilter, setStatusFilter] = useState("all");
@@ -16,13 +16,13 @@ const AllCase = () => {
     completed: "#0c8744ff",
   };
 
-  // ✅ Filtering works exactly like in ActiveTask
-  const filteredTasks = task.filter((t) => {
-    const status = t.status || "pending";
-    return statusFilter === "all" || statusFilter === status;
-  });
+  // Correct Filtering
+  const filteredCases = allCases.filter(
+    (t) => statusFilter === "all" || t.status === statusFilter
+  );
 
   return (
+    <ScrollView>
     <View style={{ flex: 1, padding: 10 }}>
       {/* === STATUS FILTER BUTTONS === */}
       <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 15 }}>
@@ -52,15 +52,13 @@ const AllCase = () => {
       </View>
 
       {/* === CASE CARDS === */}
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {filteredTasks.length === 0 ? (
+        {filteredCases.length === 0 ? (
           <Text style={{ textAlign: "center", color: "#777", marginTop: 20 }}>
             No case found.
           </Text>
         ) : (
-          filteredTasks.map((t) => {
+          filteredCases.map((t) => {
             const status = t.status || "pending";
-
             return (
               <View key={t.id} style={styles.taskCard}>
                 {/* Status Badge */}
@@ -70,9 +68,7 @@ const AllCase = () => {
                     { backgroundColor: statusColors[status] || "#000" },
                   ]}
                 >
-                  <Text style={styles.priorityBadgeText}>
-                    {status.toUpperCase()}
-                  </Text>
+                  <Text style={styles.priorityBadgeText}>{status.toUpperCase()}</Text>
                 </View>
 
                 {/* Title */}
@@ -94,8 +90,8 @@ const AllCase = () => {
             );
           })
         )}
-      </ScrollView>
-    </View>
+      </View>
+    </ScrollView>
   );
 };
 

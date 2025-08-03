@@ -171,18 +171,30 @@ export const styles = StyleSheet.create({
         color: "#1E3A8A",
         fontWeight: "500",
     },
-    downloadButton: {
-        flex: 1,
-        backgroundColor: "#1E3A8A",
-        borderRadius: 8,
-        paddingVertical: 10,
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "center",
-        gap: 6,
+
+    dropdownButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderWidth: 1,
+    borderColor: "#114d89",
+    borderRadius: 6,
+    backgroundColor: "#fff",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    minWidth: 150, 
     },
-    downloadButtonText: {
-        color: "#fff",
-        fontWeight: "500",
+
+
+    dropdownText: {
+    fontSize: 14,
+    color: "#101111ff",
+    marginRight: 6             
     },
+
+    dropdownModal:{
+    backgroundColor: "#E5E7EB",
+    },
+
+    
 });

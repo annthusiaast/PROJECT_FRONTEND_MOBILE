@@ -149,5 +149,53 @@ export const documents = [
 
 ];
 
+// Documents UI , All Case and All Types Sample Data
   export const CASE_FILTERS = ["All Cases", "Case A", "Case B", "Case C"];
   export const DOC_TYPES = ["All Types", "Pleading", "Contract", "Evidence"];
+
+// ======= CLIENTS ======= //
+export const sampleClients = [
+  { id: 1, name: "John Doe", email: "john@example.com", phone: "09123456789" },
+  { id: 2, name: "Jane Smith", email: "jane@example.com", phone: "09987654321" },
+  { id: 3, name: "Michael Johnson", email: "michael@example.com", phone: "09771234567" },
+];
+
+
+// ====== ALL CASES ======= //
+export const allCases = [
+  {
+    id: 1,
+    title: "Criminal Case",
+    description: "Review evidence for the upcoming trial.",
+    assignedTo: "Atty. Santos",
+    status: "pending",
+  },
+  {
+    id: 2,
+    title: "Civil Case",
+    description: "Prepare defense documents and witness list.",
+    assignedTo: "Atty. Cruz",
+    status: "processing",
+  },
+  {
+    id: 3,
+    title: "Property Dispute",
+    description: "Finalize settlement agreement with opposing counsel.",
+    assignedTo: "Atty. Ramirez",
+    status: "completed",
+  },
+  {
+    id: 4,
+    title: "Fraud Investigation",
+    description: "Collect financial records for further analysis.",
+    assignedTo: "Paralegal Jane",
+    status: "pending",
+  },
+  {
+    id: 5,
+    title: "Tax Evasion Case #5223",
+    description: "Draft initial complaint and supporting affidavits.",
+    assignedTo: "Atty. Lopez",
+    status: "processing",
+  },
+];

@@ -200,7 +200,6 @@ function Profile() {
       <Modal transparent visible={showSignOutModal} animationType="fade">
         <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)", justifyContent: "center", alignItems: "center" }}>
           <View style={{ backgroundColor: "#fff", padding: 20, borderRadius: 10, width: 280 }}>
-            <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 10 }}>Confirm Sign Out</Text>
             <Text style={{ fontSize: 14, color: "#555", marginBottom: 20 }}>Are you sure you want to sign out?</Text>
             <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
               <TouchableOpacity onPress={() => setShowSignOutModal(false)} style={{ padding: 10 }}>

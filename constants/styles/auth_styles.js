@@ -7,18 +7,29 @@ export const styles = StyleSheet.create({
     justifyContent: "center", // centers vertically
     alignItems: "center", // centers horizontally
     paddingHorizontal: 20,
-    paddingBottom: 70,
+    paddingBottom: 80,
   },
+
+  forgotContainer:{
+    flex: 1,
+    backgroundColor: "#fff",
+    justifyContent: "center", // centers vertically
+    alignItems: "center", // centers horizontally
+    paddingHorizontal: 20,
+    paddingBottom: 80,
+  },
+
 
   logo: {
     width: 250,
     height: 200,
-    marginBottom: 0,
+    marginBottom: 80,
   },
 
   formContainer: {
     width: "100%",
     alignItems: "center",
+    marginTop: -70,
   },
 
   inputContainer: {
@@ -59,6 +70,7 @@ export const styles = StyleSheet.create({
   checkbox: {
     flexDirection: 'row',
     alignItems: 'center',
+    transform: [{ scale: 0.9 }],
   },
 
   textRemember: {
@@ -75,6 +87,12 @@ export const styles = StyleSheet.create({
 
   loginButton: {
     width: '90%',
+  },
+
+  sendEmailButton: {
+    width: '70%',
+    alignItems:"stretch",
+    marginLeft: 55,
   },
 
   loginButtonGradient: {

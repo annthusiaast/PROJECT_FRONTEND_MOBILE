@@ -162,13 +162,14 @@ dropdownPosition: {
     alignItems: "center",
     justifyContent: "space-between",
     borderWidth: 1,
-    borderColor: "#114d89",
+    borderColor: "#acafb3ff",
     borderRadius: 6,
     paddingHorizontal: 10,
-    height: 50, // ✅ default height
+    height: 50, //  default height
     marginBottom: 15,
 },
 
+//  Dropdown Modal
 dropdownModal: {
     backgroundColor: "#fff",
     position: "absolute",
@@ -180,17 +181,31 @@ dropdownModal: {
     elevation: 5,
 },
 
+// Title
 TitlePlaceholder: {
-    borderWidth: 1, 
-    borderColor: "#ccc", 
-    borderRadius: 6, 
-    padding: 10, 
-    marginBottom: 15 
+  borderWidth: 1,
+  borderColor: "#acafb3ff",
+  borderRadius: 6,
+  paddingHorizontal: 10,
+  height: 45,
+  marginBottom: 10,
+
 },
 
+// Fee
+FeePlaceholder: {
+  borderWidth: 1,
+  borderColor: "#acafb3ff",
+  borderRadius: 6,
+  paddingHorizontal: 10,
+  height: 50,
+  marginBottom: 10,
+},
+
+// Description
 DescriptionPlaceholder: {
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: "#acafb3ff",
     borderRadius: 6,
     padding: 10,
     marginBottom: 15,
@@ -198,9 +213,10 @@ DescriptionPlaceholder: {
     textAlignVertical: "top",
 },
 
+// Due Date
 dueDateDropdown: {
     borderWidth: 1,
-    borderColor: "#114d89",
+    borderColor: "#acafb3ff",
     borderRadius: 6,
     paddingHorizontal: 10,
     height: 50, 
@@ -210,6 +226,8 @@ dueDateDropdown: {
     justifyContent: "space-between",
     },
 
+
+// Calendar Modal
 calendarModal: {
     backgroundColor: "#fff",
     width: "90%",
@@ -221,6 +239,7 @@ calendarModal: {
     elevation: 5,
     },
 
+    //Task Created Button
 taskCreatedBtn: {
     backgroundColor: "#114d89",
     paddingVertical: 12,

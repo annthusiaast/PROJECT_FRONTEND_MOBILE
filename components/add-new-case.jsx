@@ -1,18 +1,15 @@
 import { styles } from "@/constants/styles/(tabs)/tasksBtn_styles";
 import { ChevronDown } from "lucide-react-native";
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import {
-  findNodeHandle,
-  InteractionManager,
   KeyboardAvoidingView,
-  Modal,
+  Keyboard,
   Platform,
-  Pressable,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
-  UIManager,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
@@ -26,6 +23,56 @@ const offenseTypeOptions = [
   "Crimes Against Public Interest",
 ];
 
+// ✅ Reusable Dropdown (like Documents)
+const Dropdown = ({ options, value, onSelect, width = "100%", topOffset = 40 }) => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <View style={{ width, position: "relative" }}>
+      {/* Button */}
+      <TouchableOpacity
+        style={[styles.dropdownPosition, { flexDirection: "row", justifyContent: "space-between", alignItems: "center" }]}
+        onPress={() => setOpen((prev) => !prev)}
+        activeOpacity={0.8}
+      >
+        <Text style={{ color: "#101111ff" }}>{value}</Text>
+        <ChevronDown size={18} color="#114d89" />
+      </TouchableOpacity>
+
+      {/* Dropdown Menu */}
+      {open && (
+        <View
+          style={{
+            position: "absolute",
+            top: topOffset,
+            left: 0,
+            right: 0,
+            backgroundColor: "#fff",
+            borderWidth: 1,
+            borderColor: "#ccc",
+            borderRadius: 6,
+            elevation: 4,
+            zIndex: 9999,
+          }}
+        >
+          {options.map((opt, idx) => (
+            <TouchableOpacity
+              key={idx}
+              style={{ padding: 12 }}
+              onPress={() => {
+                onSelect(opt);
+                setOpen(false);
+              }}
+            >
+              <Text style={{ fontSize: 16, color: "#114d89" }}>{opt}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+};
+
 const AddNewCase = () => {
   const [cabinetNumber, setCabinetNumber] = useState("");
   const [caseName, setCaseName] = useState("");
@@ -36,133 +83,84 @@ const AddNewCase = () => {
   const [filedDate, setFiledDate] = useState(new Date());
   const [fee, setFee] = useState("");
   const [description, setDescription] = useState("");
-  const [modalType, setModalType] = useState(null);
   const [showCalendar, setShowCalendar] = useState(false);
-  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 20, right: 20 });
-
-  const buttonRefs = {
-    category: useRef(null),
-    client: useRef(null),
-    offense: useRef(null),
-  };
-
-  const measureDropdown = (type) => {
-    const handle = findNodeHandle(buttonRefs[type].current);
-    if (handle) {
-      UIManager.measure(handle, (_x, _y, _width, height, pageX, pageY) => {
-        InteractionManager.runAfterInteractions(() => {
-          setDropdownPos({ top: pageY + height, left: pageX, right: 20 });
-          setModalType(type);
-        });
-      });
-    }
-  };
-
-  const DropdownButton = ({ value, onPress, type, style }) => (
-    <TouchableOpacity ref={buttonRefs[type]} style={[styles.dropdownPosition, style]} onPress={onPress}>
-      <Text style={{ color: "#101111ff" }}>{value}</Text>
-      <ChevronDown size={18} color="#114d89" />
-    </TouchableOpacity>
-  );
-
-  const DropdownModal = ({ visible, options, onSelect }) => (
-    <Modal visible={visible} transparent animationType="fade">
-      <Pressable style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.3)" }} onPress={() => setModalType(null)}>
-        <View
-          style={[
-            styles.dropdownModal,
-            { top: dropdownPos.top, left: dropdownPos.left, right: dropdownPos.right, width: 200, zIndex: 9999 },
-          ]}
-        >
-          {options.map((opt, index) => (
-            <TouchableOpacity
-              key={index}
-              style={{ padding: 12 }}
-              onPress={() => {
-                onSelect(opt);
-                setModalType(null);
-              }}
-            >
-              <Text style={{ fontSize: 16, color: "#114d89" }}>{opt}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </Pressable>
-    </Modal>
-  );
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <ScrollView style={{ flex: 1, padding: 15 }} keyboardShouldPersistTaps="handled">
-        {/* Cabinet Number */}
-        <Text style={{ fontWeight: "bold", fontSize: 14, marginBottom: 5 }}>Cabinet Number</Text>
-        <TextInput
-          style={styles.TitlePlaceholder}
-          placeholder="Enter cabinet number"
-          value={cabinetNumber}
-          onChangeText={setCabinetNumber}
-        />
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView style={{ flex: 1, padding: 15 }} keyboardShouldPersistTaps="handled">
+          
+          {/* Cabinet Number */}
+          <Text style={{ fontWeight: "bold", fontSize: 14, marginBottom: 5 }}>Cabinet Number</Text>
+          <TextInput
+            style={styles.TitlePlaceholder}
+            placeholder="Enter cabinet number"
+            placeholderTextColor="#0b0c0cff"
+            value={cabinetNumber}
+            onChangeText={setCabinetNumber}
+          />
 
-        {/* Case Name */}
-        <Text style={{ fontWeight: "bold", fontSize: 14, marginBottom: 5 }}>Case Name</Text>
-        <TextInput
-          style={styles.TitlePlaceholder}
-          placeholder="Enter case name"
-          value={caseName}
-          onChangeText={setCaseName}
-        />
+          {/* Case Name */}
+          <Text style={{ fontWeight: "bold", fontSize: 14, marginBottom: 5 }}>Case Name</Text>
+          <TextInput
+            style={styles.TitlePlaceholder}
+            placeholder="Enter case name"
+            placeholderTextColor="#0b0c0cff"
+            value={caseName}
+            onChangeText={setCaseName}
+          />
 
-        {/* Client Dropdown */}
-        <Text style={{ fontWeight: "bold", fontSize: 14, marginTop: 10, marginBottom: 5 }}>Client</Text>
-        <DropdownButton value={client} onPress={() => measureDropdown("client")} type="client" />
+          {/* Client Dropdown */}
+          <Text style={{ fontWeight: "bold", fontSize: 14, marginTop: 10, marginBottom: 5 }}>Client</Text>
+          <Dropdown options={clientOptions} value={client} onSelect={setClient} />
 
-        {/* Category & Offense Type */}
-        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }}>
-          <View style={{ flex: 1, marginRight: 5 }}>
-            <Text style={{ fontWeight: "bold", fontSize: 14, marginBottom: 5 }}>Category</Text>
-            <DropdownButton value={category} onPress={() => measureDropdown("category")} type="category" />
+          {/* Category & Offense Type */}
+          <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }}>
+            <View style={{ flex: 1, marginRight: 5 }}>
+              <Text style={{ fontWeight: "bold", fontSize: 14, marginBottom: 5 }}>Category</Text>
+              <Dropdown options={categoryOptions} value={category} onSelect={setCategory} />
+            </View>
+            <View style={{ flex: 1, marginLeft: 5 }}>
+              <Text style={{ fontWeight: "bold", fontSize: 14, marginBottom: 5 }}>Offense Type</Text>
+              <Dropdown options={offenseTypeOptions} value={offenseType} onSelect={setOffenseType} />
+            </View>
           </View>
-          <View style={{ flex: 1, marginLeft: 5 }}>
-            <Text style={{ fontWeight: "bold", fontSize: 14, marginBottom: 5 }}>Offense Type</Text>
-            <DropdownButton value={offenseType} onPress={() => measureDropdown("offense")} type="offense" />
-          </View>
-        </View>
 
-        {/* Branch */}
-        <Text style={{ fontWeight: "bold", fontSize: 14, marginTop: 10, marginBottom: 5 }}>Branch</Text>
-        <TextInput
-          style={styles.TitlePlaceholder}
-          placeholder="Enter branch"
-          value={branch}
-          onChangeText={setBranch}
-        />
+          {/* Branch */}
+          <Text style={{ fontWeight: "bold", fontSize: 14, marginTop: 10, marginBottom: 5 }}>Branch</Text>
+          <TextInput
+            style={styles.TitlePlaceholder}
+            placeholder="Enter branch"
+            placeholderTextColor="#0b0c0cff"
+            value={branch}
+            onChangeText={setBranch}
+          />
 
-        {/* Filed Date & Fee */}
-        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }}>
-          <View style={{ flex: 1, marginRight: 5 }}>
-            <Text style={{ fontWeight: "bold", fontSize: 14, marginBottom: 5 }}>Filed Date</Text>
-            <TouchableOpacity style={styles.dueDateDropdown} onPress={() => setShowCalendar(true)}>
-              <Text>{filedDate.toLocaleDateString()}</Text>
-              <ChevronDown size={18} color="#114d89" />
-            </TouchableOpacity>
+          {/* Filed Date & Fee */}
+          <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }}>
+            <View style={{ flex: 1, marginRight: 5 }}>
+              <Text style={{ fontWeight: "bold", fontSize: 14, marginBottom: 5 }}>Filed Date</Text>
+              <TouchableOpacity style={styles.dueDateDropdown} onPress={() => setShowCalendar(true)}>
+                <Text>{filedDate.toLocaleDateString()}</Text>
+                <ChevronDown size={18} color="#114d89" />
+              </TouchableOpacity>
+            </View>
+            <View style={{ flex: 1, marginLeft: 5 }}>
+              <Text style={{ fontWeight: "bold", fontSize: 14, marginBottom: 5 }}>Fee</Text>
+              <TextInput
+                style={styles.FeePlaceholder}
+                placeholder="Enter fee"
+                placeholderTextColor="#0b0c0cff"
+                value={fee}
+                onChangeText={setFee}
+                keyboardType="numeric"
+              />
+            </View>
           </View>
-          <View style={{ flex: 1, marginLeft: 5 }}>
-            <Text style={{ fontWeight: "bold", fontSize: 14, marginBottom: 5 }}>Fee</Text>
-            <TextInput
-              style={styles.TitlePlaceholder}
-              placeholder="Enter fee"
-              value={fee}
-              onChangeText={setFee}
-              keyboardType="numeric"
-            />
-          </View>
-        </View>
 
-        {/* Calendar Modal */}
-        <Modal visible={showCalendar} transparent animationType="slide">
-          <Pressable style={{ flex: 1, justifyContent: "center", alignItems: "center" }} onPress={() => setShowCalendar(false)}>
+          {/* Calendar (Optional) */}
+          {showCalendar && (
             <View style={styles.calendarModal}>
-              <Text style={{ fontWeight: "bold", fontSize: 16, color: "#114d89", marginBottom: 10 }}>Select Filed Date</Text>
               <Calendar
                 onDayPress={(day) => {
                   setFiledDate(new Date(day.dateString));
@@ -179,29 +177,25 @@ const AddNewCase = () => {
                 }}
               />
             </View>
-          </Pressable>
-        </Modal>
+          )}
 
-        {/* Description */}
-        <Text style={{ fontWeight: "bold", fontSize: 14, marginTop: 15, marginBottom: 5 }}>Description</Text>
-        <TextInput
-          style={styles.DescriptionPlaceholder}
-          placeholder="Enter case description"
-          value={description}
-          onChangeText={setDescription}
-          multiline
-        />
+          {/* Description */}
+          <Text style={{ fontWeight: "bold", fontSize: 14, marginTop: 15, marginBottom: 5 }}>Description</Text>
+          <TextInput
+            style={styles.DescriptionPlaceholder}
+            placeholder="Enter case description"
+            placeholderTextColor="#0b0c0cff"
+            value={description}
+            onChangeText={setDescription}
+            multiline
+          />
 
-        {/* Submit Button */}
-        <TouchableOpacity style={styles.taskCreatedBtn} onPress={() => alert("Case Created!")}>
-          <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>Create Case</Text>
-        </TouchableOpacity>
-
-        {/* Dropdown Modals */}
-        <DropdownModal visible={modalType === "client"} options={clientOptions} onSelect={setClient} />
-        <DropdownModal visible={modalType === "category"} options={categoryOptions} onSelect={setCategory} />
-        <DropdownModal visible={modalType === "offense"} options={offenseTypeOptions} onSelect={setOffenseType} />
-      </ScrollView>
+          {/* Submit Button */}
+          <TouchableOpacity style={styles.taskCreatedBtn} onPress={() => alert("Case Created!")}>
+            <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>Create Case</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 };
