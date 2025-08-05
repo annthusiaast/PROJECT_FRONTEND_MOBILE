@@ -93,7 +93,7 @@ const Documents = () => {
           {/* Search */}
           <View style={styles.searchInputContainer}>
             <Search size={20} color="#999" />
-            <TextInput style={styles.searchInput} placeholder="Search documents..." placeholderTextColor="#999" />
+            <TextInput style={styles.searchInput} placeholder="Search..." placeholderTextColor="#999" />
           </View>
 
           {/* Filters */}

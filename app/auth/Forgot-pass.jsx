@@ -34,12 +34,14 @@ const ForgotPass = () => {
             onChangeText={setEmail}
           />
         </View>
+      </View>
 
+      <View>
         {/* Send Email Button */}
         <TouchableOpacity onPress={() => alert('Reset Email Sent')} style={styles.sendEmailButton}>
           <LinearGradient
             colors={['#173B7E', '#1A4C9D']}
-            style={styles.loginButtonGradient}
+            style={styles.sendEmailButtonGradient}
           >
             <Text style={styles.loginButtonText}>Send Email</Text>
           </LinearGradient>
