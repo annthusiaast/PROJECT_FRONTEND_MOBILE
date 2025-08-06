@@ -90,15 +90,25 @@ export const styles = StyleSheet.create({
   },
 
   sendEmailButton: {
-    width: '70%',
-    alignItems:"stretch",
-    marginLeft: 55,
-  },
+  alignSelf: 'center',
+  width: '90%',     // controls the actual button width
+},
+
 
   loginButtonGradient: {
     padding: 15,
     borderRadius: 20,
   },
+
+  sendEmailButtonGradient: {
+  width: '100%',         // gradient fills parent width
+  paddingVertical: 13,   // same as login button
+  paddingHorizontal: 90,
+  marginTop: 10,
+  borderRadius: 20,
+  justifyContent: 'center',
+  alignItems: 'center',
+},
 
   loginButtonText: {
     color: '#FFFFFF',
