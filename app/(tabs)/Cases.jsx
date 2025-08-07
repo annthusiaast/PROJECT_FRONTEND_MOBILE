@@ -2,7 +2,7 @@ import AddNewCase from "@/components/add-new-case";
 import AllCase from "@/components/all-case";
 import CaseModal from "@/components/case-modal";
 import ViewClients from "@/components/view-clients";
-import { today } from "@/constants/sample_data";
+import { today, allCases as rawallCases } from "@/constants/sample_data";
 import { styles } from "@/constants/styles/(tabs)/case_styles";
 import { Bell, Search } from "lucide-react-native";
 import React, { useState } from "react";
@@ -22,10 +22,18 @@ const Cases = () => {
   const [caseTab, setcaseTab] = useState("All Case");
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedCase, setSelectedCase] = useState(null);
+  const [cases, setCases] = useState(rawallCases); // store editable list
 
   const handleCasePress = (caseItem) => {
     setSelectedCase(caseItem);
     setModalVisible(true);
+  };
+
+  const handleSaveCase = (updatedCase) => {
+    setCases((prev) =>
+      prev.map((c) => (c.id === updatedCase.id ? updatedCase : c))
+    );
+    setSelectedCase(updatedCase);
   };
 
   return (
@@ -103,7 +111,7 @@ const Cases = () => {
 
             <View style={{ flex: 1 }}>
               {caseTab === "All Case" && (
-                <AllCase onCasePress={handleCasePress} />
+                <AllCase onCasePress={handleCasePress} cases={cases} />
               )}
               {caseTab === "+Add New Case" && <AddNewCase />}
               {caseTab === "View Clients" && <ViewClients />}
@@ -114,6 +122,7 @@ const Cases = () => {
                 visible={modalVisible}
                 onClose={() => setModalVisible(false)}
                 caseData={selectedCase}
+                onSave={handleSaveCase} // 🔹 pass save handler
               />
             )}
           </View>

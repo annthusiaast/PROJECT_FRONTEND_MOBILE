@@ -1,4 +1,4 @@
-import { Bell, Phone, MapPin, Edit2, Settings, Building, Mail } from "lucide-react-native";
+import { Bell, Phone, MapPin, Edit2, Settings, Building, Mail, ArrowLeft, Clock } from "lucide-react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -12,6 +12,7 @@ import {
   View,
   Platform,
   Modal,
+  Switch
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
@@ -33,11 +34,33 @@ function Profile() {
     department: initialProfile.department,
   });
 
-  // Load profile data from AsyncStorage
+  // Modals for Notifications & Activity Logs
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showLogs, setShowLogs] = useState(false);
+
+  // Notification prefs state
+  const [prefs, setPrefs] = useState({
+    push: true,
+    email: false,
+    sms: false,
+  });
+
+  // Activity Logs state
+  const [logs, setLogs] = useState([
+    { id: 1, action: "Logged in", time: "2025-08-07 09:12 AM" },
+    { id: 2, action: "Edited profile", time: "2025-08-06 04:25 PM" },
+    { id: 3, action: "Changed password", time: "2025-08-05 11:14 AM" },
+    { id: 4, action: "Viewed case C54321", time: "2025-08-05 10:05 AM" },
+  ]);
+
+  // Load profile data
   useEffect(() => {
     const loadProfile = async () => {
       const stored = await AsyncStorage.getItem("userProfile");
       if (stored) setProfile(JSON.parse(stored));
+
+      const storedPrefs = await AsyncStorage.getItem("notificationPrefs");
+      if (storedPrefs) setPrefs(JSON.parse(storedPrefs));
     };
     loadProfile();
   }, []);
@@ -46,10 +69,14 @@ function Profile() {
     await AsyncStorage.setItem("userProfile", JSON.stringify(updatedProfile));
   };
 
+  const savePrefs = async (updatedPrefs) => {
+    setPrefs(updatedPrefs);
+    await AsyncStorage.setItem("notificationPrefs", JSON.stringify(updatedPrefs));
+  };
+
   const validateInputs = () => {
     const emailRegex = /\S+@\S+\.\S+/;
     const phoneRegex = /^[0-9]{10,15}$/;
-
     if (!emailRegex.test(editData.email)) {
       Alert.alert("Invalid Email", "Please enter a valid email address.");
       return false;
@@ -63,7 +90,6 @@ function Profile() {
 
   const handleSave = async () => {
     if (!validateInputs()) return;
-
     const updated = { ...profile, ...editData };
     setProfile(updated);
     await saveProfileToStorage(updated);
@@ -87,8 +113,10 @@ function Profile() {
     router.replace("/auth/Login");
   };
 
-  const handleAccountSettings = () => router.push("/account-settings");
-  const handleNotificationSettings = () => router.push("/notifications");
+  const togglePref = (key) => {
+    const updated = { ...prefs, [key]: !prefs[key] };
+    savePrefs(updated);
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -103,7 +131,7 @@ function Profile() {
           <Text style={[styles.headerContainer, { fontFamily: Platform.OS === "ios" ? "System" : "sans-serif" }]}>
             Profile
           </Text>
-          <TouchableOpacity onPress={handleNotificationSettings}>
+          <TouchableOpacity onPress={() => setShowNotifications(true)}>
             <Bell size={26} color="#0B3D91" strokeWidth={2} />
           </TouchableOpacity>
         </View>
@@ -177,11 +205,11 @@ function Profile() {
         {/* Account Settings */}
         {!isEditing && (
           <View style={styles.settingsCard}>
-            <TouchableOpacity style={styles.settingsItem} onPress={handleAccountSettings}>
+            <TouchableOpacity style={styles.settingsItem} onPress={() => setShowLogs(true)}>
               <Settings size={20} color="#0B3D91" />
               <Text style={styles.settingsText}>Activity Logs</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.settingsItem} onPress={handleNotificationSettings}>
+            <TouchableOpacity style={styles.settingsItem} onPress={() => setShowNotifications(true)}>
               <Bell size={20} color="#0B3D91" />
               <Text style={styles.settingsText}>Notification Preference</Text>
             </TouchableOpacity>
@@ -211,6 +239,70 @@ function Profile() {
             </View>
           </View>
         </View>
+      </Modal>
+
+      {/* Notifications Modal */}
+      <Modal visible={showNotifications} animationType="slide">
+        <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+          <View style={[styles.headerWrapper, { paddingHorizontal: 16 }]}>
+            <TouchableOpacity onPress={() => setShowNotifications(false)}>
+              <ArrowLeft size={24} color="#0B3D91" />
+            </TouchableOpacity>
+            <Text style={[styles.headerContainer, { flex: 1, textAlign: "center" }]}>
+              Notification Preferences
+            </Text>
+            <View style={{ width: 24 }} />
+          </View>
+
+          <ScrollView contentContainerStyle={{ padding: 16 }}>
+            <View style={styles.infoCard}>
+              {[
+                { key: "push", label: "Push Notifications" },
+                { key: "email", label: "Email Notifications" },
+                { key: "sms", label: "SMS Notifications" },
+              ].map((item) => (
+                <View key={item.key} style={styles.infoRow}>
+                  <Text style={styles.infoValue}>{item.label}</Text>
+                  <Switch
+                    value={prefs[item.key]}
+                    onValueChange={() => togglePref(item.key)}
+                    trackColor={{ false: "#ccc", true: "#0B3D91" }}
+                    thumbColor="#fff"
+                  />
+                </View>
+              ))}
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+
+      {/* Activity Logs Modal */}
+      <Modal visible={showLogs} animationType="slide">
+        <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+          <View style={[styles.headerWrapper, { paddingHorizontal: 16 }]}>
+            <TouchableOpacity onPress={() => setShowLogs(false)}>
+              <ArrowLeft size={24} color="#0B3D91" />
+            </TouchableOpacity>
+            <Text style={[styles.headerContainer, { flex: 1, textAlign: "center" }]}>
+              Activity Logs
+            </Text>
+            <View style={{ width: 24 }} />
+          </View>
+
+          <ScrollView contentContainerStyle={{ padding: 16 }}>
+            <View style={styles.infoCard}>
+              {logs.map((log) => (
+                <View key={log.id} style={[styles.infoRow, { justifyContent: "space-between" }]}>
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <Clock size={18} color="#0B3D91" style={{ marginRight: 8 }} />
+                    <Text style={styles.infoValue}>{log.action}</Text>
+                  </View>
+                  <Text style={{ fontSize: 12, color: "#888" }}>{log.time}</Text>
+                </View>
+              ))}
+            </View>
+          </ScrollView>
+        </SafeAreaView>
       </Modal>
     </SafeAreaView>
   );

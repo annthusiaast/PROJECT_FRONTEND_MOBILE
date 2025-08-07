@@ -150,14 +150,14 @@ export const documents = [
 ];
 
 // Documents UI , All Case and All Types Sample Data
-  export const CASE_FILTERS = ["All Cases", "Case A", "Case B", "Case C"];
-  export const DOC_TYPES = ["All Types", "Pleading", "Contract", "Evidence"];
+export const CASE_FILTERS = ["All Cases", "Case A", "Case B", "Case C"];
+export const DOC_TYPES = ["All Types", "Pleading", "Contract", "Evidence"];
 
 // ======= CLIENTS ======= //
 export const sampleClients = [
-  { id: 1, name: "John Doe", email: "john@example.com", phone: "09123456789" },
-  { id: 2, name: "Jane Smith", email: "jane@example.com", phone: "09987654321" },
-  { id: 3, name: "Michael Johnson", email: "michael@example.com", phone: "09771234567" },
+  { id: 1, name: "John Doe", email: "john@example.com", phone: "09123456789", dateCreated: "2025-08-01", createdBy: "Atty. John Doe" },
+  { id: 2, name: "Jane Smith", email: "jane@example.com", phone: "09987654321", dateCreated: "2025-10-03", createdBy: "Atty. Jane Smith" },
+  { id: 3, name: "Michael Johnson", email: "michael@example.com", phone: "09771234567", dateCreated: "2025-05-01", createdBy: "Atty Michael Johnson" },
 ];
 
 
