@@ -9,13 +9,13 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View
 } from "react-native";
-import { ScrollView } from 'react-native-gesture-handler';
 
 const Tasks = () => {
   const [activeTab, setActiveTab] = useState('active');
@@ -26,8 +26,12 @@ const Tasks = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={{ flex: 1, paddingHorizontal: 10 }}>
-
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: 30 }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
           {/* Header Date */}
           <Text style={styles.headerDate}>{today}</Text>
 
@@ -69,13 +73,12 @@ const Tasks = () => {
           </View>
 
           {/* ==== Content Area of Each Task Button ==== */}
-          <View style={{ flex: 1 }}>
+          <View>
             {activeTab === 'active' && <ActiveTask />}
             {activeTab === 'completed' && <CompletedTask />}
             {activeTab === 'create' && <CreateTask />}
           </View>
-
-        </View>
+        </ScrollView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );

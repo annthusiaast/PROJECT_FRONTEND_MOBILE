@@ -71,9 +71,9 @@ const CompletedTask = () => {
     </View>
   );
 
-  return (
-    <View style={{ flex: 1, padding: 10 }}>
-      {/* === FILTER DROPDOWN BUTTON === */}
+  /** === HEADER CONTAINING DROPDOWN === */
+  const renderHeader = () => (
+    <>
       <View style={styles.dropdownBox}>
         <TouchableOpacity
           ref={buttonRef}
@@ -94,9 +94,7 @@ const CompletedTask = () => {
           style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.3)" }}
           onPress={() => setModalVisible(false)}
         >
-          <View
-            style={[styles.dropdownModalPosition, { top: dropdownTop }]}
-          >
+          <View style={[styles.dropdownModalPosition, { top: dropdownTop }]}>
             {FILTER_OPTIONS.map((option) => (
               <TouchableOpacity
                 key={option.value}
@@ -119,20 +117,22 @@ const CompletedTask = () => {
           </View>
         </Pressable>
       </Modal>
+    </>
+  );
 
-      {/* === COMPLETED TASKS LIST === */}
-      <FlatList
-        data={filterTasks()}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderTaskCard}
-        contentContainerStyle={{ paddingBottom: 20 }}
-        ListEmptyComponent={
-          <Text style={{ textAlign: "center", color: "gray", marginTop: 20 }}>
-            No tasks found for this date range.
-          </Text>
-        }
-      />
-    </View>
+  return (
+    <FlatList
+      data={filterTasks()}
+      keyExtractor={(item) => item.id.toString()}
+      renderItem={renderTaskCard}
+      ListHeaderComponent={renderHeader}
+      contentContainerStyle={{ padding: 10, paddingBottom: 20 }}
+      ListEmptyComponent={
+        <Text style={{ textAlign: "center", color: "gray", marginTop: 20 }}>
+          No tasks found for this date range.
+        </Text>
+      }
+    />
   );
 };
 

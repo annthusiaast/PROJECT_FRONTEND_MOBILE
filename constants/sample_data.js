@@ -67,7 +67,7 @@ export const getPriority = (dueDate) => {
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
   if (diffDays <= 2) return "high";        // Today or within 48 hours
-  if (diffDays <= 4) return "medium";      // 3–4 days
+  if (diffDays <= 4) return "mid";      // 3–4 days
   if (diffDays <= 7) return "low";         // Next week (5–7 days)
   return "low";                            // Else → low by default
 };
@@ -158,6 +158,7 @@ export const sampleClients = [
   { id: 1, name: "John Doe", email: "john@example.com", phone: "09123456789", dateCreated: "2025-08-01", createdBy: "Atty. John Doe" },
   { id: 2, name: "Jane Smith", email: "jane@example.com", phone: "09987654321", dateCreated: "2025-10-03", createdBy: "Atty. Jane Smith" },
   { id: 3, name: "Michael Johnson", email: "michael@example.com", phone: "09771234567", dateCreated: "2025-05-01", createdBy: "Atty Michael Johnson" },
+  { id: 4, title: "File Case Papers", description: "Organize and submit case documentation", assignedTo: "Paralegal Sarah Cruz", dueDate: "2025-08-10" },
 ];
 
 

@@ -10,7 +10,7 @@ const ActiveTask = () => {
   const priorityColors = {
     all: "#000000",
     high: "#e63946",
-    medium: "#f4a261",
+    mid: "#f4a261",
     low: "#6c757d",
   };
 
@@ -45,7 +45,10 @@ const ActiveTask = () => {
       </View>
 
       {/* === TASK CARDS === */}
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 30, flexGrow: 1 }}
+      >
         {filteredTasks.map((t) => {
           const priority = getPriority(t.dueDate);
           return (

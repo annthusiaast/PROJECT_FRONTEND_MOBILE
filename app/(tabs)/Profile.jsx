@@ -397,7 +397,7 @@ function Profile() {
                 flex: 1,
                 textAlign: "center",
                 fontSize: 18,
-                fontWeight: "600",
+                fontWeight: "1000",
                 color: "#0B3D91",
               }}
             >
