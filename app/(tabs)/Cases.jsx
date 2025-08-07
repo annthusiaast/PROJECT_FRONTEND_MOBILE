@@ -1,7 +1,8 @@
 import AddNewCase from "@/components/add-new-case";
 import AllCase from "@/components/all-case";
+import CaseModal from "@/components/case-modal";
 import ViewClients from "@/components/view-clients";
-import { today } from "@/constants/sample_data";
+import { today, allCases as rawallCases } from "@/constants/sample_data";
 import { styles } from "@/constants/styles/(tabs)/case_styles";
 import { Bell, Search } from "lucide-react-native";
 import React, { useState } from "react";
@@ -18,22 +19,33 @@ import {
 } from "react-native";
 
 const Cases = () => {
-  const [caseTab, setcaseTab] = useState("All Case"); 
+  const [caseTab, setcaseTab] = useState("All Case");
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedCase, setSelectedCase] = useState(null);
+  const [cases, setCases] = useState(rawallCases); // store editable list
+
+  const handleCasePress = (caseItem) => {
+    setSelectedCase(caseItem);
+    setModalVisible(true);
+  };
+
+  const handleSaveCase = (updatedCase) => {
+    setCases((prev) =>
+      prev.map((c) => (c.id === updatedCase.id ? updatedCase : c))
+    );
+    setSelectedCase(updatedCase);
+  };
 
   return (
-
     <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}>
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={{ flex: 1 }}>
-
-            {/* Header Date */}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={{ flex: 1 }}>
             <Text style={styles.headerDate}>{today}</Text>
 
-            {/* Header with Notification */}
             <View style={styles.headerWrapper}>
               <Text style={styles.headerContainer}>Cases</Text>
               <TouchableOpacity
@@ -44,7 +56,6 @@ const Cases = () => {
               </TouchableOpacity>
             </View>
 
-            {/* Search Input */}
             <View style={styles.searchInputContainer}>
               <Search size={20} color="#999" />
               <TextInput
@@ -54,7 +65,6 @@ const Cases = () => {
               />
             </View>
 
-            {/* ==== Tab Buttons ==== */}
             <View style={styles.taskButtonAlignments}>
               <View style={{ flexDirection: "row" }}>
                 {["All Case", "+Add New Case"].map((tab) => (
@@ -99,18 +109,26 @@ const Cases = () => {
               </TouchableOpacity>
             </View>
 
-            {/* ==== Content Area ==== */}
             <View style={{ flex: 1 }}>
-              {caseTab === "All Case" && <AllCase />}
+              {caseTab === "All Case" && (
+                <AllCase onCasePress={handleCasePress} cases={cases} />
+              )}
               {caseTab === "+Add New Case" && <AddNewCase />}
               {caseTab === "View Clients" && <ViewClients />}
-
             </View>
-        </View>
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
-    </ScrollView>
 
+            {selectedCase && (
+              <CaseModal
+                visible={modalVisible}
+                onClose={() => setModalVisible(false)}
+                caseData={selectedCase}
+                onSave={handleSaveCase} // 🔹 pass save handler
+              />
+            )}
+          </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+    </ScrollView>
   );
 };
 

@@ -8,9 +8,14 @@ import {
     Modal,
     Alert,
 } from "react-native";
-import { Search, Eye, X } from "lucide-react-native";
+import {
+    Mail,
+    Phone,
+    X,
+    Pencil,
+    Trash2,
+} from "lucide-react-native";
 import { sampleClients } from "@/constants/sample_data";
-import { styles } from "@/constants/styles/(tabs)/case_styles";
 
 const ViewClients = () => {
     const [searchTerm, setSearchTerm] = useState("");
@@ -18,7 +23,10 @@ const ViewClients = () => {
     const [selectedClient, setSelectedClient] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
     const [editModalVisible, setEditModalVisible] = useState(false);
-    const [formData, setFormData] = useState({ name: "", email: "", phone: "", contactPersonName: "", contactPersonNum: "", relation_role: "", });
+    const [formData, setFormData] = useState({
+        name: "", email: "", phone: "", contactPersonName: "",
+        contactPersonNum: "", relation_role: "",
+    });
 
     const filteredClients = clients.filter((client) =>
         client.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -35,7 +43,10 @@ const ViewClients = () => {
     };
 
     const openAddModal = () => {
-        setFormData({ name: "", email: "", phone: "", contactPersonName: "", contactPersonNum: "", relation_role: "", });
+        setFormData({
+            name: "", email: "", phone: "", contactPersonName: "",
+            contactPersonNum: "", relation_role: "",
+        });
         setEditModalVisible(true);
     };
 
@@ -82,7 +93,6 @@ const ViewClients = () => {
                     zIndex: 10,
                 }}
             >
-
                 {/* Buttons Row */}
                 <View style={{ flexDirection: "row", gap: 8 }}>
                     <TouchableOpacity
@@ -119,8 +129,10 @@ const ViewClients = () => {
             <ScrollView contentContainerStyle={{ padding: 16 }}>
                 {filteredClients.length > 0 ? (
                     filteredClients.map((client) => (
-                        <View
+                        <TouchableOpacity
                             key={client.id}
+                            onPress={() => openViewModal(client)}
+                            activeOpacity={0.8}
                             style={{
                                 backgroundColor: "#fff",
                                 borderRadius: 10,
@@ -128,58 +140,62 @@ const ViewClients = () => {
                                 marginTop: 12,
                                 borderWidth: 1,
                                 borderColor: "#ddd",
-                                flexDirection: "row",
-                                justifyContent: "space-between",
-                                alignItems: "center",
                             }}
                         >
                             <View style={{ flex: 1 }}>
-                                <Text style={{ fontSize: 16, fontWeight: "600", color: "#0B3D91" }}>
-                                    {client.name}
-                                </Text>
-                                <Text style={{ color: "#666" }}>📧 {client.email}</Text>
-                                <Text style={{ color: "#666" }}>📱 {client.phone}</Text>
+
+                                {/* Name row */}
+                                <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
+                                    <Text style={{ fontSize: 16, fontWeight: "600", color: "#0B3D91" }}>
+                                        {client.name}
+                                    </Text>
+                                </View>
+
+                                {/* Email row */}
+                                <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
+                                    <Mail color="#0B3D91" size={16} style={{ marginRight: 10 }} />
+                                    <Text style={{ color: "#666" }}>{client.email}</Text>
+                                </View>
+
+                                {/* Phone row */}
+                                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                                    <Phone color="#0B3D91" size={16} style={{ marginRight: 10 }} />
+                                    <Text style={{ color: "#666" }}>{client.phone}</Text>
+                                </View>
                             </View>
 
-                            <View style={{ flexDirection: "row", marginLeft: 8 }}>
+                            {/* Edit & Delete Buttons */}
+                            <View style={{ flexDirection: "row", justifyContent: "flex-end", marginTop: 12 }}>
                                 <TouchableOpacity
-                                    onPress={() => openViewModal(client)}
-                                    style={{
-                                        padding: 6,
-                                        borderRadius: 8,
-                                        backgroundColor: "#0B3D91",
-                                        marginRight: 6,
+                                    onPress={(e) => {
+                                        e.stopPropagation();
+                                        openEditModal(client);
                                     }}
-                                >
-                                    <Eye size={18} color="#fff" />
-                                </TouchableOpacity>
-
-                                <TouchableOpacity
-                                    onPress={() => openEditModal(client)}
                                     style={{
-                                        paddingVertical: 6,
-                                        paddingHorizontal: 10,
-                                        borderRadius: 8,
+                                        padding: 5,
+                                        borderRadius: 7,
                                         backgroundColor: "#f0ad4e",
                                         marginRight: 6,
                                     }}
                                 >
-                                    <Text style={{ color: "#fff" }}>Edit</Text>
+                                    <Pencil color="#fff" size={16} />
                                 </TouchableOpacity>
 
                                 <TouchableOpacity
-                                    onPress={() => deleteClient(client.id)}
+                                    onPress={(e) => {
+                                        e.stopPropagation();
+                                        deleteClient(client.id);
+                                    }}
                                     style={{
-                                        paddingVertical: 6,
-                                        paddingHorizontal: 10,
-                                        borderRadius: 8,
+                                        padding: 5,
+                                        borderRadius: 7,
                                         backgroundColor: "#d9534f",
                                     }}
                                 >
-                                    <Text style={{ color: "#fff" }}>Delete</Text>
+                                    <Trash2 color="#fff" size={16} />
                                 </TouchableOpacity>
                             </View>
-                        </View>
+                        </TouchableOpacity>
                     ))
                 ) : (
                     <Text style={{ textAlign: "center", marginTop: 20, color: "#666" }}>
@@ -190,31 +206,63 @@ const ViewClients = () => {
 
             {/* View Modal */}
             <Modal visible={modalVisible} animationType="slide" transparent onRequestClose={closeViewModal}>
-                <View style={{
-                    backgroundColor: "rgba(0,0,0,0.5)",
-                    flex: 1,
-                    justifyContent: "center",
-                    alignItems: "center",
-                    padding: 20,
-                }}>
-                    <View style={{
-                        backgroundColor: "#fff",
-                        borderRadius: 12,
+                <View
+                    style={{
+                        backgroundColor: "rgba(0,0,0,0.5)",
+                        flex: 1,
+                        justifyContent: "center",
+                        alignItems: "center",
                         padding: 20,
-                        width: "100%",
-                        maxWidth: 400,
-                    }}>
+                    }}
+                >
+                    <View
+                        style={{
+                            backgroundColor: "#fff",
+                            borderRadius: 12,
+                            padding: 20,
+                            width: "100%",
+                            maxWidth: 400,
+                            maxHeight: "90%",
+                        }}
+                    >
                         <TouchableOpacity
                             onPress={closeViewModal}
                             style={{ position: "absolute", top: 10, right: 10, padding: 4 }}
                         >
-                            <X size={24} color="#333" />
+                            <Text style={{ fontSize: 20, fontWeight: "bold" }}>✕</Text>
                         </TouchableOpacity>
-                        <Text style={{ fontSize: 20, fontWeight: "bold", color: "#0B3D91", marginBottom: 10 }}>
+
+                        <Text style={{
+                            fontSize: 20,
+                            fontWeight: "bold",
+                            color: "#0B3D91",
+                            marginBottom: 16,
+                        }}>
                             {selectedClient?.name}
                         </Text>
-                        <Text>📧 Email: {selectedClient?.email}</Text>
-                        <Text>📱 Phone: {selectedClient?.phone}</Text>
+
+                        <ScrollView showsVerticalScrollIndicator={false}>
+                            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+                                {[
+                                    { label: "Email:", value: selectedClient?.email },
+                                    { label: "Phone:", value: selectedClient?.phone },
+                                    { label: "Contact Person:", value: selectedClient?.contactPersonName },
+                                    { label: "Contact Number:", value: selectedClient?.contactPersonNum },
+                                    { label: "Relation/Role:", value: selectedClient?.relation_role },
+                                    { label: "Date Created:", value: selectedClient?.dateCreated },
+                                    { label: "Created By:", value: selectedClient?.createdBy },
+                                ].map((item, index) => (
+                                    <View key={index} style={{ width: "48%" }}>
+                                        <Text style={{ fontWeight: "600", fontSize: 12, color: "#555" }}>
+                                            {item.label}
+                                        </Text>
+                                        <Text style={{ fontSize: 14, color: "#000", marginTop: 4 }}>
+                                            {item.value || "—"}
+                                        </Text>
+                                    </View>
+                                ))}
+                            </View>
+                        </ScrollView>
                     </View>
                 </View>
             </Modal>
@@ -246,89 +294,29 @@ const ViewClients = () => {
                             {formData.id ? "Edit Client" : "Add Client"}
                         </Text>
 
-                        <TextInput
-                            placeholder="Full Name"
-                            placeholderTextColor= '#121313ff'
-                            value={formData.name}
-                            onChangeText={(text) => setFormData({ ...formData, name: text })}
-                            style={{
-                                borderWidth: 1,
-                                borderColor: "#ddd",
-                                borderRadius: 6,
-                                padding: 8,
-                                marginBottom: 8,
-                                textcolor: "#0B3D91",
-                            }}
-                        />
-                        <TextInput
-                            placeholder="Email"
-                            placeholderTextColor= '#121313ff'
-                            value={formData.email}
-                            onChangeText={(text) => setFormData({ ...formData, email: text })}
-                            style={{
-                                borderWidth: 1,
-                                borderColor: "#ddd",
-                                borderRadius: 6,
-                                padding: 8,
-                                marginBottom: 8,
-                            }}
-                        />
-                        <TextInput
-                            placeholder="Phone Number"
-                            placeholderTextColor= '#121313ff'
-                            value={formData.phone}
-                            onChangeText={(text) => setFormData({ ...formData, phone: text })}
-                            style={{
-                                borderWidth: 1,
-                                borderColor: "#ddd",
-                                borderRadius: 6,
-                                padding: 8,
-                                marginBottom: 8,
-                            }}
-                        />
-
-                        <TextInput
-                            placeholder="Contact Person Name"
-                            placeholderTextColor= '#121313ff'
-                            value={formData.contactPersonName}
-                            onChangeText={(text) => setFormData({ ...formData, contactPersonName: text })}
-                            style={{
-                                borderWidth: 1,
-                                borderColor: "#ddd",
-                                borderRadius: 6,
-                                padding: 8,
-                                marginBottom: 8,
-                            }}
-                        />
-
-                        <TextInput
-                            placeholder="Contact Person Number"
-                            placeholderTextColor= '#121313ff'
-                            value={formData.contactPersonNum}
-                            onChangeText={(text) => setFormData({ ...formData, contactPersonNum: text })}
-                            style={{
-                                borderWidth: 1,
-                                borderColor: "#ddd",
-                                borderRadius: 6,
-                                padding: 8,
-                                marginBottom: 8,
-                            }}
-                        />
-
-                        <TextInput
-                            placeholder="Relation/Role"
-                            placeholderTextColor= '#121313ff'
-                            value={formData.relation_role}
-                            onChangeText={(text) => setFormData({ ...formData, relation_role: text })}
-                            style={{
-                                borderWidth: 1,
-                                borderColor: "#ddd",
-                                borderRadius: 6,
-                                padding: 8,
-                                marginBottom: 8,
-                            }}
-                        />
-
+                        {[
+                            { placeholder: "Full Name", key: "name" },
+                            { placeholder: "Email", key: "email" },
+                            { placeholder: "Phone Number", key: "phone" },
+                            { placeholder: "Contact Person Name", key: "contactPersonName" },
+                            { placeholder: "Contact Person Number", key: "contactPersonNum" },
+                            { placeholder: "Relation/Role", key: "relation_role" },
+                        ].map((input) => (
+                            <TextInput
+                                key={input.key}
+                                placeholder={input.placeholder}
+                                placeholderTextColor="#121313ff"
+                                value={formData[input.key]}
+                                onChangeText={(text) => setFormData({ ...formData, [input.key]: text })}
+                                style={{
+                                    borderWidth: 1,
+                                    borderColor: "#ddd",
+                                    borderRadius: 6,
+                                    padding: 8,
+                                    marginBottom: 8,
+                                }}
+                            />
+                        ))}
 
                         <TouchableOpacity
                             onPress={saveClient}

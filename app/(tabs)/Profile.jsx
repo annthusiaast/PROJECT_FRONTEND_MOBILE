@@ -1,4 +1,14 @@
-import { Bell, Phone, MapPin, Edit2, Settings, Building, Mail } from "lucide-react-native";
+import {
+  Bell,
+  Phone,
+  MapPin,
+  Edit2,
+  Settings,
+  Building,
+  Mail,
+  ArrowLeft,
+  Clock,
+} from "lucide-react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -12,6 +22,7 @@ import {
   View,
   Platform,
   Modal,
+  Switch,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
@@ -33,11 +44,38 @@ function Profile() {
     department: initialProfile.department,
   });
 
-  // Load profile data from AsyncStorage
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showLogs, setShowLogs] = useState(false);
+
+  const [prefs, setPrefs] = useState({
+    push: true,
+    email: false,
+    sms: false,
+  });
+
+  const [logs, setLogs] = useState([
+    { id: 1, action: "Logged in", time: "August 12,2025 09:12 AM" },
+    { id: 2, action: "Edited profile", time: "August 21,2025  04:25 PM" },
+    { id: 3, action: "Changed password", time: "August 01,2025 11:14 AM" },
+    { id: 4, action: "Viewed case C54321", time: "August 04,2025  10:05 AM" },
+  ]);
+
+  const [searchText, setSearchText] = useState("");
+
+  const filteredLogs = logs.filter(
+    (log) =>
+      log.action.toLowerCase().includes(searchText.toLowerCase()) ||
+      log.time.toLowerCase().includes(searchText.toLowerCase())
+
+  );
+
   useEffect(() => {
     const loadProfile = async () => {
       const stored = await AsyncStorage.getItem("userProfile");
       if (stored) setProfile(JSON.parse(stored));
+
+      const storedPrefs = await AsyncStorage.getItem("notificationPrefs");
+      if (storedPrefs) setPrefs(JSON.parse(storedPrefs));
     };
     loadProfile();
   }, []);
@@ -46,10 +84,17 @@ function Profile() {
     await AsyncStorage.setItem("userProfile", JSON.stringify(updatedProfile));
   };
 
+  const savePrefs = async (updatedPrefs) => {
+    setPrefs(updatedPrefs);
+    await AsyncStorage.setItem(
+      "notificationPrefs",
+      JSON.stringify(updatedPrefs)
+    );
+  };
+
   const validateInputs = () => {
     const emailRegex = /\S+@\S+\.\S+/;
     const phoneRegex = /^[0-9]{10,15}$/;
-
     if (!emailRegex.test(editData.email)) {
       Alert.alert("Invalid Email", "Please enter a valid email address.");
       return false;
@@ -63,7 +108,6 @@ function Profile() {
 
   const handleSave = async () => {
     if (!validateInputs()) return;
-
     const updated = { ...profile, ...editData };
     setProfile(updated);
     await saveProfileToStorage(updated);
@@ -87,130 +131,361 @@ function Profile() {
     router.replace("/auth/Login");
   };
 
-  const handleAccountSettings = () => router.push("/account-settings");
-  const handleNotificationSettings = () => router.push("/notifications");
+  const togglePref = (key) => {
+    const updated = { ...prefs, [key]: !prefs[key] };
+    savePrefs(updated);
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <StatusBar style="dark" />
-      <ScrollView contentContainerStyle={{ paddingBottom: 20, paddingHorizontal: 16 }}>
-
-        {/* Header Date */}
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: 20, paddingHorizontal: 16 }}
+      >
         <Text style={[styles.headerDate, { paddingLeft: 2 }]}>{today}</Text>
 
-        {/* Header */}
         <View style={styles.headerWrapper}>
-          <Text style={[styles.headerContainer, { fontFamily: Platform.OS === "ios" ? "System" : "sans-serif" }]}>
+          <Text
+            style={[
+              styles.headerContainer,
+              { fontFamily: Platform.OS === "ios" ? "System" : "sans-serif" },
+            ]}
+          >
             Profile
           </Text>
-            <TouchableOpacity onPress={() => alert("Notifications Clicked!")} style={{ marginTop: 15 }}>
+          <TouchableOpacity
+            onPress={() => alert("Notifications Clicked!")}
+            style={{ marginTop: 15 }}
+          >
             <Bell size={26} color="#0B3D91" strokeWidth={2} />
           </TouchableOpacity>
         </View>
 
-        {/* Profile Card */}
         <View style={styles.profileCard}>
           <Image source={images.JosephPic} style={styles.avatar} />
           <Text style={styles.name}>{profile.name}</Text>
           <Text style={styles.role}>{profile.role}</Text>
 
           {!isEditing ? (
-            <TouchableOpacity style={styles.editBtn} onPress={() => setIsEditing(true)}>
+            <TouchableOpacity
+              style={styles.editBtn}
+              onPress={() => setIsEditing(true)}
+            >
               <Edit2 size={14} color="#0B3D91" />
               <Text style={styles.editBtnText}>Edit Profile</Text>
             </TouchableOpacity>
           ) : (
             <View style={styles.actionRow}>
-              <TouchableOpacity style={[styles.saveBtn, { backgroundColor: "#0B3D91" }]} onPress={handleSave}>
+              <TouchableOpacity
+                style={[styles.saveBtn, { backgroundColor: "#0B3D91" }]}
+                onPress={handleSave}
+              >
                 <Text style={styles.saveText}>Save</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.saveBtn, { backgroundColor: "#ccc" }]} onPress={handleCancel}>
-                <Text style={[styles.saveText, { color: "#333" }]}>Cancel</Text>
+              <TouchableOpacity
+                style={[styles.saveBtn, { backgroundColor: "#ccc" }]}
+                onPress={handleCancel}
+              >
+                <Text style={[styles.saveText, { color: "#333" }]}>
+                  Cancel
+                </Text>
               </TouchableOpacity>
             </View>
           )}
         </View>
 
-        {/* Contact Info */}
         <View style={styles.infoCard}>
-          {/* Email */}
           <View style={styles.infoRow}>
             <Mail size={20} color="#0B3D91" />
             {isEditing ? (
-              <TextInput style={styles.inputInline} value={editData.email} onChangeText={(text) => setEditData({ ...editData, email: text })} />
+              <TextInput
+                style={styles.inputInline}
+                value={editData.email}
+                onChangeText={(text) =>
+                  setEditData({ ...editData, email: text })
+                }
+              />
             ) : (
-              <View><Text style={styles.infoLabel}>Email</Text><Text style={styles.infoValue}>{profile.email}</Text></View>
+              <View>
+                <Text style={styles.infoLabel}>Email</Text>
+                <Text style={styles.infoValue}>{profile.email}</Text>
+              </View>
             )}
           </View>
 
-          {/* Phone */}
           <View style={styles.infoRow}>
             <Phone size={20} color="#0B3D91" />
             {isEditing ? (
-              <TextInput style={styles.inputInline} value={editData.phone} onChangeText={(text) => setEditData({ ...editData, phone: text })} keyboardType="phone-pad" />
+              <TextInput
+                style={styles.inputInline}
+                value={editData.phone}
+                onChangeText={(text) =>
+                  setEditData({ ...editData, phone: text })
+                }
+                keyboardType="phone-pad"
+              />
             ) : (
-              <View><Text style={styles.infoLabel}>Phone</Text><Text style={styles.infoValue}>{profile.phone}</Text></View>
+              <View>
+                <Text style={styles.infoLabel}>Phone</Text>
+                <Text style={styles.infoValue}>{profile.phone}</Text>
+              </View>
             )}
           </View>
 
-          {/* Address */}
           <View style={styles.infoRow}>
             <MapPin size={20} color="#0B3D91" />
             {isEditing ? (
-              <TextInput style={styles.inputInline} value={editData.address} onChangeText={(text) => setEditData({ ...editData, address: text })} />
+              <TextInput
+                style={styles.inputInline}
+                value={editData.address}
+                onChangeText={(text) =>
+                  setEditData({ ...editData, address: text })
+                }
+              />
             ) : (
-              <View><Text style={styles.infoLabel}>Address</Text><Text style={styles.infoValue}>{profile.address}</Text></View>
+              <View>
+                <Text style={styles.infoLabel}>Address</Text>
+                <Text style={styles.infoValue}>{profile.address}</Text>
+              </View>
             )}
           </View>
 
-          {/* Department */}
           <View style={styles.infoRow}>
             <Building size={18} color="#0B3D91" />
             {isEditing ? (
-              <TextInput style={styles.inputInline} value={editData.department} onChangeText={(text) => setEditData({ ...editData, department: text })} />
+              <TextInput
+                style={styles.inputInline}
+                value={editData.department}
+                onChangeText={(text) =>
+                  setEditData({ ...editData, department: text })
+                }
+              />
             ) : (
-              <View><Text style={styles.infoLabel}>Department</Text><Text style={styles.infoValue}>{profile.department}</Text></View>
+              <View>
+                <Text style={styles.infoLabel}>Department</Text>
+                <Text style={styles.infoValue}>{profile.department}</Text>
+              </View>
             )}
           </View>
         </View>
 
-        {/* Account Settings */}
         {!isEditing && (
           <View style={styles.settingsCard}>
-            <TouchableOpacity style={styles.settingsItem} onPress={handleAccountSettings}>
+            <TouchableOpacity
+              style={styles.settingsItem}
+              onPress={() => setShowLogs(true)}
+            >
               <Settings size={20} color="#0B3D91" />
               <Text style={styles.settingsText}>Activity Logs</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.settingsItem} onPress={handleNotificationSettings}>
+            <TouchableOpacity
+              style={styles.settingsItem}
+              onPress={() => setShowNotifications(true)}
+            >
               <Bell size={20} color="#0B3D91" />
               <Text style={styles.settingsText}>Notification Preference</Text>
             </TouchableOpacity>
           </View>
         )}
 
-        {/* Sign Out Button */}
         {!isEditing && (
-          <TouchableOpacity style={styles.signOutBtn} onPress={() => setShowSignOutModal(true)}>
+          <TouchableOpacity
+            style={styles.signOutBtn}
+            onPress={() => setShowSignOutModal(true)}
+          >
             <Text style={styles.signOutText}>Sign Out</Text>
           </TouchableOpacity>
         )}
       </ScrollView>
 
-      {/* Sign Out Confirmation Modal */}
+      {/* Sign Out Modal */}
       <Modal transparent visible={showSignOutModal} animationType="fade">
-        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)", justifyContent: "center", alignItems: "center" }}>
-          <View style={{ backgroundColor: "#fff", padding: 20, borderRadius: 10, width: 280 }}>
-            <Text style={{ fontSize: 14, color: "#555", marginBottom: 20 }}>Are you sure you want to sign out?</Text>
-            <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-              <TouchableOpacity onPress={() => setShowSignOutModal(false)} style={{ padding: 10 }}>
-                <Text style={{ color: "#555", fontWeight: "bold" }}>Cancel</Text>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.4)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: "#fff",
+              padding: 20,
+              borderRadius: 10,
+              width: 280,
+            }}
+          >
+            <Text style={{ fontSize: 14, color: "#555", marginBottom: 20 }}>
+              Are you sure you want to sign out?
+            </Text>
+            <View
+              style={{ flexDirection: "row", justifyContent: "space-between" }}
+            >
+              <TouchableOpacity
+                onPress={() => setShowSignOutModal(false)}
+                style={{ padding: 10 }}
+              >
+                <Text style={{ color: "#555", fontWeight: "bold" }}>
+                  Cancel
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={confirmSignOut} style={{ padding: 10 }}>
-                <Text style={{ color: "#E53935", fontWeight: "bold" }}>Sign Out</Text>
+                <Text style={{ color: "#E53935", fontWeight: "bold" }}>
+                  Sign Out
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
+      </Modal>
+
+      {/* Notifications Modal */}
+      <Modal visible={showNotifications} animationType="slide">
+        <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+          <View style={[styles.headerWrapper, { paddingHorizontal: 16 }]}>
+            <TouchableOpacity onPress={() => setShowNotifications(false)}>
+              <ArrowLeft size={24} color="#0B3D91" />
+            </TouchableOpacity>
+            <Text
+              style={[styles.headerContainer, { flex: 1, textAlign: "center" }]}
+            >
+              Notification Preferences
+            </Text>
+            <View style={{ width: 24 }} />
+          </View>
+
+          <ScrollView contentContainerStyle={{ padding: 16 }}>
+            <View style={styles.infoCard}>
+              {[
+                { key: "push", label: "Push Notifications" },
+                { key: "email", label: "Email Notifications" },
+                { key: "sms", label: "SMS Notifications" },
+              ].map((item) => (
+                <View key={item.key} style={styles.infoRow}>
+                  <Text style={styles.infoValue}>{item.label}</Text>
+                  <Switch
+                    value={prefs[item.key]}
+                    onValueChange={() => togglePref(item.key)}
+                    trackColor={{ false: "#ccc", true: "#0B3D91" }}
+                    thumbColor="#fff"
+                  />
+                </View>
+              ))}
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+
+      {/* Activity Logs Modal */}
+      <Modal visible={showLogs} animationType="slide">
+        <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+          {/* Header */}
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+            }}
+          >
+            <TouchableOpacity onPress={() => setShowLogs(false)}>
+              <ArrowLeft size={24} color="#0B3D91" />
+            </TouchableOpacity>
+            <Text
+              style={{
+                flex: 1,
+                textAlign: "center",
+                fontSize: 18,
+                fontWeight: "1000",
+                color: "#0B3D91",
+              }}
+            >
+              Activity Logs
+            </Text>
+            <View style={{ width: 24 }} />
+          </View>
+
+          {/* Search */}
+          <View
+            style={{
+              marginHorizontal: 16,
+              marginTop: 8,
+              backgroundColor: "#f0f2f5",
+              borderRadius: 10,
+              paddingHorizontal: 14,
+              paddingVertical: Platform.OS === "ios" ? 10 : 6,
+              flexDirection: "row",
+              alignItems: "center",
+              elevation: 2,
+            }}
+          >
+            <TextInput
+              placeholder="Search activity..."
+              placeholderTextColor="#888"
+              value={searchText}
+              onChangeText={setSearchText}
+              style={{
+                fontSize: 14,
+                flex: 1,
+                color: "#333",
+              }}
+            />
+          </View>
+
+          <ScrollView contentContainerStyle={{ padding: 16 }}>
+            {filteredLogs.length > 0 ? (
+              filteredLogs.map((log) => (
+                <View
+                  key={log.id}
+                  style={{
+                    backgroundColor: "#f9f9f9",
+                    borderRadius: 12,
+                    padding: 14,
+                    marginBottom: 12,
+                    flexDirection: "row",
+                    alignItems: "flex-start",
+                    gap: 12,
+                    shadowColor: "#000",
+                    shadowOpacity: 0.05,
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowRadius: 4,
+                    elevation: 2,
+                  }}
+                >
+                  <Clock size={20} color="#0B3D91" style={{ marginTop: 2 }} />
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        fontWeight: "600",
+                        color: "#0B3D91",
+                        marginBottom: 4,
+                      }}
+                    >
+                      {log.action}
+                    </Text>
+                    <Text style={{ fontSize: 13, color: "#555" }}>
+                      {log.time}
+                    </Text>
+                  </View>
+                </View>
+              ))
+            ) : (
+              <View
+                style={{
+                  paddingVertical: 40,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ color: "#999", fontSize: 14 }}>
+                  No activity logs found.
+                </Text>
+              </View>
+            )}
+          </ScrollView>
+        </SafeAreaView>
       </Modal>
     </SafeAreaView>
   );
