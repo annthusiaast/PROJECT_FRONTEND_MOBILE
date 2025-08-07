@@ -76,7 +76,7 @@ const Login = () => {
         </View>
 
         {/* Login Button */}
-        <TouchableOpacity onPress={() => router.push('/(tabs)/Home')} style={styles.loginButton}>
+        <TouchableOpacity onPress={() => router.push('/auth/Verification')} style={styles.loginButton}>
           <LinearGradient
             colors={['#173B7E', '#1A4C9D']}
             style={styles.loginButtonGradient}

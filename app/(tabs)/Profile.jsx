@@ -131,7 +131,7 @@ function Profile() {
           <Text style={[styles.headerContainer, { fontFamily: Platform.OS === "ios" ? "System" : "sans-serif" }]}>
             Profile
           </Text>
-          <TouchableOpacity onPress={() => setShowNotifications(true)}>
+          <TouchableOpacity onPress={() => alert("Notifications Clicked!")} style={{ marginTop: 15 }}>
             <Bell size={26} color="#0B3D91" strokeWidth={2} />
           </TouchableOpacity>
         </View>
