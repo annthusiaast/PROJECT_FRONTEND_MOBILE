@@ -50,7 +50,7 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
                     style={styles.squareBtn}
                     onPress={() => setIsEditing(true)}
                   >
-                    <Text style={styles.squareBtnText}>✎</Text>
+                    <Text style={styles.squareBtnText}>Edit</Text>
                   </TouchableOpacity>
                 ) : (
                   <View style={{ flexDirection: "row" }}>
@@ -307,6 +307,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginRight: 8,
+  },
+  twoColumnWrap: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  column: {
+    flex: 1,
   },
   squareBtnText: {
     fontSize: 16,

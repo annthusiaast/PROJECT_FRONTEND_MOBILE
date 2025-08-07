@@ -247,7 +247,7 @@ const ViewClients = () => {
                                     { label: "Email:", value: selectedClient?.email },
                                     { label: "Phone:", value: selectedClient?.phone },
                                     { label: "Contact Person:", value: selectedClient?.contactPersonName },
-                                    { label: "Contact Number", value: selectedClient?.contactPersonNum },
+                                    { label: "Contact Number:", value: selectedClient?.contactPersonNum },
                                     { label: "Relation/Role:", value: selectedClient?.relation_role },
                                     { label: "Date Created:", value: selectedClient?.dateCreated },
                                     { label: "Created By:", value: selectedClient?.createdBy },
