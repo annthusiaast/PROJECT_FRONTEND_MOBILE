@@ -70,13 +70,13 @@ const Login = () => {
             />
             <Text style={styles.textRemember}>Remember Me</Text>
           </View>
-            <TouchableOpacity onPress={() => router.push('/auth/Forgot-pass')}>
+            <TouchableOpacity onPress={() => router.push('/auth/forgot-pass')}>
             <Text style={styles.textForgot}>Forgot Password?</Text>
           </TouchableOpacity>
         </View>
 
         {/* Login Button */}
-        <TouchableOpacity onPress={() => router.push('/auth/Verification')} style={styles.loginButton}>
+        <TouchableOpacity onPress={() => router.push('/auth/verification')} style={styles.loginButton}>
           <LinearGradient
             colors={['#173B7E', '#1A4C9D']}
             style={styles.loginButtonGradient}

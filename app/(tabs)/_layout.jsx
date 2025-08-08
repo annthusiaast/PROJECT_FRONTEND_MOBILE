@@ -15,7 +15,7 @@ export default function TabsLayout() {
         }}
       >
         <Tabs.Screen
-          name="Home"
+          name="home"
           options={{
             title: "Home",
             tabBarLabelStyle: { fontSize: 12 },
@@ -23,7 +23,7 @@ export default function TabsLayout() {
           }}
         />
         <Tabs.Screen
-          name="Tasks"
+          name="tasks"
           options={{
             title: "Tasks",
             tabBarLabelStyle: { fontSize: 12 },
@@ -31,7 +31,7 @@ export default function TabsLayout() {
           }}
         />
         <Tabs.Screen
-          name="Cases"
+          name="cases"
           options={{
             title: "Cases",
             tabBarLabelStyle: { fontSize: 12 },
@@ -39,7 +39,7 @@ export default function TabsLayout() {
           }}
         />
         <Tabs.Screen
-          name="Documents"
+          name="documents"
           options={{
             title: "Documents",
             tabBarLabelStyle: { fontSize: 12 },
@@ -47,7 +47,7 @@ export default function TabsLayout() {
           }}
         />
         <Tabs.Screen
-          name="Profile"
+          name="profile"
           options={{
             title: "Profile",
             tabBarLabelStyle: { fontSize: 12 },
