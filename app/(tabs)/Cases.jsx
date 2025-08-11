@@ -44,18 +44,8 @@ const Cases = () => {
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.headerDate}>{today}</Text>
 
-            <View style={styles.headerWrapper}>
-              <Text style={styles.headerContainer}>Cases</Text>
-              <TouchableOpacity
-                onPress={() => alert("Notifications Clicked!")}
-                style={{ marginTop: 15 }}
-              >
-                <Bell size={26} color="#0B3D91" strokeWidth={2} />
-              </TouchableOpacity>
-            </View>
-
+            {/* Searh input */}
             <View style={styles.searchInputContainer}>
               <Search size={20} color="#999" />
               <TextInput

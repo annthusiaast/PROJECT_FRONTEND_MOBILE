@@ -1,29 +1,8 @@
-import {
-  Bell,
-  Phone,
-  MapPin,
-  Edit2,
-  Settings,
-  Building,
-  Mail,
-  ArrowLeft,
-  Clock,
-} from "lucide-react-native";
+import { Bell, Phone, MapPin, Edit2, Settings, Building, Mail, ArrowLeft, Clock, } from "lucide-react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import {
-  Alert,
-  Image,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  Platform,
-  Modal,
-  Switch,
-} from "react-native";
+import { Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, View, Platform, Modal, Switch, } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { today, initialProfile } from "@/constants/sample_data";
@@ -66,7 +45,6 @@ function Profile() {
     (log) =>
       log.action.toLowerCase().includes(searchText.toLowerCase()) ||
       log.time.toLowerCase().includes(searchText.toLowerCase())
-
   );
 
   useEffect(() => {
@@ -142,24 +120,6 @@ function Profile() {
       <ScrollView
         contentContainerStyle={{ paddingBottom: 20, paddingHorizontal: 16 }}
       >
-        <Text style={[styles.headerDate, { paddingLeft: 2 }]}>{today}</Text>
-
-        <View style={styles.headerWrapper}>
-          <Text
-            style={[
-              styles.headerContainer,
-              { fontFamily: Platform.OS === "ios" ? "System" : "sans-serif" },
-            ]}
-          >
-            Profile
-          </Text>
-          <TouchableOpacity
-            onPress={() => alert("Notifications Clicked!")}
-            style={{ marginTop: 15 }}
-          >
-            <Bell size={26} color="#0B3D91" strokeWidth={2} />
-          </TouchableOpacity>
-        </View>
 
         <View style={styles.profileCard}>
           <Image source={images.JosephPic} style={styles.avatar} />
@@ -340,43 +300,6 @@ function Profile() {
         </View>
       </Modal>
 
-      {/* Notifications Modal */}
-      <Modal visible={showNotifications} animationType="slide">
-        <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-          <View style={[styles.headerWrapper, { paddingHorizontal: 16 }]}>
-            <TouchableOpacity onPress={() => setShowNotifications(false)}>
-              <ArrowLeft size={24} color="#0B3D91" />
-            </TouchableOpacity>
-            <Text
-              style={[styles.headerContainer, { flex: 1, textAlign: "center" }]}
-            >
-              Notification Preferences
-            </Text>
-            <View style={{ width: 24 }} />
-          </View>
-
-          <ScrollView contentContainerStyle={{ padding: 16 }}>
-            <View style={styles.infoCard}>
-              {[
-                { key: "push", label: "Push Notifications" },
-                { key: "email", label: "Email Notifications" },
-                { key: "sms", label: "SMS Notifications" },
-              ].map((item) => (
-                <View key={item.key} style={styles.infoRow}>
-                  <Text style={styles.infoValue}>{item.label}</Text>
-                  <Switch
-                    value={prefs[item.key]}
-                    onValueChange={() => togglePref(item.key)}
-                    trackColor={{ false: "#ccc", true: "#0B3D91" }}
-                    thumbColor="#fff"
-                  />
-                </View>
-              ))}
-            </View>
-          </ScrollView>
-        </SafeAreaView>
-      </Modal>
-
       {/* Activity Logs Modal */}
       <Modal visible={showLogs} animationType="slide">
         <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -484,6 +407,101 @@ function Profile() {
                 </Text>
               </View>
             )}
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+
+      {/* Notification Preferences Modal */}
+      <Modal visible={showNotifications} animationType="slide">
+        <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+          {/* Header */}
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+            }}
+          >
+            <TouchableOpacity onPress={() => setShowNotifications(false)}>
+              <ArrowLeft size={24} color="#0B3D91" />
+            </TouchableOpacity>
+            <Text
+              style={{
+                flex: 1,
+                textAlign: "center",
+                fontSize: 18,
+                fontWeight: "1000",
+                color: "#0B3D91",
+              }}
+            >
+              Notification Preferences
+            </Text>
+            <View style={{ width: 24 }} />
+          </View>
+
+          {/* Preferences List */}
+          <ScrollView contentContainerStyle={{ padding: 16 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                paddingVertical: 12,
+                borderBottomWidth: 1,
+                borderBottomColor: "#eee",
+              }}
+            >
+              <Text style={{ fontSize: 16, color: "#333" }}>
+                Push Notifications
+              </Text>
+              <Switch
+                value={prefs.push}
+                onValueChange={() => togglePref("push")}
+                trackColor={{ false: "#ccc", true: "#0B3D91" }}
+                thumbColor="#fff"
+              />
+            </View>
+
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                paddingVertical: 12,
+                borderBottomWidth: 1,
+                borderBottomColor: "#eee",
+              }}
+            >
+              <Text style={{ fontSize: 16, color: "#333" }}>
+                Email Notifications
+              </Text>
+              <Switch
+                value={prefs.email}
+                onValueChange={() => togglePref("email")}
+                trackColor={{ false: "#ccc", true: "#0B3D91" }}
+                thumbColor="#fff"
+              />
+            </View>
+
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                paddingVertical: 12,
+              }}
+            >
+              <Text style={{ fontSize: 16, color: "#333" }}>
+                SMS Notifications
+              </Text>
+              <Switch
+                value={prefs.sms}
+                onValueChange={() => togglePref("sms")}
+                trackColor={{ false: "#ccc", true: "#0B3D91" }}
+                thumbColor="#fff"
+              />
+            </View>
           </ScrollView>
         </SafeAreaView>
       </Modal>

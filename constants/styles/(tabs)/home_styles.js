@@ -2,25 +2,6 @@ import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
 
-  // Date Header
-  headerDate: {
-    fontSize: 12,
-    color: '#555',
-    marginTop: 40,
-    marginLeft: 15,
-    marginBottom: -25,
-  },
-
-  //Dashboard title
-  headerContainer: {
-    color: '#1d1d66ff',
-    fontSize: 24,
-    fontWeight: 'bold',
-    fontFamily: 'Sans-serif',
-    padding: 20,
-    marginLeft: -25,
-  },
-
   //Notification Icon
   headerWrapper: {
     flexDirection: 'row',
@@ -49,7 +30,8 @@ export const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 10,
     backgroundColor: "#fff",
-    marginTop: -5,
+    marginTop: 15,
+    marginBottom: 30,
     marginLeft: 16,
     width: '91%',
     height: 48,
@@ -68,6 +50,7 @@ export const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     padding: 15,
+    marginTop: -30,
   },
 
   card: {
@@ -138,19 +121,19 @@ export const styles = StyleSheet.create({
   },
 
   activityItem: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  borderRadius: 8,
-  padding: 10,
-  borderWidth: 1,
-  borderColor: '#103a63',    // solid color for Android
-  backgroundColor: '#fff',   // required for proper shadow rendering
-  elevation: 5,              // shadow for Android
-  shadowColor: '#002',       // shadow for iOS
-  shadowOpacity: 0.05,
-  shadowOffset: { width: 0, height: 1 },
-  shadowRadius: 2,
-},
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 8,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#103a63',    // solid color for Android
+    backgroundColor: '#fff',   // required for proper shadow rendering
+    elevation: 5,              // shadow for Android
+    shadowColor: '#002',       // shadow for iOS
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 2,
+  },
 
 
   activityTextWrapper: {

@@ -81,14 +81,6 @@ const Documents = () => {
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 25 }}>
-          {/* Header */}
-          <Text style={styles.headerDate}>{today}</Text>
-          <View style={styles.headerWrapper}>
-            <Text style={styles.headerContainer}>Documents</Text>
-            <TouchableOpacity onPress={() => alert("Notifications Clicked!")} style={{ marginTop: 15 }}>
-              <Bell size={26} color="#373839" strokeWidth={2} />
-            </TouchableOpacity>
-          </View>
 
           {/* Search */}
           <View style={styles.searchInputContainer}>
