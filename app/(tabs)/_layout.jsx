@@ -19,12 +19,9 @@ function CustomHeader({ title }) {
   return (
     <View
       style={{
-        backgroundColor: "#fff",
         paddingHorizontal: 16,
         paddingTop: 40, // status bar space
         paddingBottom: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: "#eee",
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
