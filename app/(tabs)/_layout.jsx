@@ -1,10 +1,9 @@
-// app/(tabs)/_layout.js
-import { Tabs, useSegments } from "expo-router";
+import { Tabs, useSegments, useRouter } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { ClipboardList, FileText, Home, Scale, User, Bell } from "lucide-react-native";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Platform, StatusBar } from "react-native";
 import { useState, useEffect } from "react";
-import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 function CustomHeader({ title }) {
   const router = useRouter();
@@ -17,29 +16,39 @@ function CustomHeader({ title }) {
   }, []);
 
   return (
-    <View
+    <SafeAreaView
+      edges={["top"]}
       style={{
+        backgroundColor: "#fff",
         paddingHorizontal: 16,
-        paddingTop: 40, // status bar space
         paddingBottom: 12,
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
       }}
     >
-      {/* date + title */}
-      <View>
-        <Text style={{ fontSize: 10, color: "#666" }}>{today}</Text>
-        <Text style={{ fontSize: 22, fontWeight: "bold", color: "#0B3D91" }}>
-          {title}
-        </Text>
-      </View>
+      <StatusBar
+        barStyle={Platform.OS === "ios" ? "dark-content" : "light-content"}
+        backgroundColor="#fff"
+      />
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        {/* date + title */}
+        <View>
+          <Text style={{ fontSize: 10, color: "#666" }}>{today}</Text>
+          <Text style={{ fontSize: 22, fontWeight: "bold", color: "#0B3D91" }}>
+            {title}
+          </Text>
+        </View>
 
-      {/* bell */}
-      <TouchableOpacity onPress={() => router.push("/notifications")}>
-        <Bell size={26} color="#0B3D91" strokeWidth={2} />
-      </TouchableOpacity>
-    </View>
+        {/* bell */}
+        <TouchableOpacity onPress={() => router.push("/notifications")}>
+          <Bell size={26} color="#0B3D91" strokeWidth={2} />
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -50,19 +59,28 @@ export default function TabsLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={{ flex: 1 }}>
-        {/* Global header for all tabs */}
-        <CustomHeader title={currentTab.charAt(0).toUpperCase() + currentTab.slice(1)} />
+        {/* Show only our custom header */}
+        <CustomHeader
+          title={currentTab.charAt(0).toUpperCase() + currentTab.slice(1)}
+        />
 
         <Tabs
           screenOptions={{
-            headerShown: false, // prevents nav's own header
-            tabBarActiveTintColor: "#1111e0ff",
-            tabBarInactiveTintColor: "#0b0b68ff",
+            headerShown: false, // disable Android's default header globally
+            tabBarActiveTintColor: "#0B3D91",
+            tabBarInactiveTintColor: "#666",
+            tabBarLabelStyle: {
+              fontSize: 12,
+              fontWeight: "500",
+              marginTop: 2,
+            },
             tabBarStyle: {
-              backgroundColor: "#f8f8fbff",
-              height: 100,
-              paddingBottom: 10,
-              paddingTop: 10,
+              backgroundColor: "#fff",
+              height: Platform.OS === "ios" ? 90 : 70,
+              paddingBottom: Platform.OS === "ios" ? 20 : 10,
+              paddingTop: 8,
+              borderTopWidth: 0.5,
+              borderTopColor: "#ddd",
             },
           }}
         >
@@ -70,7 +88,7 @@ export default function TabsLayout() {
             name="home"
             options={{
               title: "Home",
-              tabBarLabelStyle: { fontSize: 12 },
+              headerShown: false,
               tabBarIcon: ({ color }) => <Home color={color} size={28} />,
             }}
           />
@@ -78,7 +96,7 @@ export default function TabsLayout() {
             name="tasks"
             options={{
               title: "Tasks",
-              tabBarLabelStyle: { fontSize: 12 },
+              headerShown: false,
               tabBarIcon: ({ color }) => <ClipboardList color={color} size={28} />,
             }}
           />
@@ -86,7 +104,7 @@ export default function TabsLayout() {
             name="cases"
             options={{
               title: "Cases",
-              tabBarLabelStyle: { fontSize: 12 },
+              headerShown: false,
               tabBarIcon: ({ color }) => <Scale color={color} size={28} />,
             }}
           />
@@ -94,7 +112,7 @@ export default function TabsLayout() {
             name="documents"
             options={{
               title: "Documents",
-              tabBarLabelStyle: { fontSize: 12 },
+              headerShown: false,
               tabBarIcon: ({ color }) => <FileText color={color} size={28} />,
             }}
           />
@@ -102,7 +120,7 @@ export default function TabsLayout() {
             name="profile"
             options={{
               title: "Profile",
-              tabBarLabelStyle: { fontSize: 12 },
+              headerShown: false,
               tabBarIcon: ({ color }) => <User color={color} size={28} />,
             }}
           />
