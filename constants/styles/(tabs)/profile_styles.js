@@ -2,26 +2,6 @@ import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
 
-    // Date Header
-    headerDate: {
-        fontSize: 12,
-        color: '#555',
-        marginTop: 20,
-        marginLeft: 2,
-        marginBottom: -25,
-    },
-
-    //Dashboard title
-    headerContainer: {
-        color: '#1d1d66ff',
-        fontSize: 24,
-        fontWeight: 'bold',
-        fontFamily: 'Sans-serif',
-        marginTop: 10,
-        padding: 7,
-        marginLeft: -25,
-    },
-
     //Notification Icon
     headerWrapper: {
         flexDirection: 'row',

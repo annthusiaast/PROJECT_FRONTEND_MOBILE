@@ -1,24 +1,6 @@
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
-    // Date Header
-    headerDate: {
-        fontSize: 12,
-        color: '#555',
-        marginTop: 40,
-        marginLeft: 15,
-        marginBottom: -25,
-    },
-
-    //Dashboard title
-    headerContainer: {
-        color: '#1d1d66ff',
-        fontSize: 24,
-        fontWeight: 'bold',
-        fontFamily: 'Sans-serif',
-        padding: 20,
-        marginLeft: -25,
-    },
 
     //Notification Icon
     headerWrapper: {
@@ -38,12 +20,13 @@ export const styles = StyleSheet.create({
         borderRadius: 10,
         paddingHorizontal: 10,
         backgroundColor: "#fff",
-        marginTop: -5,
+        marginTop: 15,
+        marginBottom: 30,
         marginLeft: 16,
         width: '91%',
-        height: 48, 
-        
+        height: 48,
     },
+
     searchInput: {
         flex: 1,
         marginLeft: 8,
@@ -67,7 +50,7 @@ export const styles = StyleSheet.create({
         color: "#000",
     },
 
-   //TABS (Recent, All Files, Shared)
+    //TABS (Recent, All Files, Shared)
     tabButton: {
         flex: 1,
         paddingVertical: 10,
@@ -173,28 +156,28 @@ export const styles = StyleSheet.create({
     },
 
     dropdownButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderWidth: 1,
-    borderColor: "#114d89",
-    borderRadius: 6,
-    backgroundColor: "#fff",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    minWidth: 150, 
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        borderWidth: 1,
+        borderColor: "#114d89",
+        borderRadius: 6,
+        backgroundColor: "#fff",
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        minWidth: 150,
     },
 
 
     dropdownText: {
-    fontSize: 14,
-    color: "#101111ff",
-    marginRight: 6             
+        fontSize: 14,
+        color: "#101111ff",
+        marginRight: 6
     },
 
-    dropdownModal:{
-    backgroundColor: "#E5E7EB",
+    dropdownModal: {
+        backgroundColor: "#E5E7EB",
     },
 
-    
+
 });

@@ -2,25 +2,6 @@ import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
 
-  // Date Header
-  headerDate: {
-    fontSize: 12,
-    color: '#555',
-    marginTop: 40,
-    marginLeft: 15,
-    marginBottom: -25,
-  },
-
-  //Tasks Title
-  headerContainer: {
-    color: '#1d1d66ff',
-    fontSize: 24,
-    fontWeight: 'bold',
-    fontFamily: 'Sans-serif',
-    padding: 20,
-    marginLeft: -25,
-  },
-
   //Notification Icon
   headerWrapper: {
     flexDirection: 'row',
@@ -39,12 +20,13 @@ export const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 10,
     backgroundColor: "#fff",
-    marginTop: -5,
-    marginLeft: 11,
-    width: '93%',
+    marginTop: 15,
+    marginBottom: 30,
+    marginLeft: 16,
+    width: '91%',
     height: 48,
   },
-  
+
   searchInput: {
     flex: 1,
     marginLeft: 8,
@@ -59,7 +41,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginHorizontal: 10,
-    marginTop: 10
+    marginTop: -5,
   },
 
   taskButton: {

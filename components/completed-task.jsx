@@ -23,8 +23,8 @@ const CompletedTask = () => {
   const filterTasks = () => {
     const today = new Date();
     return completedTasks.filter((task) => {
+      if (!task.completedDate) return false;
       const taskDate = new Date(`${task.completedDate}T00:00:00`);
-      if (isNaN(taskDate.getTime())) return false;
 
       const diffDays =
         (today.setHours(0, 0, 0, 0) - taskDate.getTime()) /

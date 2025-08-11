@@ -4,6 +4,7 @@ import CreateTask from '@/components/create-task';
 import { today } from "@/constants/sample_data";
 import { styles } from "@/constants/styles/(tabs)/tasks_styles";
 import { Bell, Search } from 'lucide-react-native';
+import { router } from "expo-router";
 import React, { useState } from 'react';
 import {
   Keyboard,
@@ -32,28 +33,11 @@ const Tasks = () => {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Header Date */}
-          <Text style={styles.headerDate}>{today}</Text>
 
-          {/* Header with Notification */}
-          <View style={styles.headerWrapper}>
-            <Text style={styles.headerContainer}>Tasks</Text>
-            <TouchableOpacity
-              onPress={() => alert("Notifications Clicked!")}
-              style={{ marginTop: 15 }}
-            >
-              <Bell size={26} color="#0B3D91" strokeWidth={2} />
-            </TouchableOpacity>
-          </View>
-
-          {/* Search Input */}
+          {/* Searh input */}
           <View style={styles.searchInputContainer}>
             <Search size={20} color="#999" />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search..."
-              placeholderTextColor="#999"
-            />
+            <TextInput style={styles.searchInput} placeholder="Search..." placeholderTextColor="#999" />
           </View>
 
           {/* ==== Tab Buttons ==== */}
