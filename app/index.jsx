@@ -16,7 +16,7 @@ const SplashScreen = () => {
         duration: 200,
         useNativeDriver: true,
       }).start(() => {
-        router.replace("/auth/Login");
+        router.replace("/auth/login");
       });
     }, 2000);
 
