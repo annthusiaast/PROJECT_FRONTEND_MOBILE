@@ -95,7 +95,7 @@ const Verify = () => {
           </View>
 
           {/* Verify Button */}
-          <TouchableOpacity onPress={() => router.push('/(tabs)/Home')} style={{ alignSelf: 'center', width: '90%' }}>
+          <TouchableOpacity onPress={() => router.push('/(tabs)/home')} style={{ alignSelf: 'center', width: '90%' }}>
             <LinearGradient colors={['#173B7E', '#1A4C9D']} style={styles.loginButtonGradient}>
               <Text style={styles.loginButtonText}>Verify</Text>
             </LinearGradient>
