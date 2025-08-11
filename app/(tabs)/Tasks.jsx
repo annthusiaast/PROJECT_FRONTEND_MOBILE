@@ -1,10 +1,8 @@
 import ActiveTask from '@/components/active-task';
 import CompletedTask from '@/components/completed-task';
 import CreateTask from '@/components/create-task';
-import { today } from "@/constants/sample_data";
 import { styles } from "@/constants/styles/(tabs)/tasks_styles";
-import { Bell, Search } from 'lucide-react-native';
-import { router } from "expo-router";
+import { Search } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
   Keyboard,
