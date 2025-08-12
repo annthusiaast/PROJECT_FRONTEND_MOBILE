@@ -53,20 +53,20 @@ function CustomHeader({ title }) {
 }
 
 export default function TabsLayout() {
-  const segments = useSegments();
-  const currentTab = segments[segments.length - 1] || "Home";
+  // Remove "(tabs)" segment from the array
+  const segments = useSegments().filter((seg) => seg !== "(tabs)");
+  const currentTab = segments[segments.length - 1] || "home";
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={{ flex: 1 }}>
-        {/* Show only our custom header */}
         <CustomHeader
           title={currentTab.charAt(0).toUpperCase() + currentTab.slice(1)}
         />
 
         <Tabs
           screenOptions={{
-            headerShown: false, // disable Android's default header globally
+            headerShown: false,
             tabBarActiveTintColor: "#0B3D91",
             tabBarInactiveTintColor: "#666",
             tabBarLabelStyle: {
@@ -84,11 +84,11 @@ export default function TabsLayout() {
             },
           }}
         >
+          {/* Only declare these if you need custom icons or overrides */}
           <Tabs.Screen
             name="home"
             options={{
               title: "Home",
-              headerShown: false,
               tabBarIcon: ({ color }) => <Home color={color} size={28} />,
             }}
           />
@@ -96,15 +96,15 @@ export default function TabsLayout() {
             name="tasks"
             options={{
               title: "Tasks",
-              headerShown: false,
-              tabBarIcon: ({ color }) => <ClipboardList color={color} size={28} />,
+              tabBarIcon: ({ color }) => (
+                <ClipboardList color={color} size={28} />
+              ),
             }}
           />
           <Tabs.Screen
             name="cases"
             options={{
               title: "Cases",
-              headerShown: false,
               tabBarIcon: ({ color }) => <Scale color={color} size={28} />,
             }}
           />
@@ -112,7 +112,6 @@ export default function TabsLayout() {
             name="documents"
             options={{
               title: "Documents",
-              headerShown: false,
               tabBarIcon: ({ color }) => <FileText color={color} size={28} />,
             }}
           />
@@ -120,7 +119,6 @@ export default function TabsLayout() {
             name="profile"
             options={{
               title: "Profile",
-              headerShown: false,
               tabBarIcon: ({ color }) => <User color={color} size={28} />,
             }}
           />
