@@ -37,31 +37,38 @@ const Tasks = () => {
           </View>
 
           {/* ==== Tab Buttons ==== */}
-          <View style={styles.taskButtonAlignments}>
-            {['active', 'completed', 'create'].map((tab) => (
-              <TouchableOpacity
-                key={tab}
-                style={[
-                  styles.taskButton,
-                  activeTab === tab && styles.taskButtonPressed
-                ]}
-                onPress={() => setActiveTab(tab)}
-                activeOpacity={0.7}
-              >
-                <Text
+            <View style={styles.taskButtonAlignments}>
+            {['active', 'completed', 'create'].map((tab) => {
+              const isActive = activeTab === tab;
+
+              return (
+                <TouchableOpacity
+                  key={tab}
                   style={[
-                    styles.taskButtonText,
-                    activeTab === tab && styles.taskButtonTextPressed
+                    styles.taskButton,
+                    tab === 'create' && !isActive && { backgroundColor: 'green' }, //  Green only if not active
+                    isActive && styles.taskButtonPressed // Normal active style
+                    
                   ]}
+                  onPress={() => setActiveTab(tab)}
+                  activeOpacity={0.7}
                 >
-                  {tab === 'active'
-                    ? 'Active Task'
-                    : tab === 'completed'
-                    ? 'Completed Task'
-                    : '+ Create Task'}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <Text
+                    style={[
+                      styles.taskButtonText,
+                      isActive && styles.taskButtonTextPressed,
+                      tab === 'create' && !isActive && { color: 'white' } // White text only when green
+                    ]}
+                  >
+                    {tab === 'active'
+                      ? 'Active Task'
+                      : tab === 'completed'
+                      ? 'Completed Task'
+                      : '+ Create Task'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
 
           {/* ==== Content Area of Each Task Button ==== */}
