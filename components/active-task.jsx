@@ -14,16 +14,21 @@ const ActiveTask = () => {
     low: "#6c757d",
   };
 
-  // Apply filter
   const filteredTasks = task.filter((t) => {
     const priority = getPriority(t.dueDate);
     return priorityFilter === "all" || priorityFilter === priority;
   });
 
   return (
-    <View style={{ flex: 1, padding: 10 }}>
+    <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 30, flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
+        scrollEventThrottle={16}
+      >
+
       {/* === PRIORITY FILTER BUTTONS === */}
-      <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 15 }}>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 15, marginTop: 10 }}>
         {Object.keys(priorityColors).map((p) => (
           <TouchableOpacity
             key={p}
@@ -44,16 +49,17 @@ const ActiveTask = () => {
         ))}
       </View>
 
-      {/* === TASK CARDS === */}
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 30, flexGrow: 1 }}
-      >
-        {filteredTasks.map((t) => {
+      {/* === TASK CARDS OR "NO TASK" MESSAGE === */}
+      {filteredTasks.length === 0 ? (
+        <View style={{ alignItems: "center", justifyContent: "center", paddingTop: 50 }}>
+          <Text style={{ fontSize: 16, color: "#888" }}>No task found</Text>
+        </View>
+      ) : (
+        filteredTasks.map((t) => {
           const priority = getPriority(t.dueDate);
           return (
             <View key={t.id} style={styles.taskCard}>
-              {/* Priority Badge (Top Right) */}
+              {/* Priority Badge */}
               <View style={[styles.priorityBadge, { backgroundColor: priorityColors[priority] }]}>
                 <Text style={styles.priorityBadgeText}>{priority.toUpperCase()}</Text>
               </View>
@@ -77,9 +83,9 @@ const ActiveTask = () => {
               </View>
             </View>
           );
-        })}
-      </ScrollView>
-    </View>
+        })
+      )}
+    </ScrollView>
   );
 };
 
