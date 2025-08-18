@@ -21,11 +21,11 @@ const ActiveTask = () => {
 
   return (
     <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 30, flexGrow: 1 }}
-        keyboardShouldPersistTaps="handled"
-        scrollEventThrottle={16}
-      >
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingBottom: 30, flexGrow: 1 }}
+      keyboardShouldPersistTaps="handled"
+      scrollEventThrottle={16}
+    >
 
       {/* === PRIORITY FILTER BUTTONS === */}
       <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 15, marginTop: 10 }}>

@@ -119,6 +119,7 @@ export default function TabsLayout() {
               tabBarIcon: ({ color }) => <User color={color} size={26} />,
             }}
           />
+
         </Tabs>
       </View>
     </GestureHandlerRootView>
