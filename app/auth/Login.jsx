@@ -1,12 +1,12 @@
-import { 
-  View, 
-  Text, 
-  Image, 
-  TextInput, 
-  TouchableOpacity, 
-  KeyboardAvoidingView, 
-  Platform, 
-  ScrollView 
+import {
+  View,
+  Text,
+  Image,
+  TextInput,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView
 } from 'react-native';
 import Checkbox from 'expo-checkbox';
 import { useState } from 'react';
@@ -28,9 +28,9 @@ const Login = () => {
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0} 
+      keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
     >
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
       >
@@ -69,8 +69,8 @@ const Login = () => {
                 secureTextEntry={!showPassword}
                 onChangeText={setPassword}
               />
-              <TouchableOpacity 
-                onPress={() => setShowPassword(!showPassword)} 
+              <TouchableOpacity
+                onPress={() => setShowPassword(!showPassword)}
                 style={styles.eyeIcon}
               >
                 {showPassword ? (
@@ -97,8 +97,8 @@ const Login = () => {
             </View>
 
             {/* Login Button */}
-            <TouchableOpacity 
-              onPress={() => router.push('/auth/verification')} 
+            <TouchableOpacity
+              onPress={() => router.push('/auth/unauthorized')}
               style={styles.loginButton}
             >
               <LinearGradient
