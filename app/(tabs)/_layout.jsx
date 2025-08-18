@@ -22,6 +22,7 @@ function CustomHeader({ title }) {
         backgroundColor: "#fff",
         paddingHorizontal: 16,
         paddingBottom: 12,
+        paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
       }}
     >
       <StatusBar
@@ -53,7 +54,6 @@ function CustomHeader({ title }) {
 }
 
 export default function TabsLayout() {
-  // Remove "(tabs)" segment from the array
   const segments = useSegments().filter((seg) => seg !== "(tabs)");
   const currentTab = segments[segments.length - 1] || "home";
 
@@ -76,50 +76,47 @@ export default function TabsLayout() {
             },
             tabBarStyle: {
               backgroundColor: "#fff",
-              height: Platform.OS === "ios" ? 90 : 70,
-              paddingBottom: Platform.OS === "ios" ? 20 : 10,
-              paddingTop: 8,
+              height: Platform.OS === "ios" ? 90 : 60,
+              paddingBottom: Platform.OS === "ios" ? 20 : 8,
+              paddingTop: 6,
               borderTopWidth: 0.5,
               borderTopColor: "#ddd",
             },
           }}
         >
-          {/* Only declare these if you need custom icons or overrides */}
           <Tabs.Screen
             name="home"
             options={{
               title: "Home",
-              tabBarIcon: ({ color }) => <Home color={color} size={28} />,
+              tabBarIcon: ({ color }) => <Home color={color} size={26} />,
             }}
           />
           <Tabs.Screen
             name="tasks"
             options={{
               title: "Tasks",
-              tabBarIcon: ({ color }) => (
-                <ClipboardList color={color} size={28} />
-              ),
+              tabBarIcon: ({ color }) => <ClipboardList color={color} size={26} />,
             }}
           />
           <Tabs.Screen
             name="cases"
             options={{
               title: "Cases",
-              tabBarIcon: ({ color }) => <Scale color={color} size={28} />,
+              tabBarIcon: ({ color }) => <Scale color={color} size={26} />,
             }}
           />
           <Tabs.Screen
             name="documents"
             options={{
               title: "Documents",
-              tabBarIcon: ({ color }) => <FileText color={color} size={28} />,
+              tabBarIcon: ({ color }) => <FileText color={color} size={26} />,
             }}
           />
           <Tabs.Screen
             name="profile"
             options={{
               title: "Profile",
-              tabBarIcon: ({ color }) => <User color={color} size={28} />,
+              tabBarIcon: ({ color }) => <User color={color} size={26} />,
             }}
           />
         </Tabs>

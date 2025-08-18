@@ -114,7 +114,7 @@ function Profile() {
       "notificationPrefs",
     ]);
 
-    // Navigate back to Login (make sure path matches your file name)
+    // Navigate back to login
     router.replace("/auth/login"); 
   } catch (error) {
     console.error("Error signing out:", error);
