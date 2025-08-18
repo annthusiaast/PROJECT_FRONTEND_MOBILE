@@ -104,10 +104,23 @@ function Profile() {
   };
 
   const confirmSignOut = async () => {
+  try {
     setShowSignOutModal(false);
-    await AsyncStorage.removeItem("authToken");
-    router.replace("/auth/Login");
-  };
+
+    // Clear multiple keys from AsyncStorage
+    await AsyncStorage.multiRemove([
+      "authToken",
+      "userProfile",
+      "notificationPrefs",
+    ]);
+
+    // Navigate back to Login (make sure path matches your file name)
+    router.replace("/auth/login"); 
+  } catch (error) {
+    console.error("Error signing out:", error);
+  }
+};
+
 
   const togglePref = (key) => {
     const updated = { ...prefs, [key]: !prefs[key] };
