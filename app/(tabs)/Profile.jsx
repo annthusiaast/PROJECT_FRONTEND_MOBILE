@@ -8,11 +8,13 @@ import { StatusBar } from "expo-status-bar";
 import { today, initialProfile } from "@/constants/sample_data";
 import images from "@/constants/images";
 import { styles } from "@/constants/styles/(tabs)/profile_styles";
+import { useAuth } from "@/context/auth-context";
 
 function Profile() {
   const router = useRouter();
+  const { user, logout } = useAuth();
 
-  const [profile, setProfile] = useState(initialProfile);
+  const [profile, setProfile] = useState(user || initialProfile);
   const [isEditing, setIsEditing] = useState(false);
   const [showSignOutModal, setShowSignOutModal] = useState(false);
 
@@ -49,14 +51,34 @@ function Profile() {
 
   useEffect(() => {
     const loadProfile = async () => {
-      const stored = await AsyncStorage.getItem("userProfile");
-      if (stored) setProfile(JSON.parse(stored));
+      // Use authenticated user data if available
+      if (user) {
+        const userProfile = {
+          name: `${user.user_fname} ${user.user_mname || ''} ${user.user_lname}`.trim(),
+          email: user.user_email || profile.email,
+          phone: user.user_phone || profile.phone,
+          role: user.user_role || profile.role,
+          address: user.user_address || profile.address,
+          department: user.user_department || profile.department,
+        };
+        setProfile(userProfile);
+        setEditData({
+          email: userProfile.email,
+          phone: userProfile.phone,
+          address: userProfile.address,
+          department: userProfile.department,
+        });
+      } else {
+        // Fallback to stored profile data
+        const stored = await AsyncStorage.getItem("userProfile");
+        if (stored) setProfile(JSON.parse(stored));
+      }
 
       const storedPrefs = await AsyncStorage.getItem("notificationPrefs");
       if (storedPrefs) setPrefs(JSON.parse(storedPrefs));
     };
     loadProfile();
-  }, []);
+  }, [user]);
 
   const saveProfileToStorage = async (updatedProfile) => {
     await AsyncStorage.setItem("userProfile", JSON.stringify(updatedProfile));
@@ -104,6 +126,20 @@ function Profile() {
   };
 
   const confirmSignOut = async () => {
+    try {
+      setShowSignOutModal(false);
+      
+      // Use the auth context logout method
+      await logout();
+      
+      // Navigate back to Login
+      router.replace("/auth/login"); 
+    } catch (error) {
+      console.error("Error signing out:", error);
+      Alert.alert("Error", "Failed to sign out. Please try again.");
+    }
+  };
+
   try {
     setShowSignOutModal(false);
 
@@ -120,6 +156,7 @@ function Profile() {
     console.error("Error signing out:", error);
   }
 };
+
 
 
   const togglePref = (key) => {

@@ -1,14 +1,18 @@
-import { View, Text, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
-import { useState, useRef } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, Alert, ActivityIndicator } from 'react-native';
+import { useState, useRef, useEffect } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { styles } from '@/constants/styles/auth_styles';
 import images from '@/constants/images';
+import { useAuth } from '@/context/auth-context';
 
 const Verify = () => {
   const [code, setCode] = useState(['', '', '', '', '', '']);
+  const [loading, setLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
   const router = useRouter();
   const inputs = useRef([]);
+  const { verifyOTP, resendOTP, isPendingVerification } = useAuth();
 
   const handleChange = (text, index) => {
     if (/^\d*$/.test(text)) {
@@ -32,6 +36,45 @@ const Verify = () => {
         newCode[index] = '';
         setCode(newCode);
       }
+    }
+  };
+
+  //Submit OTP
+  const handleVerify = async () => {
+    const otpCode = code.join('');
+    
+    if (otpCode.length !== 6) {
+      Alert.alert('Error', 'Please enter the complete 6-digit code');
+      return;
+    }
+
+    setLoading(true);
+    
+    try {
+      await verifyOTP(otpCode);
+      Alert.alert('Success', 'Verification successful!', [
+        { text: 'OK', onPress: () => router.push('/(tabs)/home') }
+      ]);
+    } catch (error) {
+      Alert.alert('Verification Failed', error.message || 'Invalid or expired code. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOTP = async () => {
+    setResendLoading(true);
+    
+    try {
+      await resendOTP();
+      Alert.alert('Success', 'A new code has been sent to your email');
+      // Clear current code inputs
+      setCode(['', '', '', '', '', '']);
+      inputs.current[0]?.focus();
+    } catch (error) {
+      Alert.alert('Error', error.message || 'Failed to resend code. Please try again.');
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -88,16 +131,31 @@ const Verify = () => {
 
           {/* Resend Link */}
           <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 30 }}>
-            <Text style={{ color: '#2756afff' }}>Didn’t receive a code? </Text>
-            <TouchableOpacity onPress={() => alert('Another code is sent to your email')}>
-              <Text style={{ color: '#0582ff', textDecorationLine: 'underline' }}>Resend</Text>
+            <Text style={{ color: '#2756afff' }}>Didn't receive a code? </Text>
+            <TouchableOpacity 
+              onPress={handleResendOTP}
+              disabled={resendLoading}
+            >
+              {resendLoading ? (
+                <ActivityIndicator size="small" color="#0582ff" />
+              ) : (
+                <Text style={{ color: '#0582ff', textDecorationLine: 'underline' }}>Resend</Text>
+              )}
             </TouchableOpacity>
           </View>
 
           {/* Verify Button */}
-          <TouchableOpacity onPress={() => router.push('/(tabs)/home')} style={{ alignSelf: 'center', width: '90%' }}>
+          <TouchableOpacity 
+            onPress={handleVerify} 
+            style={{ alignSelf: 'center', width: '90%' }}
+            disabled={loading}
+          >
             <LinearGradient colors={['#173B7E', '#1A4C9D']} style={styles.loginButtonGradient}>
-              <Text style={styles.loginButtonText}>Verify</Text>
+              {loading ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <Text style={styles.loginButtonText}>Verify</Text>
+              )}
             </LinearGradient>
           </TouchableOpacity>
 
