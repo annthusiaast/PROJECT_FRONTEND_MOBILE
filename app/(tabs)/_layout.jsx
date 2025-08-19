@@ -59,7 +59,6 @@ export default function TabsLayout() {
   const currentTab = segments[segments.length - 1] || "home";
 
   return (
-
     <ProtectedRoute>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <View style={{ flex: 1 }}>
@@ -80,119 +79,51 @@ export default function TabsLayout() {
               tabBarStyle: {
                 backgroundColor: "#fff",
                 height: Platform.OS === "ios" ? 90 : 70,
-                paddingBottom: Platform.OS === "ios" ? 20 : 20,
-                paddingTop: 8,
+                paddingBottom: Platform.OS === "ios" ? 20 : 12,
+                paddingTop: 6,
                 borderTopWidth: 0.5,
                 borderTopColor: "#ddd",
               },
             }}
           >
-            {/* Only declare these if you need custom icons or overrides */}
             <Tabs.Screen
               name="home"
               options={{
                 title: "Home",
-                tabBarIcon: ({ color }) => <Home color={color} size={28} />,
+                tabBarIcon: ({ color }) => <Home color={color} size={26} />,
               }}
             />
             <Tabs.Screen
               name="tasks"
               options={{
                 title: "Tasks",
-                tabBarIcon: ({ color }) => (
-                  <ClipboardList color={color} size={28} />
-                ),
+                tabBarIcon: ({ color }) => <ClipboardList color={color} size={26} />,
               }}
             />
             <Tabs.Screen
               name="cases"
               options={{
                 title: "Cases",
-                tabBarIcon: ({ color }) => <Scale color={color} size={28} />,
+                tabBarIcon: ({ color }) => <Scale color={color} size={26} />,
               }}
             />
             <Tabs.Screen
               name="documents"
               options={{
                 title: "Documents",
-                tabBarIcon: ({ color }) => <FileText color={color} size={28} />,
+                tabBarIcon: ({ color }) => <FileText color={color} size={26} />,
               }}
             />
             <Tabs.Screen
               name="profile"
               options={{
                 title: "Profile",
-                tabBarIcon: ({ color }) => <User color={color} size={28} />,
+                tabBarIcon: ({ color }) => <User color={color} size={26} />,
               }}
             />
           </Tabs>
         </View>
       </GestureHandlerRootView>
     </ProtectedRoute>
-
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <View style={{ flex: 1 }}>
-        <CustomHeader
-          title={currentTab.charAt(0).toUpperCase() + currentTab.slice(1)}
-        />
-
-        <Tabs
-          screenOptions={{
-            headerShown: false,
-            tabBarActiveTintColor: "#0B3D91",
-            tabBarInactiveTintColor: "#666",
-            tabBarLabelStyle: {
-              fontSize: 12,
-              fontWeight: "500",
-              marginTop: 2,
-            },
-            tabBarStyle: {
-              backgroundColor: "#fff",
-              height: Platform.OS === "ios" ? 90 : 60,
-              paddingBottom: Platform.OS === "ios" ? 20 : 8,
-              paddingTop: 6,
-              borderTopWidth: 0.5,
-              borderTopColor: "#ddd",
-            },
-          }}
-        >
-          <Tabs.Screen
-            name="home"
-            options={{
-              title: "Home",
-              tabBarIcon: ({ color }) => <Home color={color} size={26} />,
-            }}
-          />
-          <Tabs.Screen
-            name="tasks"
-            options={{
-              title: "Tasks",
-              tabBarIcon: ({ color }) => <ClipboardList color={color} size={26} />,
-            }}
-          />
-          <Tabs.Screen
-            name="cases"
-            options={{
-              title: "Cases",
-              tabBarIcon: ({ color }) => <Scale color={color} size={26} />,
-            }}
-          />
-          <Tabs.Screen
-            name="documents"
-            options={{
-              title: "Documents",
-              tabBarIcon: ({ color }) => <FileText color={color} size={26} />,
-            }}
-          />
-          <Tabs.Screen
-            name="profile"
-            options={{
-              title: "Profile",
-              tabBarIcon: ({ color }) => <User color={color} size={26} />,
-            }}
-          />
-        </Tabs>
-      </View>
-    </GestureHandlerRootView>
   );
 }
