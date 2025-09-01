@@ -37,7 +37,6 @@ const Cases = () => {
   };
 
   return (
-    <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -118,7 +117,6 @@ const Cases = () => {
           </View>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
-    </ScrollView>
   );
 };
 
