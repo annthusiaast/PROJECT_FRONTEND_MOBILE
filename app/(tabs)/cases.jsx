@@ -1,4 +1,3 @@
-import AddNewCase from "@/components/add-new-case";
 import AllCase from "@/components/all-case";
 import CaseModal from "@/components/case-modal";
 import ViewClients from "@/components/view-clients";
@@ -56,7 +55,7 @@ const Cases = () => {
 
             <View style={styles.taskButtonAlignments}>
               <View style={{ flexDirection: "row" }}>
-                {["All Case", "+Add New Case"].map((tab) => (
+                {["All Case"].map((tab) => (
                   <TouchableOpacity
                     key={tab}
                     style={[
@@ -102,7 +101,6 @@ const Cases = () => {
               {caseTab === "All Case" && (
                 <AllCase onCasePress={handleCasePress} user={user} />
               )}
-              {caseTab === "+Add New Case" && <AddNewCase />}
               {caseTab === "View Clients" && <ViewClients user={user} />}
             </View>
 

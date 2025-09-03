@@ -13,7 +13,6 @@ import { styles } from "../constants/styles/view-clients";
 import { getEndpoint } from "../constants/api-config";
 
 // import your pages
-import AddClient from "../components/add-clients";
 import AddContact from "../components/add-contacts";
 
 const ViewClients = ({ user }) => {
@@ -23,8 +22,6 @@ const ViewClients = ({ user }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showAllClients, setShowAllClients] = useState(false);
   const [error, setError] = useState(null);
-
-  const [editClient, setEditClient] = useState(null);
 
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 5;
@@ -135,11 +132,10 @@ const ViewClients = ({ user }) => {
         </Text>
       </View>
       <View style={styles.clientActions}>
-        {/* Eye button can later navigate to a dedicated client detail page */}
         <TouchableOpacity onPress={() => console.log("View client:", item)}>
           <Eye size={20} color="blue" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => setEditClient(item)}>
+        <TouchableOpacity onPress={() => console.log("Edit client:", item)}>
           <Pencil size={20} color="orange" />
         </TouchableOpacity>
         {item.client_status !== "Removed" ? (
@@ -172,7 +168,7 @@ const ViewClients = ({ user }) => {
               activeTab === "clients" && styles.activeTabText,
             ]}
           >
-            Add Clients
+              Add Clients
           </Text>
         </TouchableOpacity>
 

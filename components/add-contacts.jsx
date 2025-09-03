@@ -5,10 +5,9 @@ import {
   Text, 
   TextInput, 
   TouchableOpacity, 
-  Alert, 
-  StyleSheet 
+  Alert 
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
+import DropDownPicker from "react-native-dropdown-picker";
 import { styles } from "../constants/styles/add-contacts"; 
 
 const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
@@ -19,6 +18,15 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
     contact_role: "",
     client_id: "",
   });
+
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState(null);
+  const [items, setItems] = useState(
+    clients.map((client) => ({
+      label: client.client_fullname || `Client ${client.client_id}`,
+      value: client.client_id,
+    }))
+  );
 
   const handleChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -41,9 +49,21 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
           text: "OK", 
           onPress: () => {
             onAdd(formData);
+            Alert.alert("Success", "Contact saved successfully!");
             onClose();
           }
         }
+      ]
+    );
+  };
+
+  const handleCancel = () => {
+    Alert.alert(
+      "Cancel",
+      "Are you sure you want to cancel?",
+      [
+        { text: "No", style: "cancel" },
+        { text: "Yes", onPress: onClose }
       ]
     );
   };
@@ -57,22 +77,23 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
     >
       <View style={styles.overlay}>
         <View style={styles.modal}>
-          <Text style={styles.title}>Add Client Contact Person</Text>
+          <Text style={styles.title}>Client Contact</Text>
 
-          <Picker
-            selectedValue={formData.client_id}
-            onValueChange={(value) => handleChange("client_id", value)}
+          <DropDownPicker
+            open={open}
+            value={formData.client_id}
+            items={items}
+            setOpen={setOpen}
+            setValue={(callback) => {
+              const val = callback(formData.client_id);
+              handleChange("client_id", val);
+              setValue(val);
+            }}
+            setItems={setItems}
+            placeholder="Select Client"
             style={styles.input}
-          >
-            <Picker.Item label="Select Client" value="" />
-            {clients.map((client) => (
-              <Picker.Item 
-                key={client.client_id} 
-                label={client.client_fullname || `Client ${client.client_id}`} 
-                value={client.client_id} 
-              />
-            ))}
-          </Picker>
+            dropDownContainerStyle={{ borderColor: "#ccc" }}
+          />
 
           <TextInput
             placeholder="Full Name"
@@ -102,7 +123,7 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
           />
 
           <View style={styles.buttonRow}>
-            <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
+            <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
               <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.saveButton} onPress={handleSubmit}>
