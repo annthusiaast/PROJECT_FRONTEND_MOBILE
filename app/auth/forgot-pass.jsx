@@ -58,7 +58,10 @@ const ForgotPass = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email: email.trim() }),
+        body: JSON.stringify({ 
+          email: email.trim(),
+          client_type: 'mobile'
+        }),
       });
 
       const data = await response.json();

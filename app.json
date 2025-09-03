@@ -8,6 +8,9 @@
     "scheme": "legalvaultmobile",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "linking": {
+      "prefixes": ["legalvaultmobile://"]
+    },
     "ios": {
       "supportsTablet": true
     },

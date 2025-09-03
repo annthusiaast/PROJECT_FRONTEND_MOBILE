@@ -20,7 +20,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { styles } from '@/constants/styles/auth_styles';
 import { getEndpoint } from '@/constants/api-config';
 
-const ChangePass = () => {
+const ChangePasswordFromDeepLink = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -102,7 +102,7 @@ const ChangePass = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(getEndpoint('/reset-password'), {
+      const response = await fetch(getEndpoint('/auth/reset-password'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -168,7 +168,7 @@ const ChangePass = () => {
             {/* Form */}
             <View style={[styles.formContainer, { alignItems: "flex-start" }]}>
               <Text style={{ paddingBottom: 30, fontSize: 16, fontWeight: 'bold' }}>
-                Change Password
+                Reset Password
               </Text>
 
               {/* Success Message */}
@@ -309,7 +309,7 @@ const ChangePass = () => {
                       </Text>
                     </View>
                   ) : (
-                    <Text style={styles.loginButtonText}>Change Password</Text>
+                    <Text style={styles.loginButtonText}>Reset Password</Text>
                   )}
                 </LinearGradient>
               </TouchableOpacity>
@@ -337,4 +337,4 @@ const ChangePass = () => {
   );
 };
 
-export default ChangePass;
+export default ChangePasswordFromDeepLink;

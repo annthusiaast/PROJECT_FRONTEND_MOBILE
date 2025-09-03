@@ -4,6 +4,7 @@ import CaseModal from "@/components/case-modal";
 import ViewClients from "@/components/view-clients";
 import { today, allCases as rawallCases } from "@/constants/sample_data";
 import { styles } from "@/constants/styles/(tabs)/case_styles";
+import { useAuth } from "@/context/auth-context";
 import { Bell, Search } from "lucide-react-native";
 import React, { useState } from "react";
 import {
@@ -19,6 +20,7 @@ import {
 } from "react-native";
 
 const Cases = () => {
+  const { user } = useAuth();
   const [caseTab, setcaseTab] = useState("All Case");
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedCase, setSelectedCase] = useState(null);
@@ -103,7 +105,7 @@ const Cases = () => {
                 <AllCase onCasePress={handleCasePress} cases={cases} />
               )}
               {caseTab === "+Add New Case" && <AddNewCase />}
-              {caseTab === "View Clients" && <ViewClients />}
+              {caseTab === "View Clients" && <ViewClients user={user} />}
             </View>
 
             {selectedCase && (

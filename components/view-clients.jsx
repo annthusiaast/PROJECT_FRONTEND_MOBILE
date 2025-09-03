@@ -35,23 +35,35 @@ const ViewClients = ({ user }) => {
 
   // fetch all
   const fetchAll = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+      console.log("ViewClients: No user provided");
+      return;
+    }
+
+    console.log("ViewClients: User data:", user);
 
     try {
-      const clients_endpoint =
+      const clients_endpoint = (
         user.user_role === "Admin"
           ? showAllClients
             ? getEndpoint("/all-clients")
             : getEndpoint("/clients")
-          : getEndpoint(`/clients/${user.user_id}`);
+          : getEndpoint(`/clients/${user.user_id}`)
+      );
 
       console.log("Fetching from:", clients_endpoint);
 
       const [cRes, uRes, ctRes] = await Promise.all([
-        fetch(clients_endpoint),
-        fetch(getEndpoint("/users")),
-        fetch(getEndpoint("/client-contacts")),
+        fetch(clients_endpoint, { credentials: "include" }),
+        fetch(getEndpoint("/users"), { credentials: "include" }),
+        fetch(getEndpoint("/client-contacts"), { credentials: "include" }),
       ]);
+
+      console.log("Response status:", { 
+        clients: cRes.status, 
+        users: uRes.status, 
+        contacts: ctRes.status 
+      });
 
       if (!cRes.ok || !uRes.ok || !ctRes.ok)
         throw new Error("Fetch failed");
@@ -62,12 +74,18 @@ const ViewClients = ({ user }) => {
         ctRes.json(),
       ]);
 
+      console.log("Fetched data counts:", {
+        clients: cData.length,
+        users: uData.length,
+        contacts: ctData.length
+      });
+
       setClients(cData);
       setUsers(uData);
       setContacts(ctData);
     } catch (err) {
+      console.error("Fetch error details:", err);
       setError(err.message);
-      console.error("Fetch error:", err);
     }
   }, [user, showAllClients]);
 
