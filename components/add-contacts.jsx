@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Modal, 
   View, 
@@ -12,6 +12,14 @@ import { Picker } from "@react-native-picker/picker";
 import { styles } from "../constants/styles/add-contacts"; 
 
 const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
+  // Internal visibility state so Cancel works even if parent does not control "visible" prop
+  const isControlled = typeof visible === 'boolean';
+  const [internalVisible, setInternalVisible] = useState(isControlled ? !!visible : true);
+
+  useEffect(() => {
+    if (isControlled) setInternalVisible(!!visible);
+  }, [visible, isControlled]);
+
   const [formData, setFormData] = useState({
     contact_fullname: "",
     contact_email: "",
@@ -48,16 +56,23 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
     );
   };
 
+  // When uncontrolled and user pressed cancel, do not render anything
+  if (!internalVisible) return null;
+
+  const handleCancel = () => {
+    if (onClose) onClose(); else setInternalVisible(false);
+  };
+
   return (
     <Modal
-      visible={visible}
+      visible={internalVisible}
       transparent
       animationType="slide"
-      onRequestClose={onClose}
+      onRequestClose={handleCancel}
     >
       <View style={styles.overlay}>
         <View style={styles.modal}>
-          <Text style={styles.title}>Add Client Contact Person</Text>
+          <Text style={styles.title}>Add Client Contact</Text>
 
           <Picker
             selectedValue={formData.client_id}
@@ -102,7 +117,7 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
           />
 
           <View style={styles.buttonRow}>
-            <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
+            <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
               <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.saveButton} onPress={handleSubmit}>
