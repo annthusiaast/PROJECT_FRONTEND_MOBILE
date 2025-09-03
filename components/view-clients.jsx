@@ -8,16 +8,15 @@ import {
   Pressable,
   Alert,
 } from "react-native";
-import {
-  Pencil,
-  Trash2,
-  Eye,
-  RefreshCcw,
-} from "lucide-react-native";
+import { Pencil, Trash2, Eye, RefreshCcw } from "lucide-react-native";
 import { styles } from "../constants/styles/view-clients"; 
 
-//api
+// api
 import { getEndpoint } from "../constants/api-config";
+
+// import your pages
+import AddClient from "../components/add-clients";
+import AddContact from "../components/add-contacts";
 
 const ViewClients = ({ user }) => {
   const [clients, setClients] = useState([]);
@@ -33,40 +32,30 @@ const ViewClients = ({ user }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 5;
 
+  // active tab state
+  const [activeTab, setActiveTab] = useState("clients"); // "clients" | "contacts"
+
   // fetch all
   const fetchAll = useCallback(async () => {
-    if (!user) {
-      console.log("ViewClients: No user provided");
-      return;
-    }
-
-    console.log("ViewClients: User data:", user);
+    if (!user) return;
 
     try {
-      const clients_endpoint = (
+      const clients_endpoint =
         user.user_role === "Admin"
           ? showAllClients
             ? getEndpoint("/all-clients")
             : getEndpoint("/clients")
-          : getEndpoint(`/clients/${user.user_id}`)
-      );
+          : getEndpoint(`/clients/${user.user_id}`);
 
       console.log("Fetching from:", clients_endpoint);
 
       const [cRes, uRes, ctRes] = await Promise.all([
-        fetch(clients_endpoint, { credentials: "include" }),
-        fetch(getEndpoint("/users"), { credentials: "include" }),
-        fetch(getEndpoint("/client-contacts"), { credentials: "include" }),
+        fetch(clients_endpoint),
+        fetch(getEndpoint("/users")),
+        fetch(getEndpoint("/client-contacts")),
       ]);
 
-      console.log("Response status:", { 
-        clients: cRes.status, 
-        users: uRes.status, 
-        contacts: ctRes.status 
-      });
-
-      if (!cRes.ok || !uRes.ok || !ctRes.ok)
-        throw new Error("Fetch failed");
+      if (!cRes.ok || !uRes.ok || !ctRes.ok) throw new Error("Fetch failed");
 
       const [cData, uData, ctData] = await Promise.all([
         cRes.json(),
@@ -74,18 +63,12 @@ const ViewClients = ({ user }) => {
         ctRes.json(),
       ]);
 
-      console.log("Fetched data counts:", {
-        clients: cData.length,
-        users: uData.length,
-        contacts: ctData.length
-      });
-
       setClients(cData);
       setUsers(uData);
       setContacts(ctData);
     } catch (err) {
-      console.error("Fetch error details:", err);
       setError(err.message);
+      console.error("Fetch error:", err);
     }
   }, [user, showAllClients]);
 
@@ -176,39 +159,83 @@ const ViewClients = ({ user }) => {
 
   return (
     <View style={styles.container}>
-      {error && <Text style={styles.errorText}>{error}</Text>}
-
-      <FlatList
-        data={paginated}
-        keyExtractor={(item) => item.client_id.toString()}
-        renderItem={renderItem}
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>No clients found.</Text>
-        }
-        scrollEnabled={true}
-      />
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <View style={styles.pagination}>
-          <TouchableOpacity
-            disabled={currentPage === 1}
-            onPress={() => setCurrentPage((p) => Math.max(1, p - 1))}
+      {/* TABS */}
+      <View style={{ flexDirection: "row", marginBottom: 10 }}>
+        <TouchableOpacity
+          style={[
+            styles.tabButton,
+            activeTab === "clients" && styles.activeTab,
+          ]}
+          onPress={() => setActiveTab("clients")}
+        >
+          <Text
+            style={[
+              styles.tabText,
+              activeTab === "clients" && styles.activeTabText,
+            ]}
           >
-            <Text style={styles.pageButton}>&lt;</Text>
-          </TouchableOpacity>
-          <Text>
-            Page {currentPage} of {totalPages}
+            Add Clients
           </Text>
-          <TouchableOpacity
-            disabled={currentPage === totalPages}
-            onPress={() =>
-              setCurrentPage((p) => Math.min(totalPages, p + 1))
-            }
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[
+            styles.tabButton,
+            activeTab === "contacts" && styles.activeTab,
+          ]}
+          onPress={() => setActiveTab("contacts")}
+        >
+          <Text
+            style={[
+              styles.tabText,
+              activeTab === "contacts" && styles.activeTabText,
+            ]}
           >
-            <Text style={styles.pageButton}>&gt;</Text>
-          </TouchableOpacity>
-        </View>
+            View Contacts
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* CONTENT */}
+      {activeTab === "clients" ? (
+        <>
+          {error && <Text style={styles.errorText}>{error}</Text>}
+
+          <FlatList
+            data={paginated}
+            keyExtractor={(item) => item.client_id.toString()}
+            renderItem={renderItem}
+            ListEmptyComponent={
+              <Text style={styles.emptyText}>No clients found.</Text>
+            }
+            scrollEnabled={true}
+          />
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <View style={styles.pagination}>
+              <TouchableOpacity
+                disabled={currentPage === 1}
+                onPress={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              >
+                <Text style={styles.pageButton}>&lt;</Text>
+              </TouchableOpacity>
+              <Text>
+                Page {currentPage} of {totalPages}
+              </Text>
+              <TouchableOpacity
+                disabled={currentPage === totalPages}
+                onPress={() =>
+                  setCurrentPage((p) => Math.min(totalPages, p + 1))
+                }
+              >
+                <Text style={styles.pageButton}>&gt;</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </>
+      ) : (
+        <AddContact user={user} />
       )}
 
       {/* View Client Modal */}
