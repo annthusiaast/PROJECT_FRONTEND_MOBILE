@@ -10,8 +10,6 @@ import {
   ScrollView,
 } from "react-native";
 import Icon from "react-native-vector-icons/Feather";
-import Toast from "react-native-toast-message";
-import { useAuth } from "@/context/auth-context"; // your auth hook
 import { styles } from "../constants/styles/add-clients"; 
 
 const AddClient = ({ visible, onClose }) => {
@@ -49,37 +47,6 @@ const AddClient = ({ visible, onClose }) => {
     setContacts(contacts.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = async () => {
-    try {
-      const resClient = await fetch("http://localhost:3000/api/clients", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(clientData),
-      });
-
-      if (!resClient.ok) throw new Error("Failed to add client");
-
-      const newClient = await resClient.json();
-
-      await Promise.all(
-        contacts.map((c) =>
-          fetch("http://localhost:3000/api/client-contacts", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ ...c, client_id: newClient.client_id }),
-          })
-        )
-      );
-
-      Toast.show({ type: "success", text1: "Client added successfully!" });
-      onClose();
-    } catch (err) {
-      console.error(err);
-      Toast.show({ type: "error", text1: "Error adding client/contacts" });
-    }
-  };
 
   return (
     <Modal visible={visible} transparent animationType="slide">
