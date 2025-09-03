@@ -3,6 +3,7 @@ import CompletedTask from '@/components/completed-task';
 import CreateTask from '@/components/create-task';
 import { styles } from "@/constants/styles/(tabs)/tasks_styles";
 import { Search } from 'lucide-react-native';
+import { useAuth } from '@/context/auth-context';
 import React, { useState } from 'react';
 import {
   Keyboard,
@@ -16,6 +17,7 @@ import {
 } from "react-native";
 
 const Tasks = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('active');
 
   return (
@@ -73,9 +75,9 @@ const Tasks = () => {
 
           {/* ==== Content Area of Each Task Button ==== */}
           <View style={{ flex: 1 }}>
-            {activeTab === 'active' && <ActiveTask />}
-            {activeTab === 'completed' && <CompletedTask />}
-            {activeTab === 'create' && <CreateTask />}
+            {activeTab === 'active' && <ActiveTask user={user} />}
+            {activeTab === 'completed' && <CompletedTask user={user} />}
+            {activeTab === 'create' && <CreateTask user={user} />}
           </View>
         </View>
       </TouchableWithoutFeedback>
