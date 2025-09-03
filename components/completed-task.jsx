@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -10,28 +10,53 @@ import {
   UIManager,
 } from "react-native";
 import { User, Calendar, ChevronDown } from "lucide-react-native";
-import { FILTER_OPTIONS, completedTasks } from "@/constants/sample_data";
+import { FILTER_OPTIONS } from "@/constants/sample_data"; // retain filter options only
 import { styles } from "@/constants/styles/(tabs)/tasksBtn_styles";
+import { getEndpoint } from "@/constants/api-config";
 
-const CompletedTask = () => {
+const CompletedTask = ({ user }) => {
   const [filter, setFilter] = useState(7); // default filter: last 7 days
   const [modalVisible, setModalVisible] = useState(false);
   const [dropdownTop, setDropdownTop] = useState(0);
   const buttonRef = useRef(null);
+  const [tasks, setTasks] = useState([]); // backend completed tasks
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Fetch completed tasks from backend
+  const fetchCompleted = useCallback(async () => {
+    setLoading(true); setError(null);
+    try {
+      const res = await fetch(getEndpoint('/tasks/completed'), { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to fetch completed tasks');
+      const data = await res.json();
+      setTasks(Array.isArray(data) ? data : []);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchCompleted(); }, [fetchCompleted]);
 
   /** === FILTER COMPLETED TASKS BASED ON SELECTED RANGE === */
   const filterTasks = () => {
     const today = new Date();
-    return completedTasks.filter((task) => {
-      if (!task.completedDate) return false;
-      const taskDate = new Date(`${task.completedDate}T00:00:00`);
-
-      const diffDays =
-        (today.setHours(0, 0, 0, 0) - taskDate.getTime()) /
-        (1000 * 3600 * 24);
-
+    return tasks.filter(task => {
+      const raw = task.td_date_completed || task.td_due_date; // fallback
+      if (!raw) return false;
+      const base = raw.split('T')[0];
+      const taskDate = new Date(`${base}T00:00:00`);
+      const diffDays = (today.setHours(0,0,0,0) - taskDate.getTime()) / (1000 * 3600 * 24);
       return diffDays >= 0 && diffDays <= filter;
-    });
+    }).map(t => ({
+      id: t.td_id,
+      title: t.td_name,
+      description: t.td_description,
+      completedDate: (t.td_date_completed || '').split('T')[0] || null,
+      staff: t.td_to || 'Unknown'
+    }));
   };
 
   /** === OPEN DROPDOWN BELOW FILTER BUTTON === */
@@ -120,19 +145,30 @@ const CompletedTask = () => {
     </>
   );
 
+  const filtered = filterTasks();
+
   return (
-    <FlatList
-      data={filterTasks()}
-      keyExtractor={(item) => item.id.toString()}
-      renderItem={renderTaskCard}
-      ListHeaderComponent={renderHeader}
-      contentContainerStyle={{ padding: 10, paddingBottom: 20 }}
-      ListEmptyComponent={
-        <Text style={{ textAlign: "center", color: "gray", marginTop: 20 }}>
-          No tasks found for this date range.
-        </Text>
-      }
-    />
+    <>
+      {error && (
+        <Text style={{ color: 'red', textAlign: 'center', marginTop: 10 }}>{error}</Text>
+      )}
+      {loading ? (
+        <Text style={{ textAlign: 'center', marginTop: 20 }}>Loading...</Text>
+      ) : (
+        <FlatList
+          data={filtered}
+          keyExtractor={(item) => item.id.toString()}
+            renderItem={renderTaskCard}
+          ListHeaderComponent={renderHeader}
+          contentContainerStyle={{ padding: 10, paddingBottom: 20 }}
+          ListEmptyComponent={
+            <Text style={{ textAlign: 'center', color: 'gray', marginTop: 20 }}>
+              No tasks found for this date range.
+            </Text>
+          }
+        />
+      )}
+    </>
   );
 };
 
