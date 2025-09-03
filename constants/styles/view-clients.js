@@ -3,15 +3,7 @@ import { StyleSheet } from "react-native";
 export const styles = StyleSheet.create({
   container: { flex: 1},
   errorText: { backgroundColor: "#ef4444", color: "#fff", padding: 8, textAlign: "center" },
-  searchRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 12,
-    borderBottomWidth: 1,
-    borderColor: "#e5e7eb",
-  },
-
-  searchInput: { flex: 1, marginLeft: 8 },
+  
   clientRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -52,10 +44,11 @@ export const styles = StyleSheet.create({
 
   tabContainer: {
     flexDirection: "row",
-    alignItems: "flex-end",
+    justifyContent: "flex-end", //top- right corner
+    alignItems: "center",
     marginBottom: 15,
     marginTop: 10,
-    marginLeft: 10, // aligns to top-left corner
+    marginLeft: 10, 
   },
 
   tabButton: {
@@ -72,7 +65,7 @@ export const styles = StyleSheet.create({
   },
 
   activeTab: {
-    backgroundColor: "#007bff",
+    backgroundColor: "#144478ff",
   },
 
   tabText: {

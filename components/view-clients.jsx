@@ -4,8 +4,6 @@ import {
   Text,
   TouchableOpacity,
   FlatList,
-  Modal,
-  Pressable,
   Alert,
 } from "react-native";
 import { Pencil, Trash2, Eye, RefreshCcw } from "lucide-react-native";
@@ -26,7 +24,6 @@ const ViewClients = ({ user }) => {
   const [showAllClients, setShowAllClients] = useState(false);
   const [error, setError] = useState(null);
 
-  const [viewClient, setViewClient] = useState(null);
   const [editClient, setEditClient] = useState(null);
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -138,7 +135,8 @@ const ViewClients = ({ user }) => {
         </Text>
       </View>
       <View style={styles.clientActions}>
-        <TouchableOpacity onPress={() => setViewClient(item)}>
+        {/* Eye button can later navigate to a dedicated client detail page */}
+        <TouchableOpacity onPress={() => console.log("View client:", item)}>
           <Eye size={20} color="blue" />
         </TouchableOpacity>
         <TouchableOpacity onPress={() => setEditClient(item)}>
@@ -174,7 +172,7 @@ const ViewClients = ({ user }) => {
               activeTab === "clients" && styles.activeTabText,
             ]}
           >
-             Add Clients
+            Add Clients
           </Text>
         </TouchableOpacity>
 
@@ -191,7 +189,7 @@ const ViewClients = ({ user }) => {
               activeTab === "contacts" && styles.activeTabText,
             ]}
           >
-           View Contacts
+            View Contacts
           </Text>
         </TouchableOpacity>
       </View>
@@ -237,28 +235,6 @@ const ViewClients = ({ user }) => {
       ) : (
         <AddContact user={user} />
       )}
-
-      {/* View Client Modal */}
-      <Modal visible={!!viewClient} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalBox}>
-            <Text style={styles.modalTitle}>Client Info</Text>
-            {viewClient && (
-              <>
-                <Text>Name: {viewClient.client_fullname}</Text>
-                <Text>Email: {viewClient.client_email}</Text>
-                <Text>Status: {viewClient.client_status}</Text>
-              </>
-            )}
-            <Pressable
-              onPress={() => setViewClient(null)}
-              style={styles.modalButton}
-            >
-              <Text style={styles.modalButtonText}>Close</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 };
