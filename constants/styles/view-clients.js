@@ -50,5 +50,41 @@ export const styles = StyleSheet.create({
   modalButton: { marginTop: 16, backgroundColor: "#2563eb", padding: 10, borderRadius: 6 },
   modalButtonText: { color: "#fff", textAlign: "center" },
 
+  tabContainer: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    marginBottom: 15,
+    marginTop: 10,
+    marginLeft: 10, // aligns to top-left corner
+  },
+
+  tabButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 20,
+    marginRight: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 3,
+    elevation: 2,
+  },
+
+  activeTab: {
+    backgroundColor: "#007bff",
+  },
+
+  tabText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#333",
+  },
+
+  activeTabText: {
+    color: "#fff",
+    fontWeight: "600",
+  },
+
 
 });

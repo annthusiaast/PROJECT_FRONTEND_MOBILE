@@ -9,7 +9,7 @@ import {
   Alert,
 } from "react-native";
 import { Pencil, Trash2, Eye, RefreshCcw } from "lucide-react-native";
-import { styles } from "../constants/styles/view-clients"; 
+import { styles } from "../constants/styles/view-clients";
 
 // api
 import { getEndpoint } from "../constants/api-config";
@@ -160,7 +160,7 @@ const ViewClients = ({ user }) => {
   return (
     <View style={styles.container}>
       {/* TABS */}
-      <View style={{ flexDirection: "row", marginBottom: 10 }}>
+      <View style={styles.tabContainer}>
         <TouchableOpacity
           style={[
             styles.tabButton,
@@ -174,7 +174,7 @@ const ViewClients = ({ user }) => {
               activeTab === "clients" && styles.activeTabText,
             ]}
           >
-            Add Clients
+             Add Clients
           </Text>
         </TouchableOpacity>
 
@@ -191,7 +191,7 @@ const ViewClients = ({ user }) => {
               activeTab === "contacts" && styles.activeTabText,
             ]}
           >
-            View Contacts
+           View Contacts
           </Text>
         </TouchableOpacity>
       </View>
