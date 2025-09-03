@@ -180,12 +180,25 @@ const CreateTask = ({ user }) => {
     }
   };
 
+  const canCreate = user && ['Admin','Lawyer'].includes(user.user_role);
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView style={{ flex: 1, padding: 15 }} keyboardShouldPersistTaps="handled">
+
+        {!canCreate && (
+          <View style={{ padding: 16, backgroundColor: '#ffe8e8', borderRadius: 8, marginBottom: 20 }}>
+            <Text style={{ color: '#b00020', fontWeight: '600' }}>
+              You don\'t have permission to create tasks. (Allowed: Admin, Lawyer)
+            </Text>
+          </View>
+        )}
+
+        {canCreate && (
+        <>
 
         {/* === TASK TITLE === */}
         <Text style={{ fontWeight: "bold", fontSize: 14, marginBottom: 5 }}>Task Title</Text>
@@ -268,11 +281,13 @@ const CreateTask = ({ user }) => {
           <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>{submitting ? 'Creating...' : 'Create Task'}</Text>
         </TouchableOpacity>
 
-        {/* === DROPDOWN MODALS === */}
+  {/* === DROPDOWN MODALS === */}
   <DropdownModal visible={modalType === "case"} options={caseOptions} onSelect={setRelatedCase} />
   <DropdownModal visible={modalType === "assignee"} options={userOptions} onSelect={setAssignee} isAssignee />
+  </>
+  )}
 
-      </ScrollView>
+  </ScrollView>
     </KeyboardAvoidingView>
   );
 };
