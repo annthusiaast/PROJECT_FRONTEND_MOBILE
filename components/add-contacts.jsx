@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { 
-  Modal, 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  Alert, 
-  StyleSheet 
+import {
+  Modal,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  StyleSheet
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import { styles } from "../constants/styles/add-contacts"; 
+import { styles } from "../constants/styles/add-contacts";
 
 const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
   // Internal visibility state so Cancel works even if parent does not control "visible" prop
@@ -45,8 +45,8 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
       "Are you sure you want to add this contact?",
       [
         { text: "Cancel", style: "cancel" },
-        { 
-          text: "OK", 
+        {
+          text: "OK",
           onPress: () => {
             onAdd(formData);
             onClose();
@@ -81,10 +81,10 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
           >
             <Picker.Item label="Select Client" value="" />
             {clients.map((client) => (
-              <Picker.Item 
-                key={client.client_id} 
-                label={client.client_fullname || `Client ${client.client_id}`} 
-                value={client.client_id} 
+              <Picker.Item
+                key={client.client_id}
+                label={client.client_fullname || `Client ${client.client_id}`}
+                value={client.client_id}
               />
             ))}
           </Picker>

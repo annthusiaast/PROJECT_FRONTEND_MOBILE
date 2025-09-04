@@ -82,8 +82,7 @@ const ViewClients = ({ user }) => {
   const getUserFullName = (createdBy) => {
     const u = users.find((x) => x.user_id === createdBy);
     return u
-      ? `${u.user_fname || ""} ${u.user_mname ? u.user_mname[0] + "." : ""} ${
-          u.user_lname || ""
+      ? `${u.user_fname || ""} ${u.user_mname ? u.user_mname[0] + "." : ""} ${u.user_lname || ""
         }`.trim()
       : "Unknown";
   };
@@ -177,7 +176,7 @@ const ViewClients = ({ user }) => {
             <Trash2 size={20} color="red" />
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity onPress={() => {}}>
+          <TouchableOpacity onPress={() => { }}>
             <RefreshCcw size={20} color="green" />
           </TouchableOpacity>
         )}
@@ -268,16 +267,26 @@ const ViewClients = ({ user }) => {
           {/* Add Contact Button */}
           <TouchableOpacity
             style={{
+              position: 'absolute',
+              bottom: 24,
+              right: 20,
               backgroundColor: '#114d89',
-              padding: 10,
-              borderRadius: 6,
-              alignSelf: 'flex-start',
-              marginBottom: 10
+              paddingVertical: 14,
+              paddingHorizontal: 20,
+              borderRadius: 40,
+              flexDirection: 'row',
+              alignItems: 'center',
+              shadowColor: '#000',
+              shadowOpacity: 0.25,
+              shadowRadius: 4,
+              shadowOffset: { width: 0, height: 2 },
+              elevation: 5,
+              zIndex: 20,
             }}
             onPress={() => setShowAddContact(true)}
-            activeOpacity={0.8}
+            activeOpacity={0.85}
           >
-            <Text style={{ color: '#fff', fontWeight: '600' }}>+ Add Contact</Text>
+            <Text style={{ color: '#fff', fontWeight: '700', fontSize: 14 }}>+ Contact</Text>
           </TouchableOpacity>
 
           {/* Contacts List */}
