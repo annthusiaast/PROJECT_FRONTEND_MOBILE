@@ -277,7 +277,6 @@ const ViewClients = ({ user, navigation }) => {
               elevation: 4,
               zIndex: 10,
             }}
-            onPress={() => navigation.push("AddClient")}
             activeOpacity={0.8}
             accessibilityRole="button"
             accessibilityLabel="Add Client"
