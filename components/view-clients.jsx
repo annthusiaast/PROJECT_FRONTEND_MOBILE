@@ -14,6 +14,7 @@ import { getEndpoint } from "../constants/api-config";
 
 // import your pages
 import AddContact from "../components/add-contacts";
+import ClientContact from "../components/client-contacts"; // integrated contacts view
 import AddClient from "../components/add-clients";
 
 const ViewClients = ({ user, navigation }) => {
@@ -35,6 +36,7 @@ const ViewClients = ({ user, navigation }) => {
   // active tab state
   const [activeTab, setActiveTab] = useState("clients"); // "clients" | "contacts"
   const [showAddContact, setShowAddContact] = useState(false); // controls AddContact modal visibility
+  const [showAddClient, setShowAddClient] = useState(false); // controls AddClient modal
 
   // fetch all
   const fetchAll = useCallback(async () => {
@@ -279,6 +281,7 @@ const ViewClients = ({ user, navigation }) => {
             activeOpacity={0.8}
             accessibilityRole="button"
             accessibilityLabel="Add Client"
+            onPress={() => setShowAddClient(true)}
           >
             <Text style={{ color: "#fff", fontWeight: "600" }}>
               + Add Client
@@ -288,60 +291,8 @@ const ViewClients = ({ user, navigation }) => {
       ) : (
         <>
           {error && <Text style={styles.errorText}>{error}</Text>}
-
-          {/* Add Contact Button */}
-          <TouchableOpacity
-            style={{
-              position: "absolute",
-              bottom: 20,
-              right: 20,
-              backgroundColor: "#114d89",
-              paddingVertical: 14,
-              paddingHorizontal: 16,
-              borderRadius: 28,
-              shadowColor: "#000",
-              shadowOpacity: 0.2,
-              shadowRadius: 4,
-              shadowOffset: { width: 0, height: 2 },
-              elevation: 4,
-              zIndex: 10,
-            }}
-            onPress={() => setShowAddContact(true)}
-            activeOpacity={0.8}
-          >
-            <Text style={{ color: '#fff', fontWeight: '600' }}>+ Add Contact</Text>
-          </TouchableOpacity>
-
-          {/* Contacts List */}
-          <FlatList
-            data={contacts}
-            keyExtractor={(item) =>
-              item.contact_id?.toString() ||
-              `${item.contact_fullname}-${item.client_id}`
-            }
-            renderItem={({ item }) => (
-              <View style={[styles.clientRow, { alignItems: "flex-start" }]}>
-                <View style={styles.clientInfo}>
-                  <Text style={styles.clientName}>{item.contact_fullname}</Text>
-                  <Text style={styles.clientEmail}>{item.contact_email}</Text>
-                  <Text style={styles.clientCreatedBy}>
-                    {item.contact_phone}
-                  </Text>
-                </View>
-              </View>
-            )}
-            ListEmptyComponent={
-              <Text style={styles.emptyText}>No contacts found.</Text>
-            }
-          />
-
-          {/* Add Contact Modal */}
-          <AddContact
-            visible={showAddContact}
-            onClose={() => setShowAddContact(false)}
-            onAdd={handleAddContact}
-            clients={clients}
-          />
+          {/* Reusing ClientContact component */}
+          <ClientContact />
         </>
       )}
 
@@ -445,6 +396,16 @@ const ViewClients = ({ user, navigation }) => {
           </View>
         </View>
       )}
+      {/* Add Client Modal */}
+      <AddClient
+        visible={showAddClient}
+        onClose={() => setShowAddClient(false)}
+        onCreated={({ client, contacts: newContacts }) => {
+          setShowAddClient(false);
+          if (client) setClients(prev => [client, ...prev]);
+          if (newContacts?.length) setContacts(prev => [...newContacts, ...prev]);
+        }}
+      />
     </View>
   );
 };
