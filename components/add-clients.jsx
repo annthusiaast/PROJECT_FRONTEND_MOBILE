@@ -52,6 +52,7 @@ const AddClient = ({ visible, onClose }) => {
     <Modal visible={visible} transparent animationType="slide">
       <View style={styles.overlay}>
         <View style={styles.modal}>
+          
           {/* Close button */}
           <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
             <Icon name="x" size={24} color="#555" />

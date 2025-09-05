@@ -4,11 +4,9 @@ import {
   Image, 
   TextInput, 
   TouchableOpacity, 
-  Alert, 
   ActivityIndicator, 
   Platform, 
   KeyboardAvoidingView, 
-  ScrollView 
 } from 'react-native';
 
 import Checkbox from 'expo-checkbox';
@@ -27,24 +25,59 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Error messages
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+
   const { login } = useAuth();
   const router = useRouter();
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
+  const validateFields = () => {
+    let valid = true;
+
+    // Reset errors
+    setEmailError('');
+    setPasswordError('');
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+      setEmailError('Email is required');
+      valid = false;
+    } else if (!emailRegex.test(email)) {
+      setEmailError('Please enter a valid email address');
+      valid = false;
     }
+
+    // Password validation
+    if (!password) {
+      setPasswordError('Password is required');
+      valid = false;
+    } else if (password.length < 6) {
+      setPasswordError('Password must be at least 6 characters long');
+      valid = false;
+    }
+
+    return valid;
+  };
+
+  const handleLogin = async () => {
+    if (!validateFields()) return;
 
     setLoading(true);
 
     try {
       await login(email, password);
-      Alert.alert('Success', 'OTP sent to your email', [
-        { text: 'OK', onPress: () => router.push('/auth/verification') }
-      ]);
+
+      router.push('/auth/verification');
     } catch (error) {
-      Alert.alert('Login Failed', error.message || 'Something went wrong. Please try again.');
+      if (error.message?.toLowerCase().includes('user') || error.message?.toLowerCase().includes('email')) {
+        setEmailError('Username/Email is incorrect');
+      } else if (error.message?.toLowerCase().includes('password')) {
+        setPasswordError('Password is incorrect');
+      } else {
+        setPasswordError('Something went wrong. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -72,12 +105,17 @@ const Login = () => {
             <TextInput
               style={styles.TextInputWithIcon}
               autoCapitalize="none"
+              keyboardType="email-address"
               value={email}
               placeholder="Enter email"
               placeholderTextColor="#9A8478"
-              onChangeText={setEmail}
+              onChangeText={(text) => {
+                setEmail(text);
+                if (emailError) setEmailError('');
+              }}
             />
           </View>
+          {emailError ? <Text style={{ color: 'red', marginLeft: 5 }}>{emailError}</Text> : null}
 
           {/* Password Field */}
           <View style={styles.inputContainer}>
@@ -88,7 +126,10 @@ const Login = () => {
               placeholder="Enter password"
               placeholderTextColor="#9A8478"
               secureTextEntry={!showPassword}
-              onChangeText={setPassword}
+              onChangeText={(text) => {
+                setPassword(text);
+                if (passwordError) setPasswordError('');
+              }}
             />
             <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
               {showPassword ? (
@@ -98,6 +139,7 @@ const Login = () => {
               )}
             </TouchableOpacity>
           </View>
+          {passwordError ? <Text style={{ color: 'red', marginLeft: 5 }}>{passwordError}</Text> : null}
 
           {/* Remember Me + Forgot Password */}
           <View style={styles.Remember_Forgot_View}>
