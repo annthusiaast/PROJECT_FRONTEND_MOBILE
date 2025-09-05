@@ -1,8 +1,14 @@
-import { Bell, Phone, MapPin, Edit2, Settings, Building, Mail, ArrowLeft, Clock, } from "lucide-react-native";
+import { 
+  Bell, Phone, MapPin, Edit2, Settings, Building, Mail, ArrowLeft, 
+  Clock, User2Icon, AlertCircle, Lock 
+} from "lucide-react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, View, Platform, Modal, Switch, } from "react-native";
+import { 
+  Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, 
+  View, Platform, Modal, Switch 
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { today, initialProfile } from "@/constants/sample_data";
@@ -19,10 +25,13 @@ function Profile() {
   const [showSignOutModal, setShowSignOutModal] = useState(false);
 
   const [editData, setEditData] = useState({
-    email: initialProfile.email,
-    phone: initialProfile.phone,
-    address: initialProfile.address,
-    department: initialProfile.department,
+    user_id: initialProfile.user_id,
+    user_date_created: initialProfile.dateCreated,
+    user_email: initialProfile.email,
+    user_password: initialProfile.password,
+    user_phonenum: initialProfile.phone,
+    user_status: initialProfile.status,
+    branch_id: initialProfile.branch,
   });
 
   const [showNotifications, setShowNotifications] = useState(false);
@@ -36,9 +45,9 @@ function Profile() {
 
   const [logs, setLogs] = useState([
     { id: 1, action: "Logged in", time: "August 12,2025 09:12 AM" },
-    { id: 2, action: "Edited profile", time: "August 21,2025  04:25 PM" },
+    { id: 2, action: "Edited profile", time: "August 21,2025 04:25 PM" },
     { id: 3, action: "Changed password", time: "August 01,2025 11:14 AM" },
-    { id: 4, action: "Viewed case C54321", time: "August 04,2025  10:05 AM" },
+    { id: 4, action: "Viewed case C54321", time: "August 04,2025 10:05 AM" },
   ]);
 
   const [searchText, setSearchText] = useState("");
@@ -51,25 +60,29 @@ function Profile() {
 
   useEffect(() => {
     const loadProfile = async () => {
-      // Use authenticated user data if available
       if (user) {
         const userProfile = {
-          name: `${user.user_fname} ${user.user_mname || ''} ${user.user_lname}`.trim(),
-          email: user.user_email || profile.email,
-          phone: user.user_phone || profile.phone,
-          role: user.user_role || profile.role,
-          address: user.user_address || profile.address,
-          department: user.user_department || profile.department,
+          user_id: user.user_id,
+          name: `${user.user_fname} ${user.user_mname || ""} ${user.user_lname}`.trim(),
+          user_email: user.user_email,
+          user_password: user.user_password,
+          user_phonenum: user.user_phonenum,
+          user_status: user.user_status,
+          user_role: user.user_role,
+          user_date_created: user.user_date_created,
+          branch_id: user.branch_id,
         };
         setProfile(userProfile);
         setEditData({
-          email: userProfile.email,
-          phone: userProfile.phone,
-          address: userProfile.address,
-          department: userProfile.department,
+          user_id: userProfile.user_id,
+          user_date_created: userProfile.user_date_created,
+          user_email: userProfile.user_email,
+          user_password: userProfile.user_password,
+          user_phonenum: userProfile.user_phonenum,
+          user_status: userProfile.user_status,
+          branch_id: userProfile.branch_id,
         });
       } else {
-        // Fallback to stored profile data
         const stored = await AsyncStorage.getItem("userProfile");
         if (stored) setProfile(JSON.parse(stored));
       }
@@ -95,11 +108,11 @@ function Profile() {
   const validateInputs = () => {
     const emailRegex = /\S+@\S+\.\S+/;
     const phoneRegex = /^[0-9]{10,15}$/;
-    if (!emailRegex.test(editData.email)) {
+    if (!emailRegex.test(editData.user_email)) {
       Alert.alert("Invalid Email", "Please enter a valid email address.");
       return false;
     }
-    if (!phoneRegex.test(editData.phone)) {
+    if (!phoneRegex.test(editData.user_phonenum)) {
       Alert.alert("Invalid Phone", "Please enter a valid phone number.");
       return false;
     }
@@ -117,10 +130,13 @@ function Profile() {
 
   const handleCancel = () => {
     setEditData({
-      email: profile.email,
-      phone: profile.phone,
-      address: profile.address,
-      department: profile.department,
+      user_id: profile.user_id,
+      user_date_created: profile.user_date_created,
+      user_email: profile.user_email,
+      user_password: profile.user_password,
+      user_phonenum: profile.user_phonenum,
+      user_status: profile.user_status,
+      branch_id: profile.branch_id,
     });
     setIsEditing(false);
   };
@@ -128,18 +144,13 @@ function Profile() {
   const confirmSignOut = async () => {
     try {
       setShowSignOutModal(false);
-      
-      // Use the auth context logout method
       await logout();
-      
-      // Navigate back to Login
       router.replace("/auth/login"); 
     } catch (error) {
       console.error("Error signing out:", error);
       Alert.alert("Error", "Failed to sign out. Please try again.");
     }
   };
-
 
   const togglePref = (key) => {
     const updated = { ...prefs, [key]: !prefs[key] };
@@ -149,131 +160,158 @@ function Profile() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <StatusBar style="dark" />
-      <ScrollView
-        contentContainerStyle={{ paddingBottom: 20, paddingHorizontal: 16 }}
-      >
-
+      <ScrollView contentContainerStyle={{ paddingBottom: 20, paddingHorizontal: 16 }}>
         <View style={styles.profileCard}>
-          <Image source={images.JosephPic} style={styles.avatar} />
+          <Image source={user.user_profile} style={styles.avatar} />
           <Text style={styles.name}>{profile.name}</Text>
-          <Text style={styles.role}>{profile.role}</Text>
+          <Text style={styles.role}>{profile.user_role}</Text>
 
           {!isEditing ? (
-            <TouchableOpacity
-              style={styles.editBtn}
-              onPress={() => setIsEditing(true)}
-            >
+            <TouchableOpacity style={styles.editBtn} onPress={() => setIsEditing(true)}>
               <Edit2 size={14} color="#0B3D91" />
               <Text style={styles.editBtnText}>Edit Profile</Text>
             </TouchableOpacity>
           ) : (
             <View style={styles.actionRow}>
-              <TouchableOpacity
-                style={[styles.saveBtn, { backgroundColor: "#0B3D91" }]}
-                onPress={handleSave}
-              >
+              <TouchableOpacity style={[styles.saveBtn, { backgroundColor: "#0B3D91" }]} onPress={handleSave}>
                 <Text style={styles.saveText}>Save</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.saveBtn, { backgroundColor: "#ccc" }]}
-                onPress={handleCancel}
-              >
-                <Text style={[styles.saveText, { color: "#333" }]}>
-                  Cancel
-                </Text>
+              <TouchableOpacity style={[styles.saveBtn, { backgroundColor: "#ccc" }]} onPress={handleCancel}>
+                <Text style={[styles.saveText, { color: "#333" }]}>Cancel</Text>
               </TouchableOpacity>
             </View>
           )}
         </View>
 
         <View style={styles.infoCard}>
+          {/* User ID */}
+          <View style={styles.infoRow}>
+            <User2Icon size={20} color="#0B3D91" />
+            {!isEditing ? (
+              <View>
+                <Text style={styles.infoLabel}>User Id</Text>
+                <Text style={styles.infoValue}>{profile.user_id}</Text>
+              </View>
+            ) : (
+              <TextInput
+                style={styles.inputInline}
+                value={editData.user_id.toString()}
+                editable={false}
+              />
+            )}
+          </View>
+
+          {/* Date Created */}
+            <View style={styles.infoRow}>
+              <Clock size={20} color="#0B3D91" />
+              <View>
+                <Text style={styles.infoLabel}>Date Created</Text>
+                <Text style={styles.infoValue}>
+                  {profile.user_date_created
+                    ? new Date(profile.user_date_created).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })
+                    : ""}
+                </Text>
+              </View>
+            </View>
+
+          {/* Email */}
           <View style={styles.infoRow}>
             <Mail size={20} color="#0B3D91" />
             {isEditing ? (
               <TextInput
                 style={styles.inputInline}
-                value={editData.email}
-                onChangeText={(text) =>
-                  setEditData({ ...editData, email: text })
-                }
+                value={editData.user_email}
+                onChangeText={(text) => setEditData({ ...editData, user_email: text })}
               />
             ) : (
               <View>
                 <Text style={styles.infoLabel}>Email</Text>
-                <Text style={styles.infoValue}>{profile.email}</Text>
+                <Text style={styles.infoValue}>{profile.user_email}</Text>
               </View>
             )}
           </View>
 
+          <View style={styles.infoRow}>
+            {/* Password */}
+              {isEditing && (
+                <View style={styles.infoRow}>
+                  <Lock size={20} color="#0B3D91" />
+                  <TextInput
+                    style={styles.inputInline}
+                    value={editData.user_password}
+                    onChangeText={(text) => setEditData({ ...editData, user_password: text })}
+                    secureTextEntry={true}
+                  />
+                </View>
+              )}
+          </View>
+
+
+          {/* Phone */}
           <View style={styles.infoRow}>
             <Phone size={20} color="#0B3D91" />
             {isEditing ? (
               <TextInput
                 style={styles.inputInline}
-                value={editData.phone}
-                onChangeText={(text) =>
-                  setEditData({ ...editData, phone: text })
-                }
+                value={editData.user_phonenum}
+                onChangeText={(text) => setEditData({ ...editData, user_phonenum: text })}
                 keyboardType="phone-pad"
               />
             ) : (
               <View>
                 <Text style={styles.infoLabel}>Phone</Text>
-                <Text style={styles.infoValue}>{profile.phone}</Text>
+                <Text style={styles.infoValue}>{profile.user_phonenum}</Text>
               </View>
             )}
           </View>
 
+          {/* Status */}
           <View style={styles.infoRow}>
-            <MapPin size={20} color="#0B3D91" />
+            <AlertCircle size={20} color="#0B3D91" />
             {isEditing ? (
               <TextInput
                 style={styles.inputInline}
-                value={editData.address}
-                onChangeText={(text) =>
-                  setEditData({ ...editData, address: text })
-                }
+                value={editData.user_status}
+                onChangeText={(text) => setEditData({ ...editData, user_status: text })}
               />
             ) : (
               <View>
-                <Text style={styles.infoLabel}>Address</Text>
-                <Text style={styles.infoValue}>{profile.address}</Text>
+                <Text style={styles.infoLabel}>Status</Text>
+                <Text style={styles.infoValue}>{profile.user_status}</Text>
               </View>
             )}
           </View>
 
+          {/* Branch */}
           <View style={styles.infoRow}>
             <Building size={18} color="#0B3D91" />
             {isEditing ? (
               <TextInput
                 style={styles.inputInline}
-                value={editData.department}
-                onChangeText={(text) =>
-                  setEditData({ ...editData, department: text })
-                }
+                value={editData.branch_id.toString()}
+                onChangeText={(text) => setEditData({ ...editData, branch_id: parseInt(text) })}
               />
             ) : (
               <View>
-                <Text style={styles.infoLabel}>Department</Text>
-                <Text style={styles.infoValue}>{profile.department}</Text>
+                <Text style={styles.infoLabel}>Branch</Text>
+                <Text style={styles.infoValue}>{profile.branch_id}</Text>
               </View>
             )}
           </View>
         </View>
 
+        {/* Settings and Logs */}
         {!isEditing && (
           <View style={styles.settingsCard}>
-            <TouchableOpacity
-              style={styles.settingsItem}
-              onPress={() => setShowLogs(true)}
-            >
+            <TouchableOpacity style={styles.settingsItem} onPress={() => setShowLogs(true)}>
               <Settings size={20} color="#0B3D91" />
               <Text style={styles.settingsText}>Activity Logs</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.settingsItem}
-              onPress={() => setShowNotifications(true)}
-            >
+            <TouchableOpacity style={styles.settingsItem} onPress={() => setShowNotifications(true)}>
               <Bell size={20} color="#0B3D91" />
               <Text style={styles.settingsText}>Notification Preference</Text>
             </TouchableOpacity>
@@ -281,10 +319,7 @@ function Profile() {
         )}
 
         {!isEditing && (
-          <TouchableOpacity
-            style={styles.signOutBtn}
-            onPress={() => setShowSignOutModal(true)}
-          >
+          <TouchableOpacity style={styles.signOutBtn} onPress={() => setShowSignOutModal(true)}>
             <Text style={styles.signOutText}>Sign Out</Text>
           </TouchableOpacity>
         )}
