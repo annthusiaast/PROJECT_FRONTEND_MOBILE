@@ -378,55 +378,28 @@ function Profile() {
           {/* First Name */}
           <View style={styles.infoRow}>
             <User2Icon size={20} color="#0B3D91" />
-            {isEditing ? (
-              <TextInput
-                style={styles.inputInline}
-                value={editData.user_fname}
-                placeholder="First Name"
-                onChangeText={(text) => setEditData({ ...editData, user_fname: text })}
-              />
-            ) : (
-              <View>
-                <Text style={styles.infoLabel}>First Name</Text>
-                <Text style={styles.infoValue}>{profile.user_fname}</Text>
-              </View>
-            )}
+            <View>
+              <Text style={styles.infoLabel}>First Name</Text>
+              <Text style={styles.infoValue}>{profile.user_fname}</Text>
+            </View>
           </View>
 
           {/* Middle Name */}
           <View style={styles.infoRow}>
             <User2Icon size={20} color="#0B3D91" />
-            {isEditing ? (
-              <TextInput
-                style={styles.inputInline}
-                value={editData.user_mname}
-                placeholder="Middle Name"
-                onChangeText={(text) => setEditData({ ...editData, user_mname: text })}
-              />
-            ) : (
-              <View>
-                <Text style={styles.infoLabel}>Middle Name</Text>
-                <Text style={styles.infoValue}>{profile.user_mname}</Text>
-              </View>
-            )}
+            <View>
+              <Text style={styles.infoLabel}>Middle Name</Text>
+              <Text style={styles.infoValue}>{profile.user_mname}</Text>
+            </View>
           </View>
 
           {/* Last Name */}
           <View style={styles.infoRow}>
             <User2Icon size={20} color="#0B3D91" />
-            {isEditing ? (
-              <TextInput
-                style={styles.inputInline}
-                value={editData.user_lname}
-                placeholder="Last Name"
-                onChangeText={(text) => setEditData({ ...editData, user_lname: text })}
-              />
-            ) : (
-              <View>
-                <Text style={styles.infoLabel}>Last Name</Text>
-                <Text style={styles.infoValue}>{profile.user_lname}</Text>
-              </View>
-            )}
+            <View>
+              <Text style={styles.infoLabel}>Last Name</Text>
+              <Text style={styles.infoValue}>{profile.user_lname}</Text>
+            </View>
           </View>
 
           {/* Email */}
@@ -485,18 +458,10 @@ function Profile() {
           {/* Status */}
           <View style={styles.infoRow}>
             <AlertCircle size={20} color="#0B3D91" />
-            {isEditing ? (
-              <TextInput
-                style={styles.inputInline}
-                value={editData.user_status}
-                onChangeText={(text) => setEditData({ ...editData, user_status: text })}
-              />
-            ) : (
-              <View>
-                <Text style={styles.infoLabel}>Status</Text>
-                <Text style={styles.infoValue}>{profile.user_status}</Text>
-              </View>
-            )}
+            <View>
+              <Text style={styles.infoLabel}>Status</Text>
+              <Text style={styles.infoValue}>{profile.user_status}</Text>
+            </View>
           </View>
 
           {/* Role (read only) */}
@@ -511,18 +476,10 @@ function Profile() {
           {/* Branch */}
           <View style={styles.infoRow}>
             <Building size={18} color="#0B3D91" />
-            {isEditing ? (
-              <TextInput
-                style={styles.inputInline}
-                value={editData.branch_id.toString()}
-                onChangeText={(text) => setEditData({ ...editData, branch_id: parseInt(text) })}
-              />
-            ) : (
-              <View>
-                <Text style={styles.infoLabel}>Branch</Text>
-                <Text style={styles.infoValue}>{profile.branch_id}</Text>
-              </View>
-            )}
+            <View>
+              <Text style={styles.infoLabel}>Branch</Text>
+              <Text style={styles.infoValue}>{profile.branch_id}</Text>
+            </View>
           </View>
         </View>
 
