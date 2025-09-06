@@ -9,7 +9,7 @@ import {
   ScrollView,
 } from "react-native";
 import Icon from "react-native-vector-icons/Feather";
-import { styles } from "../constants/styles/add-clients"; 
+import { styles } from "../constants/styles/add-clients";
 import { getEndpoint } from "../constants/api-config";
 import { useAuth } from "@/context/auth-context";
 
@@ -88,11 +88,11 @@ const AddClient = ({ visible, onClose, onCreated }) => {
       });
       if (!clientRes.ok) {
         let msg = 'Failed to create client';
-        try { const j = await clientRes.json(); if (j?.message) msg = j.message; } catch {}
+        try { const j = await clientRes.json(); if (j?.message) msg = j.message; } catch { }
         throw new Error(msg);
       }
       let createdClient = clientPayload;
-      try { createdClient = await clientRes.json(); } catch {}
+      try { createdClient = await clientRes.json(); } catch { }
 
       // Create contacts sequentially (could also batch with Promise.all)
       const createdContacts = [];
@@ -129,17 +129,17 @@ const AddClient = ({ visible, onClose, onCreated }) => {
 
 
   return (
-  <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <View style={styles.modal}>
           {/* Close button */}
-      <TouchableOpacity style={styles.closeBtn} onPress={onClose} disabled={isSubmitting}>
+          <TouchableOpacity style={styles.closeBtn} onPress={onClose} disabled={isSubmitting}>
             <Icon name="x" size={24} color="#555" />
           </TouchableOpacity>
 
           <ScrollView>
             <Text style={styles.title}>Add New Client</Text>
-            {errorMsg ? <Text style={{ color:'red', marginBottom:8, fontSize:12 }}>{errorMsg}</Text> : null}
+            {errorMsg ? <Text style={{ color: 'red', marginBottom: 8, fontSize: 12 }}>{errorMsg}</Text> : null}
 
             {/* Client info */}
             <Text style={styles.sectionTitle}>Client Information</Text>
@@ -208,7 +208,7 @@ const AddClient = ({ visible, onClose, onCreated }) => {
               onChangeText={(text) => setContact({ ...contact, contact_role: text })}
             />
 
-            <TouchableOpacity style={[styles.addBtn, isSubmitting && { opacity:0.5 }]} onPress={handleAddContact} disabled={isSubmitting}>
+            <TouchableOpacity style={[styles.addBtn, isSubmitting && { opacity: 0.5 }]} onPress={handleAddContact} disabled={isSubmitting}>
               <Text style={styles.addBtnText}>+ Add Contact</Text>
             </TouchableOpacity>
 
@@ -226,15 +226,15 @@ const AddClient = ({ visible, onClose, onCreated }) => {
             ))}
 
             {/* Submit */}
-            <TouchableOpacity style={[styles.saveBtn, isSubmitting && { opacity:0.6 }]} onPress={handleSubmit} disabled={isSubmitting}>
+            <TouchableOpacity style={[styles.saveBtn, isSubmitting && { opacity: 0.6 }]} onPress={handleSubmit} disabled={isSubmitting}>
               <Text style={styles.saveBtnText}>{isSubmitting ? 'Saving...' : 'Save'}</Text>
             </TouchableOpacity>
           </ScrollView>
         </View>
       </View>
       {toast.visible && (
-        <View style={{ position:'absolute', bottom: 40, left:20, right:20, backgroundColor: toast.type==='error' ? '#dc2626':'#16a34a', padding:14, borderRadius:10, alignItems:'center', shadowColor:'#000', shadowOpacity:0.2, shadowRadius:4 }}>
-          <Text style={{ color:'#fff', fontWeight:'600' }}>{toast.message}</Text>
+        <View style={{ position: 'absolute', bottom: 40, left: 20, right: 20, backgroundColor: toast.type === 'error' ? '#dc2626' : '#16a34a', padding: 14, borderRadius: 10, alignItems: 'center', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 4 }}>
+          <Text style={{ color: '#fff', fontWeight: '600' }}>{toast.message}</Text>
         </View>
       )}
     </Modal>
