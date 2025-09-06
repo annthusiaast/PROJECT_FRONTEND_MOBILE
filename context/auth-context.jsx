@@ -26,11 +26,11 @@ export const AuthProvider = ({ children }) => {
     try {
       const userData = await AsyncStorage.getItem('user');
       const userId = await AsyncStorage.getItem('pendingUserId');
-      
+
       if (userData) {
         setUser(JSON.parse(userData));
       }
-      
+
       if (userId) {
         setPendingUserId(userId);
       }
@@ -80,9 +80,9 @@ export const AuthProvider = ({ children }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          user_id: pendingUserId, 
-          code: code 
+        body: JSON.stringify({
+          user_id: pendingUserId,
+          code: code
         }),
       });
 
@@ -96,7 +96,7 @@ export const AuthProvider = ({ children }) => {
       await AsyncStorage.setItem('user', JSON.stringify(data.user));
       await AsyncStorage.removeItem('pendingUserId');
       await AsyncStorage.removeItem('pendingUserEmail');
-      
+
       setUser(data.user);
       setPendingUserId(null);
 
@@ -155,6 +155,8 @@ export const AuthProvider = ({ children }) => {
     logout,
     isAuthenticated: !!user,
     isPendingVerification: !!pendingUserId,
+    // Expose setUser so other screens (e.g., Profile) can update cached user after edits
+    setUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

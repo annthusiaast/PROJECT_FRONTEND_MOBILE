@@ -145,7 +145,7 @@ const ClientContact = () => {
       try { updated = await res.json(); } catch { updated = { ...editContact, ...editForm }; }
       setTableData(prev => prev.map(c => c.contact_id === editContact.contact_id ? updated : c));
       setEditContact(null);
-      showToast('Contact updated successfully','success');
+      showToast('Contact updated successfully', 'success');
     } catch (e) {
       Alert.alert('Error', e.message);
     } finally {
@@ -154,7 +154,7 @@ const ClientContact = () => {
   };
 
   const renderContactItem = ({ item }) => (
-    <View style={[styles.contactCard, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}> 
+    <View style={[styles.contactCard, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}>
       <View style={{ flex: 1, paddingRight: 8 }}>
         <Text style={styles.contactName}>{item.contact_fullname}</Text>
         <Text style={styles.contactText}>{item.contact_email}</Text>
@@ -162,7 +162,7 @@ const ClientContact = () => {
         {item.contact_role ? <Text style={styles.contactText}>{item.contact_role}</Text> : null}
         <Text style={styles.contactText}>{getClientNameById(item.client_id)}</Text>
       </View>
-      <View style={[styles.actionsRow, { marginTop: 0 }]}> 
+      <View style={[styles.actionsRow, { marginTop: 0 }]}>
         <TouchableOpacity onPress={() => openEdit(item)} accessibilityLabel="Edit Contact">
           <Pencil color="orange" size={20} />
         </TouchableOpacity>
@@ -190,18 +190,18 @@ const ClientContact = () => {
       <TouchableOpacity
         style={{
           position: 'absolute',
-            bottom: 20,
-            right: 20,
-            backgroundColor: '#114d89',
-            paddingVertical: 14,
-            paddingHorizontal: 16,
-            borderRadius: 28,
-            shadowColor: '#000',
-            shadowOpacity: 0.2,
-            shadowRadius: 4,
-            shadowOffset: { width: 0, height: 2 },
-            elevation: 4,
-            zIndex: 10,
+          bottom: 20,
+          right: 20,
+          backgroundColor: '#114d89',
+          paddingVertical: 14,
+          paddingHorizontal: 16,
+          borderRadius: 28,
+          shadowColor: '#000',
+          shadowOpacity: 0.2,
+          shadowRadius: 4,
+          shadowOffset: { width: 0, height: 2 },
+          elevation: 4,
+          zIndex: 10,
         }}
         onPress={() => setShowAddModal(true)}
         activeOpacity={0.85}
@@ -241,7 +241,7 @@ const ClientContact = () => {
         </View>
       )}
 
-  {/* Remove Confirmation Modal */}
+      {/* Remove Confirmation Modal */}
       <Modal
         visible={removeContactModalOpen}
         transparent
@@ -293,13 +293,13 @@ const ClientContact = () => {
             </View>
             {/* Inputs */}
             <View style={{ marginTop: 4 }}>
-              <EditableField label="Full Name" value={editForm.contact_fullname} onChange={(v)=>setEditForm(f=>({...f, contact_fullname:v}))} />
-              <EditableField label="Email" value={editForm.contact_email} onChange={(v)=>setEditForm(f=>({...f, contact_email:v}))} keyboardType="email-address" />
-              <EditableField label="Phone" value={editForm.contact_phone} onChange={(v)=>setEditForm(f=>({...f, contact_phone:v}))} keyboardType="phone-pad" />
-              <EditableField label="Role" value={editForm.contact_role} onChange={(v)=>setEditForm(f=>({...f, contact_role:v}))} />
+              <EditableField label="Full Name" value={editForm.contact_fullname} onChange={(v) => setEditForm(f => ({ ...f, contact_fullname: v }))} />
+              <EditableField label="Email" value={editForm.contact_email} onChange={(v) => setEditForm(f => ({ ...f, contact_email: v }))} keyboardType="email-address" />
+              <EditableField label="Phone" value={editForm.contact_phone} onChange={(v) => setEditForm(f => ({ ...f, contact_phone: v }))} keyboardType="phone-pad" />
+              <EditableField label="Role" value={editForm.contact_role} onChange={(v) => setEditForm(f => ({ ...f, contact_role: v }))} />
             </View>
             <View style={styles.modalActions}>
-              <TouchableOpacity style={styles.cancelBtn} onPress={()=>setEditContact(null)}>
+              <TouchableOpacity style={styles.cancelBtn} onPress={() => setEditContact(null)}>
                 <Text>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -307,20 +307,20 @@ const ClientContact = () => {
                 onPress={handleEditSave}
                 disabled={isSavingEdit}
               >
-                <Text style={{ color:'#fff' }}>{isSavingEdit ? 'Saving...' : 'Save'}</Text>
+                <Text style={{ color: '#fff' }}>{isSavingEdit ? 'Saving...' : 'Save'}</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </Modal>
       {/* Add Contact Modal */}
-      <AddContact 
+      <AddContact
         visible={showAddModal}
         onClose={() => setShowAddModal(false)}
         onAdd={handleAddContact}
         clients={clients}
       />
-  <Toast visible={toast.visible} message={toast.message} type={toast.type} />
+      <Toast visible={toast.visible} message={toast.message} type={toast.type} />
     </SafeAreaView>
   );
 };
@@ -369,7 +369,7 @@ const Toast = ({ visible, message, type }) => {
       elevation: 5,
       alignItems: 'center'
     }}>
-      <Text style={{ color:'#fff', fontWeight:'600' }}>{message}</Text>
+      <Text style={{ color: '#fff', fontWeight: '600' }}>{message}</Text>
     </View>
   );
 };

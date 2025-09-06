@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { 
-  Modal, 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  Alert 
+import {
+  Modal,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert
 } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
-import { styles } from "../constants/styles/add-contacts"; 
+import { styles } from "../constants/styles/add-contacts";
 import { getEndpoint } from "../constants/api-config";
 
 const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
@@ -78,14 +78,14 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
       });
       if (!res.ok) {
         let msg = 'Failed to add contact';
-        try { const j = await res.json(); if (j?.message) msg = j.message; } catch {}
+        try { const j = await res.json(); if (j?.message) msg = j.message; } catch { }
         throw new Error(msg);
       }
       let saved = formData;
-      try { saved = await res.json(); } catch {}
+      try { saved = await res.json(); } catch { }
       if (onAdd) onAdd(saved);
       Alert.alert('Success', 'Contact added.');
-  setFormData({ contact_fullname:'', contact_email:'', contact_phone:'', contact_role:'', client_id:null });
+      setFormData({ contact_fullname: '', contact_email: '', contact_phone: '', contact_role: '', client_id: null });
       onClose && onClose();
     } catch (e) {
       setErrorMsg(e.message);
