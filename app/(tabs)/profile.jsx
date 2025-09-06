@@ -30,14 +30,15 @@ function Profile() {
     user_id: initialProfile.user_id,
     user_date_created: initialProfile.dateCreated,
     user_email: initialProfile.email,
-    user_password: initialProfile.password,
+    // Leave password blank; only send when user explicitly sets a new one
+    user_password: "",
     user_phonenum: initialProfile.phone,
     user_status: initialProfile.status,
     branch_id: initialProfile.branch,
     user_fname: initialProfile.user_fname || "",
     user_mname: initialProfile.user_mname || "",
     user_lname: initialProfile.user_lname || "",
-  user_role: initialProfile.user_role || "",
+    user_role: initialProfile.user_role || "",
   });
 
   const [showNotifications, setShowNotifications] = useState(false);
@@ -87,7 +88,8 @@ function Profile() {
             user_id: userProfile.user_id,
             user_date_created: userProfile.user_date_created,
             user_email: userProfile.user_email,
-            user_password: userProfile.user_password,
+            // do not preload (likely hashed) password
+            user_password: "",
             user_phonenum: userProfile.user_phonenum,
             user_status: userProfile.user_status,
             branch_id: userProfile.branch_id,
@@ -178,15 +180,19 @@ function Profile() {
     try {
       const payload = {
         user_email: editData.user_email,
-        user_password: editData.user_password,
         user_phonenum: editData.user_phonenum,
         user_status: editData.user_status,
         branch_id: editData.branch_id,
         user_fname: editData.user_fname,
         user_mname: editData.user_mname,
         user_lname: editData.user_lname,
-  user_role: editData.user_role || profile.user_role || user?.user_role || 'User',
+        user_role: editData.user_role || profile.user_role || user?.user_role || 'User',
       };
+
+      // Only include password if user entered a new non-empty one
+      if (editData.user_password && editData.user_password.trim().length > 0) {
+        payload.user_password = editData.user_password.trim();
+      }
 
       let res;
       if (newImage) {
@@ -196,12 +202,14 @@ function Profile() {
         res = await fetch(getEndpoint(`/users/${editData.user_id}`), {
           method: 'PUT',
           body: form,
+          credentials: 'include',
         });
       } else {
         res = await fetch(getEndpoint(`/users/${editData.user_id}`), {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
+          credentials: 'include',
         });
       }
       if (!res.ok) {
@@ -210,7 +218,7 @@ function Profile() {
       }
 
       // Re-verify / fetch updated user
-      const verifyRes = await fetch(getEndpoint(`/verify`), { method: 'GET' });
+      const verifyRes = await fetch(getEndpoint(`/verify`), { method: 'GET', credentials: 'include' });
       if (verifyRes.ok) {
         const verifyData = await verifyRes.json();
         if (verifyData.user) {
@@ -238,14 +246,15 @@ function Profile() {
       user_id: profile.user_id,
       user_date_created: profile.user_date_created,
       user_email: profile.user_email,
-      user_password: profile.user_password,
+      // keep blank so we don't resend unchanged hashed password
+      user_password: "",
       user_phonenum: profile.user_phonenum,
       user_status: profile.user_status,
       branch_id: profile.branch_id,
       user_fname: profile.user_fname || "",
       user_mname: profile.user_mname || "",
       user_lname: profile.user_lname || "",
-  user_role: profile.user_role || "",
+      user_role: profile.user_role || "",
     });
     setIsEditing(false);
   };
@@ -369,55 +378,28 @@ function Profile() {
           {/* First Name */}
           <View style={styles.infoRow}>
             <User2Icon size={20} color="#0B3D91" />
-            {isEditing ? (
-              <TextInput
-                style={styles.inputInline}
-                value={editData.user_fname}
-                placeholder="First Name"
-                onChangeText={(text) => setEditData({ ...editData, user_fname: text })}
-              />
-            ) : (
-              <View>
-                <Text style={styles.infoLabel}>First Name</Text>
-                <Text style={styles.infoValue}>{profile.user_fname}</Text>
-              </View>
-            )}
+            <View>
+              <Text style={styles.infoLabel}>First Name</Text>
+              <Text style={styles.infoValue}>{profile.user_fname}</Text>
+            </View>
           </View>
 
           {/* Middle Name */}
           <View style={styles.infoRow}>
             <User2Icon size={20} color="#0B3D91" />
-            {isEditing ? (
-              <TextInput
-                style={styles.inputInline}
-                value={editData.user_mname}
-                placeholder="Middle Name"
-                onChangeText={(text) => setEditData({ ...editData, user_mname: text })}
-              />
-            ) : (
-              <View>
-                <Text style={styles.infoLabel}>Middle Name</Text>
-                <Text style={styles.infoValue}>{profile.user_mname}</Text>
-              </View>
-            )}
+            <View>
+              <Text style={styles.infoLabel}>Middle Name</Text>
+              <Text style={styles.infoValue}>{profile.user_mname}</Text>
+            </View>
           </View>
 
           {/* Last Name */}
           <View style={styles.infoRow}>
             <User2Icon size={20} color="#0B3D91" />
-            {isEditing ? (
-              <TextInput
-                style={styles.inputInline}
-                value={editData.user_lname}
-                placeholder="Last Name"
-                onChangeText={(text) => setEditData({ ...editData, user_lname: text })}
-              />
-            ) : (
-              <View>
-                <Text style={styles.infoLabel}>Last Name</Text>
-                <Text style={styles.infoValue}>{profile.user_lname}</Text>
-              </View>
-            )}
+            <View>
+              <Text style={styles.infoLabel}>Last Name</Text>
+              <Text style={styles.infoValue}>{profile.user_lname}</Text>
+            </View>
           </View>
 
           {/* Email */}
@@ -445,6 +427,8 @@ function Profile() {
                 <TextInput
                   style={styles.inputInline}
                   value={editData.user_password}
+                  placeholder="New Password"
+                  placeholderTextColor="#888"
                   onChangeText={(text) => setEditData({ ...editData, user_password: text })}
                   secureTextEntry={true}
                 />
@@ -474,18 +458,10 @@ function Profile() {
           {/* Status */}
           <View style={styles.infoRow}>
             <AlertCircle size={20} color="#0B3D91" />
-            {isEditing ? (
-              <TextInput
-                style={styles.inputInline}
-                value={editData.user_status}
-                onChangeText={(text) => setEditData({ ...editData, user_status: text })}
-              />
-            ) : (
-              <View>
-                <Text style={styles.infoLabel}>Status</Text>
-                <Text style={styles.infoValue}>{profile.user_status}</Text>
-              </View>
-            )}
+            <View>
+              <Text style={styles.infoLabel}>Status</Text>
+              <Text style={styles.infoValue}>{profile.user_status}</Text>
+            </View>
           </View>
 
           {/* Role (read only) */}
@@ -500,18 +476,10 @@ function Profile() {
           {/* Branch */}
           <View style={styles.infoRow}>
             <Building size={18} color="#0B3D91" />
-            {isEditing ? (
-              <TextInput
-                style={styles.inputInline}
-                value={editData.branch_id.toString()}
-                onChangeText={(text) => setEditData({ ...editData, branch_id: parseInt(text) })}
-              />
-            ) : (
-              <View>
-                <Text style={styles.infoLabel}>Branch</Text>
-                <Text style={styles.infoValue}>{profile.branch_id}</Text>
-              </View>
-            )}
+            <View>
+              <Text style={styles.infoLabel}>Branch</Text>
+              <Text style={styles.infoValue}>{profile.branch_id}</Text>
+            </View>
           </View>
         </View>
 
