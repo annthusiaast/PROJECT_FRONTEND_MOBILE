@@ -15,12 +15,12 @@ const AllCase = ({ onCasePress, user }) => {
 
   // Decide endpoint based on role
   const buildEndpoint = () => {
-    if (user && ['Admin','Lawyer'].includes(user.user_role)) return getEndpoint('/cases');
-    if (user) return getEndpoint(`/cases/user/${user.user_id}`);
-    return null;
+    if (!user) return null;
+    if (user.user_role === 'Admin') return getEndpoint('/cases');
+    return getEndpoint(`/cases/user/${user.user_id}`);
   };
 
-  const fetchCases = useCallback( async () => {
+  const fetchCases = useCallback(async () => {
     const ep = buildEndpoint();
     if (!ep) return;
     setLoading(true); setError(null);
@@ -54,7 +54,7 @@ const AllCase = ({ onCasePress, user }) => {
   const statusColors = {
     all: "#000000",
     pending: "#656162ff",
-    processing: "#d5441bff",
+    processing: "#3b82f6",
     completed: "#0c8744ff",
   };
 
@@ -63,7 +63,7 @@ const AllCase = ({ onCasePress, user }) => {
   );
 
   return (
-    <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} /> }>
+    <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
       <View style={{ flex: 1, padding: 10 }}>
         {error && (
           <Text style={{ color: 'red', marginBottom: 10 }}>{error}</Text>
@@ -108,7 +108,7 @@ const AllCase = ({ onCasePress, user }) => {
         </View>
 
         {/* Cases List */}
-  {filteredCases.length === 0 && !loading ? (
+        {filteredCases.length === 0 && !loading ? (
           <Text style={{ textAlign: "center", color: "#777", marginTop: 20 }}>
             No case found.
           </Text>
