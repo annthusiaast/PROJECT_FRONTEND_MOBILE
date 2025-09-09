@@ -158,6 +158,7 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
           />
           <TextInput
             placeholder="Role (e.g. Manager, Secretary)"
+            placeholderTextColor={"#666"} 
             value={formData.contact_role}
             onChangeText={(text) => handleChange("contact_role", text)}
             style={styles.input}
