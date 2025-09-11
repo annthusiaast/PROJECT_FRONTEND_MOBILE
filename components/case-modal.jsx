@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import { getEndpoint } from "@/constants/api-config";
+import { Pencil } from "lucide-react-native";
 
 const CaseModal = ({ visible, onClose, caseData, onSave }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -56,7 +57,13 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
           client: data.client_fullname || editableCase.client,
           lawyer: data.user_fname ? `${data.user_fname} ${data.user_lname || ''}`.trim() : (editableCase.lawyer || ''),
           totalFee: data.case_fee ?? editableCase.totalFee,
-          totalPaid: data.total_paid ?? editableCase.totalPaid,
+          caseBalance: data.case_balance ?? editableCase.caseBalance,
+          // derive totalPaid: prefer explicit total_paid; else compute from fee - balance
+          totalPaid: (data.total_paid != null && data.total_paid !== '')
+            ? data.total_paid
+            : (data.case_fee != null && data.case_balance != null
+                ? (Number(data.case_fee) - Number(data.case_balance))
+                : editableCase.totalPaid),
           description: data.case_remarks || data.case_description || editableCase.description,
           dateFiled: data.case_date_created || editableCase.dateFiled,
           status: (data.case_status || editableCase.status || 'Pending'),
@@ -95,8 +102,13 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
 
   // numbers (ensure numeric math for summary)
   const totalFee = Number(editableCase.totalFee) || 0;
-  const totalPaid = Number(editableCase.totalPaid) || 0;
-  const remaining = Math.max(totalFee - totalPaid, 0);
+  const caseBalanceNum = editableCase.caseBalance != null ? Number(editableCase.caseBalance) : NaN;
+  const totalPaid = (editableCase.totalPaid != null && editableCase.totalPaid !== '')
+    ? Number(editableCase.totalPaid)
+    : (!isNaN(caseBalanceNum) ? Math.max(totalFee - caseBalanceNum, 0) : 0);
+  const remaining = !isNaN(caseBalanceNum)
+    ? Math.max(caseBalanceNum, 0)
+    : Math.max(totalFee - totalPaid, 0);
 
   const safeOpen = (url) => {
     if (!url) return;
@@ -105,10 +117,10 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
     if (canOpen) Linking.openURL(url);
   };
 
-  const Field = ({ label, fieldKey, placeholder }) => (
+  const Field = ({ label, fieldKey, placeholder, editable = true, formatter }) => (
     <View style={styles.rowCompact}>
       <Text style={styles.labelCompact}>{label}</Text>
-      {isEditing ? (
+      {(isEditing && editable) ? (
         <TextInput
           style={styles.inputCompact}
           value={editableCase[fieldKey] ?? ''}
@@ -117,11 +129,39 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
         />
       ) : (
         <Text style={styles.valueCompact} numberOfLines={1}>
-          {editableCase[fieldKey] || 'N/A'}
+          {(() => {
+            const raw = editableCase[fieldKey];
+            if (!raw) return 'N/A';
+            if (formatter) return formatter(raw);
+            return raw;
+          })()}
         </Text>
       )}
     </View>
   );
+
+  const formatDateTime = (value) => {
+    if (!value) return 'N/A';
+    const d = new Date(value);
+    if (isNaN(d)) return value; // fallback to raw if invalid
+    return d.toLocaleString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+  };
+
+  // Status color mapping aligned with list view (see all-case.jsx)
+  const statusColors = {
+    pending: '#656162ff',
+    processing: '#3b82f6',
+    completed: '#0c8744ff',
+  };
+  const statusValueRaw = editableCase.status || 'Pending';
+  const statusValue = statusValueRaw.toLowerCase();
+  const statusColor = statusColors[statusValue] || '#656162ff';
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
@@ -142,8 +182,9 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
                   <TouchableOpacity
                     style={styles.squareBtn}
                     onPress={() => setIsEditing(true)}
+                    accessibilityLabel="Edit case"
                   >
-                    <Text style={styles.squareBtnText}>Edit</Text>
+                    <Pencil size={18} color="#0B3D91" />
                   </TouchableOpacity>
                 ) : (
                   <View style={{ flexDirection: "row" }}>
@@ -173,9 +214,35 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
                 </TouchableOpacity>
               </View>
 
+              {/* Cabinet & Drawer (editable) */}
               <View style={styles.metaRow}>
-                <View style={styles.chip}><Text style={styles.chipText}>Cabinet: {editableCase.cabinetNo || 'N/A'}</Text></View>
-                <View style={styles.chip}><Text style={styles.chipText}>Drawer: {editableCase.drawerNo || 'N/A'}</Text></View>
+                {(isEditing) ? (
+                  <View style={{ flexDirection: 'row', gap: 8, flex: 1 }}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.chipText}>Cabinet</Text>
+                      <TextInput
+                        style={styles.metaInput}
+                        value={editableCase.cabinetNo ? String(editableCase.cabinetNo) : ''}
+                        placeholder="Cabinet"
+                        onChangeText={(t) => handleChange('cabinetNo', t)}
+                      />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.chipText}>Drawer</Text>
+                      <TextInput
+                        style={styles.metaInput}
+                        value={editableCase.drawerNo ? String(editableCase.drawerNo) : ''}
+                        placeholder="Drawer"
+                        onChangeText={(t) => handleChange('drawerNo', t)}
+                      />
+                    </View>
+                  </View>
+                ) : (
+                  <>
+                    <View style={styles.chip}><Text style={styles.chipText}>Cabinet: {editableCase.cabinetNo || 'N/A'}</Text></View>
+                    <View style={styles.chip}><Text style={styles.chipText}>Drawer: {editableCase.drawerNo || 'N/A'}</Text></View>
+                  </>
+                )}
               </View>
 
               {/* Scrollable content */}
@@ -183,46 +250,25 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
                 {loading ? (
                   <Text style={{ marginBottom: 10 }}>Loading details...</Text>
                 ) : null}
-                {/* Case Name */}
-                <View style={styles.rowCompact}>
-                  <Text style={styles.labelCompact}>Case Name</Text>
-                  {isEditing ? (
-                    <TextInput
-                      style={styles.inputCompact}
-                      value={editableCase.title ?? ''}
-                      onChangeText={(text) => handleChange("title", text)}
-                    />)
-                    : (
-                      <Text style={styles.valueCompact} numberOfLines={1}>{editableCase.title || 'N/A'}</Text>
-                    )}
-                </View>
+                {/* Case Type (editable) */}
+                <Field label="Case Type" fieldKey="title" placeholder="Type" editable />
 
-                {/* Category */}
-                <Field label="Category" fieldKey="category" placeholder="Category" />
+                {/* Category (editable) */}
+                <Field label="Category" fieldKey="category" placeholder="Category" editable />
 
-                {/* Client */}
-                <Field label="Client" fieldKey="client" placeholder="Client" />
+                {/* Client (editable) */}
+                <Field label="Client" fieldKey="client" placeholder="Client" editable />
 
-                {/* Lawyer */}
-                <Field label="Lawyer" fieldKey="lawyer" placeholder="Lawyer" />
+                {/* Assign to Lawyer (editable) */}
+                <Field label="Assign Lawyer" fieldKey="lawyer" placeholder="Lawyer" editable />
 
-                {/* Date Filed */}
-                <Field label="Date Filed" fieldKey="dateFiled" placeholder="YYYY-MM-DD" />
+                {/* Date Filed (read-only, formatted) */}
+                <Field label="Date Filed" fieldKey="dateFiled" placeholder="YYYY-MM-DD" editable={false} formatter={formatDateTime} />
 
-                {/* Status */}
+                {/* Status (read-only) */}
                 <View style={[styles.rowCompact, { marginTop: 6 }]}>
                   <Text style={styles.labelCompact}>Status</Text>
-                  {isEditing ? (
-                    <TextInput
-                      style={styles.inputCompact}
-                      value={editableCase.status ?? ''}
-                      onChangeText={(text) => handleChange("status", text)}
-                    />
-                  ) : (
-                    <Text style={[styles.valueCompact, { color: "#b00020" }]} numberOfLines={1}>
-                      {editableCase.status || "Pending"}
-                    </Text>
-                  )}
+                  <Text style={[styles.valueCompact, { color: statusColor }]} numberOfLines={1}>{statusValueRaw}</Text>
                 </View>
 
                 {/* Payment (condensed) */}
@@ -232,8 +278,8 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
                     <Text style={styles.payValue}>₱{totalFee.toFixed(2)}</Text>
                     <Text style={styles.payLabel}>Paid</Text>
                     <Text style={styles.payValue}>₱{totalPaid.toFixed(2)}</Text>
-                    <Text style={[styles.payLabel, { marginLeft: 6 }]}>Rem</Text>
-                    <Text style={[styles.payValue, { color: "#b00020", fontWeight: '700' }]}>₱{remaining.toFixed(2)}</Text>
+                    <Text style={[styles.payLabel, { marginLeft: 6 }]}>Balance</Text>
+                    <Text style={[styles.payValue, { color: remaining === 0 ? '#0c8744ff' : '#b00020', fontWeight: '700' }]}>₱{remaining.toFixed(2)}</Text>
                   </View>
                   <TouchableOpacity onPress={() => { /* open payments screen hook */ }}>
                     <Text style={styles.linkInline}>View payment record</Text>
@@ -248,7 +294,6 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
                       style={[styles.textarea, { minHeight: 80 }]}
                       value={editableCase.description ?? ''}
                       multiline
-                      editable
                       onChangeText={(text) => handleChange("description", text)}
                     />
                   ) : (
