@@ -1,5 +1,5 @@
 import {
-  Bell, Phone, MapPin, Edit2, Settings, Building, Mail, ArrowLeft,
+  Bell, Phone, Edit2, Settings, Building, Mail, ArrowLeft,
   Clock, User2Icon, AlertCircle, Lock
 } from "lucide-react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -7,16 +7,16 @@ import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Alert, Image, ScrollView, Text, TextInput, TouchableOpacity,
-  View, Platform, Modal, Switch
+  View, Modal, Switch
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
-import { today, initialProfile } from "@/constants/sample_data";
+import { initialProfile } from "@/constants/sample_data";
 import images from "@/constants/images";
 import { styles } from "@/constants/styles/(tabs)/profile_styles";
 import { useAuth } from "@/context/auth-context";
 import { API_CONFIG, getEndpoint } from "@/constants/api-config";
-import * as ImagePicker from 'expo-image-picker';
+import * as ImagePicker from "expo-image-picker";
 
 function Profile() {
   const router = useRouter();
@@ -30,7 +30,6 @@ function Profile() {
     user_id: initialProfile.user_id,
     user_date_created: initialProfile.dateCreated,
     user_email: initialProfile.email,
-    // Leave password blank; only send when user explicitly sets a new one
     user_password: "",
     user_phonenum: initialProfile.phone,
     user_status: initialProfile.status,
@@ -42,7 +41,6 @@ function Profile() {
   });
 
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showLogs, setShowLogs] = useState(false);
 
   const [prefs, setPrefs] = useState({
     push: true,
@@ -50,19 +48,9 @@ function Profile() {
     sms: false,
   });
 
-  const [logs, setLogs] = useState([]);
-  const [loadingLogs, setLoadingLogs] = useState(false);
   const [saving, setSaving] = useState(false);
   const [pickingImage, setPickingImage] = useState(false);
-  const [newImage, setNewImage] = useState(null); // holds { uri, type, name }
-
-  const [searchText, setSearchText] = useState("");
-
-  const filteredLogs = logs.filter(
-    (log) =>
-      log.action.toLowerCase().includes(searchText.toLowerCase()) ||
-      log.time.toLowerCase().includes(searchText.toLowerCase())
-  );
+  const [newImage, setNewImage] = useState(null);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -88,7 +76,6 @@ function Profile() {
             user_id: userProfile.user_id,
             user_date_created: userProfile.user_date_created,
             user_email: userProfile.user_email,
-            // do not preload (likely hashed) password
             user_password: "",
             user_phonenum: userProfile.user_phonenum,
             user_status: userProfile.user_status,
@@ -111,34 +98,6 @@ function Profile() {
     };
     loadProfile();
   }, [user]);
-
-  // Fetch logs from backend
-  useEffect(() => {
-    const fetchLogs = async () => {
-      if (!user?.user_id) return;
-      setLoadingLogs(true);
-      try {
-        const res = await fetch(getEndpoint(`/user-logs/${user.user_id}`), {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        });
-        if (!res.ok) throw new Error('Failed to fetch logs');
-        const data = await res.json();
-        // Expecting array; map to {id, action, time}
-        const mapped = Array.isArray(data) ? data.map((l, idx) => ({
-          id: l.log_id || idx,
-          action: l.action || l.user_action || l.description || 'Activity',
-          time: l.timestamp || l.created_at || l.time || new Date().toISOString(),
-        })) : [];
-        setLogs(mapped);
-      } catch (err) {
-        console.warn('Error fetching logs', err.message);
-      } finally {
-        setLoadingLogs(false);
-      }
-    };
-    fetchLogs();
-  }, [user?.user_id]);
 
   const saveProfileToStorage = async (updatedProfile) => {
     await AsyncStorage.setItem("userProfile", JSON.stringify(updatedProfile));
@@ -486,7 +445,7 @@ function Profile() {
         {/* Settings and Logs */}
         {!isEditing && (
           <View style={styles.settingsCard}>
-            <TouchableOpacity style={styles.settingsItem} onPress={() => setShowLogs(true)}>
+          <TouchableOpacity style={styles.settingsItem} onPress={() => router.push('/userlogs')}>
               <Settings size={20} color="#0B3D91" />
               <Text style={styles.settingsText}>Activity Logs</Text>
             </TouchableOpacity>
@@ -545,212 +504,7 @@ function Profile() {
           </View>
         </View>
       </Modal>
-
-      {/* Activity Logs Modal */}
-      <Modal visible={showLogs} animationType="slide">
-        <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-          {/* Header */}
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              paddingHorizontal: 16,
-              paddingVertical: 12,
-            }}
-          >
-            <TouchableOpacity onPress={() => setShowLogs(false)}>
-              <ArrowLeft size={24} color="#0B3D91" />
-            </TouchableOpacity>
-            <Text
-              style={{
-                flex: 1,
-                textAlign: "center",
-                fontSize: 18,
-                fontWeight: "1000",
-                color: "#0B3D91",
-              }}
-            >
-              Activity Logs
-            </Text>
-            <View style={{ width: 24 }} />
-          </View>
-
-          {/* Search */}
-          <View
-            style={{
-              marginHorizontal: 16,
-              marginTop: 8,
-              backgroundColor: "#f0f2f5",
-              borderRadius: 10,
-              paddingHorizontal: 14,
-              paddingVertical: Platform.OS === "ios" ? 10 : 6,
-              flexDirection: "row",
-              alignItems: "center",
-              elevation: 2,
-            }}
-          >
-            <TextInput
-              placeholder="Search activity..."
-              placeholderTextColor="#888"
-              value={searchText}
-              onChangeText={setSearchText}
-              style={{
-                fontSize: 14,
-                flex: 1,
-                color: "#333",
-              }}
-            />
-          </View>
-
-          <ScrollView contentContainerStyle={{ padding: 16 }}>
-            {filteredLogs.length > 0 ? (
-              filteredLogs.map((log) => (
-                <View
-                  key={log.id}
-                  style={{
-                    backgroundColor: "#f9f9f9",
-                    borderRadius: 12,
-                    padding: 14,
-                    marginBottom: 12,
-                    flexDirection: "row",
-                    alignItems: "flex-start",
-                    gap: 12,
-                    shadowColor: "#000",
-                    shadowOpacity: 0.05,
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowRadius: 4,
-                    elevation: 2,
-                  }}
-                >
-                  <Clock size={20} color="#0B3D91" style={{ marginTop: 2 }} />
-                  <View style={{ flex: 1 }}>
-                    <Text
-                      style={{
-                        fontSize: 15,
-                        fontWeight: "600",
-                        color: "#0B3D91",
-                        marginBottom: 4,
-                      }}
-                    >
-                      {log.action}
-                    </Text>
-                    <Text style={{ fontSize: 13, color: "#555" }}>
-                      {log.time}
-                    </Text>
-                  </View>
-                </View>
-              ))
-            ) : (
-              <View
-                style={{
-                  paddingVertical: 40,
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <Text style={{ color: "#999", fontSize: 14 }}>
-                  No activity logs found.
-                </Text>
-              </View>
-            )}
-          </ScrollView>
-        </SafeAreaView>
-      </Modal>
-
-      {/* Notification Preferences Modal */}
-      <Modal visible={showNotifications} animationType="slide">
-        <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
-          {/* Header */}
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              paddingHorizontal: 16,
-              paddingVertical: 12,
-            }}
-          >
-            <TouchableOpacity onPress={() => setShowNotifications(false)}>
-              <ArrowLeft size={24} color="#0B3D91" />
-            </TouchableOpacity>
-            <Text
-              style={{
-                flex: 1,
-                textAlign: "center",
-                fontSize: 18,
-                fontWeight: "1000",
-                color: "#0B3D91",
-              }}
-            >
-              Notification Preferences
-            </Text>
-            <View style={{ width: 24 }} />
-          </View>
-
-          {/* Preferences List */}
-          <ScrollView contentContainerStyle={{ padding: 16 }}>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                paddingVertical: 12,
-                borderBottomWidth: 1,
-                borderBottomColor: "#eee",
-              }}
-            >
-              <Text style={{ fontSize: 16, color: "#333" }}>
-                Push Notifications
-              </Text>
-              <Switch
-                value={prefs.push}
-                onValueChange={() => togglePref("push")}
-                trackColor={{ false: "#ccc", true: "#0B3D91" }}
-                thumbColor="#fff"
-              />
-            </View>
-
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                paddingVertical: 12,
-                borderBottomWidth: 1,
-                borderBottomColor: "#eee",
-              }}
-            >
-              <Text style={{ fontSize: 16, color: "#333" }}>
-                Email Notifications
-              </Text>
-              <Switch
-                value={prefs.email}
-                onValueChange={() => togglePref("email")}
-                trackColor={{ false: "#ccc", true: "#0B3D91" }}
-                thumbColor="#fff"
-              />
-            </View>
-
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                paddingVertical: 12,
-              }}
-            >
-              <Text style={{ fontSize: 16, color: "#333" }}>
-                SMS Notifications
-              </Text>
-              <Switch
-                value={prefs.sms}
-                onValueChange={() => togglePref("sms")}
-                trackColor={{ false: "#ccc", true: "#0B3D91" }}
-                thumbColor="#fff"
-              />
-            </View>
-          </ScrollView>
-        </SafeAreaView>
-      </Modal>
+      
     </SafeAreaView>
   );
 }
