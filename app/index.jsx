@@ -4,12 +4,13 @@ import { useRouter } from "expo-router";
 import images from "@/constants/images";
 import { styles } from "@/constants/styles/index_styles";
 import { useAuth } from "@/context/auth-context";
+import { roleToGroup } from "@/constants/role-tabs";
 
 const SplashScreen = () => {
   const router = useRouter();
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const { width, height } = Dimensions.get("window");
-  const { isAuthenticated, isPendingVerification, loading } = useAuth();
+  const { isAuthenticated, isPendingVerification, loading, user } = useAuth();
 
   useEffect(() => {
     if (loading) return; // wait for auth rehydration
@@ -23,7 +24,12 @@ const SplashScreen = () => {
         if (isPendingVerification) {
           router.replace("/auth/verification");
         } else if (isAuthenticated) {
-          router.replace("/(tabs)/home");
+          const group = roleToGroup(user?.user_role);
+          if (group) {
+            router.replace(`/${`(${group})`}/home`);
+          } else {
+            router.replace("/(tabs)/home");
+          }
         } else {
           router.replace("/auth/login");
         }

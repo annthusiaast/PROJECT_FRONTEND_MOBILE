@@ -13,7 +13,7 @@ export const baseTabs = [
 
 // Returns an ordered array of tab objects allowed for a given role.
 export function getAllowedTabs(role) {
-  if (!role) return baseTabs; // while role unknown, show all (layout will handle loading separately)
+  if (!role) return []; // while role unknown, show none; layout should handle loading state
   const normalized = String(role).toLowerCase();
   switch (normalized) {
     case 'admin':
@@ -51,4 +51,23 @@ export function getAllowedTabNames(role) {
 
 function tab(name) {
   return baseTabs.find(t => t.name === name);
+}
+
+// Map a role string to its route group name (folder under app/).
+// Returns one of: 'admin' | 'lawyer' | 'paralegal' | 'staff' | null (unknown)
+export function roleToGroup(role) {
+  if (!role) return null;
+  const normalized = String(role).toLowerCase();
+  switch (normalized) {
+    case 'admin':
+      return 'admin';
+    case 'lawyer':
+      return 'lawyer';
+    case 'paralegal':
+      return 'paralegal';
+    case 'staff':
+      return 'staff';
+    default:
+      return null;
+  }
 }

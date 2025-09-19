@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { styles } from '@/constants/styles/auth_styles';
 import images from '@/constants/images';
 import { useAuth } from '@/context/auth-context';
+import { roleToGroup } from '@/constants/role-tabs';
 
 const Verify = () => {
   const [code, setCode] = useState(['', '', '', '', '', '']);
@@ -12,7 +13,7 @@ const Verify = () => {
   const [resendLoading, setResendLoading] = useState(false);
   const router = useRouter();
   const inputs = useRef([]);
-  const { verifyOTP, resendOTP, isPendingVerification } = useAuth();
+  const { verifyOTP, resendOTP, isPendingVerification, user } = useAuth();
 
   const handleChange = (text, index) => {
     if (/^\d*$/.test(text)) {
@@ -51,10 +52,14 @@ const Verify = () => {
     setLoading(true);
     
     try {
-      await verifyOTP(otpCode);
-      Alert.alert('Success', 'Verification successful!', [
-        { text: 'OK', onPress: () => router.push('/(tabs)/home') }
-      ]);
+      const result = await verifyOTP(otpCode);
+      const group = roleToGroup(result?.user?.user_role || user?.user_role);
+      // Navigate immediately to the correct role group home
+      if (group) {
+        router.replace(`/${`(${group})`}/home`);
+      } else {
+        router.replace('/(tabs)/home');
+      }
     } catch (error) {
       Alert.alert('Verification Failed', error.message || 'Invalid or expired code. Please try again.');
     } finally {

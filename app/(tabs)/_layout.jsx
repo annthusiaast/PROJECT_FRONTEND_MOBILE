@@ -83,15 +83,16 @@ export default function TabsLayout() {
       <GestureHandlerRootView style={{ flex: 1 }}>
         <View style={{ flex: 1 }}>
           <CustomHeader
-            title={currentTab.charAt(0).toUpperCase() + currentTab.slice(1)}
+            title={(filteredTabs.find(t => t.name === currentTab)?.label) || (currentTab.charAt(0).toUpperCase() + currentTab.slice(1))}
           />
-          {loading && (
+          {(loading || filteredTabs.length === 0) && (
             <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
               <ActivityIndicator size="large" color="#0B3D91" />
             </View>
           )}
-          {!loading && (
+          {!loading && filteredTabs.length > 0 && (
             <Tabs
+              initialRouteName={filteredTabs[0]?.name || 'home'}
               screenOptions={{
                 headerShown: false,
                 tabBarActiveTintColor: "#0B3D91",
@@ -111,16 +112,21 @@ export default function TabsLayout() {
                 },
               }}
             >
-              {filteredTabs.map((tab) => (
-                <Tabs.Screen
-                  key={tab.name}
-                  name={tab.name}
-                  options={{
-                    title: tab.label,
-                    tabBarIcon: ({ color }) => <tab.icon color={color} size={26} />,
-                  }}
-                />
-              ))}
+              {baseTabs.map((tab) => {
+                const allowed = filteredTabs.some(t => t.name === tab.name);
+                return (
+                  <Tabs.Screen
+                    key={tab.name}
+                    name={tab.name}
+                    options={{
+                      title: tab.label,
+                      tabBarIcon: ({ color }) => <tab.icon color={color} size={26} />,
+                      // Hide from tab bar and deep links if not allowed for the current role
+                      href: allowed ? undefined : null,
+                    }}
+                  />
+                );
+              })}
             </Tabs>
           )}
         </View>
