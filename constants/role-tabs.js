@@ -14,24 +14,27 @@ export const baseTabs = [
 // Returns an ordered array of tab objects allowed for a given role.
 export function getAllowedTabs(role) {
   if (!role) return baseTabs; // while role unknown, show all (layout will handle loading separately)
-  switch (role) {
-    case 'Admin':
+  const normalized = String(role).toLowerCase();
+  switch (normalized) {
+    case 'admin':
       return baseTabs;
-    case 'Lawyer':
+    case 'lawyer':
+      // Lawyers should have access to Documents as well
       return [
         tab('home'),
         tab('cases'),
+        tab('documents'),
         tab('tasks'),
         tab('profile'),
       ].filter(Boolean);
-    case 'Paralegal':
+    case 'paralegal':
       // Per updated requirement Paralegals have no access to cases or documents
       return [
         tab('home'),
         tab('tasks'),
         tab('profile'),
       ].filter(Boolean);
-    case 'Staff':
+    case 'staff':
       return [
         tab('home'),
         tab('tasks'),

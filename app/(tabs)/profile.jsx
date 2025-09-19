@@ -7,7 +7,7 @@ import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Alert, Image, ScrollView, Text, TextInput, TouchableOpacity,
-  View, Modal, Switch
+  View, Modal, Switch, Platform
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
@@ -52,6 +52,12 @@ function Profile() {
   const [saving, setSaving] = useState(false);
   const [pickingImage, setPickingImage] = useState(false);
   const [newImage, setNewImage] = useState(null);
+
+  // State for logs UI in modal
+  const [showLogs, setShowLogs] = useState(false);
+  const [logs, setLogs] = useState([]);
+  const [loadingLogs, setLoadingLogs] = useState(false);
+  const [searchText, setSearchText] = useState('');
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -133,6 +139,12 @@ function Profile() {
 
   const [showLogDetails, setShowLogDetails] = useState(false);
   const [selectedLog, setSelectedLog] = useState(null);
+
+  const filteredLogs = React.useMemo(() => {
+    const q = searchText.trim().toLowerCase();
+    if (!q) return logs;
+    return logs.filter((l) => [l.action, l.time].filter(Boolean).some((v) => String(v).toLowerCase().includes(q)));
+  }, [logs, searchText]);
 
   const saveProfileToStorage = async (updatedProfile) => {
     await AsyncStorage.setItem("userProfile", JSON.stringify(updatedProfile));
