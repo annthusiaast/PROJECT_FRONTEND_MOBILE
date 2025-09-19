@@ -11,7 +11,8 @@ export default function RootLayout() {
         <Stack.Screen name="auth/forgot-pass" options={{ headerShown: false }} />
         <Stack.Screen name="auth/changepass" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="notifications" />
+        <Stack.Screen name="notifications" options={{ headerShown: false }} />
+        <Stack.Screen name="userlogs" options={{ headerShown: false }} />
       </Stack>
     </AuthProvider>
 

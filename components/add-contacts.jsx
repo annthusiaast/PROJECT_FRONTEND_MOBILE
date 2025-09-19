@@ -132,6 +132,7 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
 
           <TextInput
             placeholder="Full Name"
+            placeholderTextColor={"#666"}
             value={formData.contact_fullname}
             onChangeText={(text) => handleChange("contact_fullname", text)}
             style={styles.input}
@@ -139,6 +140,7 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
           />
           <TextInput
             placeholder="Email"
+            placeholderTextColor={"#666"}
             keyboardType="email-address"
             value={formData.contact_email}
             onChangeText={(text) => handleChange("contact_email", text)}
@@ -147,6 +149,7 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
           />
           <TextInput
             placeholder="Phone Number"
+            placeholderTextColor={"#666"}
             keyboardType="phone-pad"
             value={formData.contact_phone}
             onChangeText={(text) => handleChange("contact_phone", text)}
@@ -155,6 +158,7 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
           />
           <TextInput
             placeholder="Role (e.g. Manager, Secretary)"
+            placeholderTextColor={"#666"} 
             value={formData.contact_role}
             onChangeText={(text) => handleChange("contact_role", text)}
             style={styles.input}

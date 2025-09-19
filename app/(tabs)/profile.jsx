@@ -1,5 +1,5 @@
 import {
-  Bell, Phone, MapPin, Edit2, Settings, Building, Mail, ArrowLeft,
+  Bell, Phone, Edit2, Settings, Building, Mail, ArrowLeft,
   Clock, User2Icon, AlertCircle, Lock
 } from "lucide-react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -7,11 +7,11 @@ import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Alert, Image, ScrollView, Text, TextInput, TouchableOpacity,
-  View, Platform, Modal, Switch
+  View, Modal, Switch
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
-import { today, initialProfile } from "@/constants/sample_data";
+import { initialProfile } from "@/constants/sample_data";
 import images from "@/constants/images";
 import { styles } from "@/constants/styles/(tabs)/profile_styles";
 import { useAuth } from "@/context/auth-context";
@@ -31,7 +31,6 @@ function Profile() {
     user_id: initialProfile.user_id,
     user_date_created: initialProfile.dateCreated,
     user_email: initialProfile.email,
-    // Leave password blank; only send when user explicitly sets a new one
     user_password: "",
     user_phonenum: initialProfile.phone,
     user_status: initialProfile.status,
@@ -43,7 +42,6 @@ function Profile() {
   });
 
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showLogs, setShowLogs] = useState(false);
 
   const [prefs, setPrefs] = useState({
     push: true,
@@ -51,19 +49,9 @@ function Profile() {
     sms: false,
   });
 
-  const [logs, setLogs] = useState([]);
-  const [loadingLogs, setLoadingLogs] = useState(false);
   const [saving, setSaving] = useState(false);
   const [pickingImage, setPickingImage] = useState(false);
-  const [newImage, setNewImage] = useState(null); // holds { uri, type, name }
-
-  const [searchText, setSearchText] = useState("");
-
-  const filteredLogs = logs.filter(
-    (log) =>
-      log.action.toLowerCase().includes(searchText.toLowerCase()) ||
-      log.time.toLowerCase().includes(searchText.toLowerCase())
-  );
+  const [newImage, setNewImage] = useState(null);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -89,7 +77,6 @@ function Profile() {
             user_id: userProfile.user_id,
             user_date_created: userProfile.user_date_created,
             user_email: userProfile.user_email,
-            // do not preload (likely hashed) password
             user_password: "",
             user_phonenum: userProfile.user_phonenum,
             user_status: userProfile.user_status,
@@ -113,6 +100,7 @@ function Profile() {
     loadProfile();
   }, [user]);
 
+  
   // Fetch logs from backend
   useEffect(() => {
     const fetchLogs = async () => {
@@ -492,7 +480,7 @@ function Profile() {
         {/* Settings and Logs */}
         {!isEditing && (
           <View style={styles.settingsCard}>
-            <TouchableOpacity style={styles.settingsItem} onPress={() => setShowLogs(true)}>
+          <TouchableOpacity style={styles.settingsItem} onPress={() => router.push('/userlogs')}>
               <Settings size={20} color="#0B3D91" />
               <Text style={styles.settingsText}>Activity Logs</Text>
             </TouchableOpacity>
@@ -551,6 +539,7 @@ function Profile() {
           </View>
         </View>
       </Modal>
+
 
       {/* Activity Logs Modal */}
       <Modal visible={showLogs} animationType="slide">

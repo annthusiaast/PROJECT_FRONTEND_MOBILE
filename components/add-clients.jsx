@@ -147,6 +147,7 @@ const AddClient = ({ visible, onClose, onCreated }) => {
             <TextInput
               style={styles.input}
               placeholder="Name / Company"
+              placeholderTextColor={"#666"}
               value={clientData.client_fullname}
               editable={!isSubmitting}
               onChangeText={(text) => setClientData({ ...clientData, client_fullname: text })}
@@ -154,6 +155,7 @@ const AddClient = ({ visible, onClose, onCreated }) => {
             <TextInput
               style={styles.input}
               placeholder="Email"
+              placeholderTextColor={"#666"}
               keyboardType="email-address"
               value={clientData.client_email}
               editable={!isSubmitting}
@@ -162,6 +164,7 @@ const AddClient = ({ visible, onClose, onCreated }) => {
             <TextInput
               style={styles.input}
               placeholder="Phone Number"
+              placeholderTextColor={"#666"}
               keyboardType="phone-pad"
               value={clientData.client_phonenum}
               editable={!isSubmitting}
@@ -170,6 +173,7 @@ const AddClient = ({ visible, onClose, onCreated }) => {
             <TextInput
               style={styles.input}
               placeholder="Password"
+              placeholderTextColor={"#666"}
               secureTextEntry
               value={clientData.client_password}
               editable={!isSubmitting}
@@ -181,6 +185,7 @@ const AddClient = ({ visible, onClose, onCreated }) => {
             <TextInput
               style={styles.input}
               placeholder="Full Name"
+              placeholderTextColor={"#666"}
               value={contact.contact_fullname}
               editable={!isSubmitting}
               onChangeText={(text) => setContact({ ...contact, contact_fullname: text })}
@@ -188,6 +193,7 @@ const AddClient = ({ visible, onClose, onCreated }) => {
             <TextInput
               style={styles.input}
               placeholder="Email"
+              placeholderTextColor={"#666"}
               keyboardType="email-address"
               value={contact.contact_email}
               editable={!isSubmitting}
@@ -196,6 +202,7 @@ const AddClient = ({ visible, onClose, onCreated }) => {
             <TextInput
               style={styles.input}
               placeholder="Phone"
+              placeholderTextColor={"#666"}
               keyboardType="phone-pad"
               value={contact.contact_phone}
               editable={!isSubmitting}
@@ -204,6 +211,7 @@ const AddClient = ({ visible, onClose, onCreated }) => {
             <TextInput
               style={styles.input}
               placeholder="Relation / Role"
+              placeholderTextColor={"#666"}
               value={contact.contact_role}
               editable={!isSubmitting}
               onChangeText={(text) => setContact({ ...contact, contact_role: text })}
