@@ -17,6 +17,7 @@ import { styles } from "@/constants/styles/(tabs)/profile_styles";
 import { useAuth } from "@/context/auth-context";
 import { API_CONFIG, getEndpoint } from "@/constants/api-config";
 import * as ImagePicker from 'expo-image-picker';
+import LogDetailsModal from "@/components/log-details-modal";
 
 function Profile() {
   const router = useRouter();
@@ -121,14 +122,16 @@ function Profile() {
         const res = await fetch(getEndpoint(`/user-logs/${user.user_id}`), {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
         });
         if (!res.ok) throw new Error('Failed to fetch logs');
         const data = await res.json();
-        // Expecting array; map to {id, action, time}
+        // Expecting array; map to {id, action, time}; preserve raw
         const mapped = Array.isArray(data) ? data.map((l, idx) => ({
-          id: l.log_id || idx,
-          action: l.action || l.user_action || l.description || 'Activity',
-          time: l.timestamp || l.created_at || l.time || new Date().toISOString(),
+          id: l.user_log_id || l.log_id || idx,
+          action: l.user_log_description || l.user_log_action || l.description || l.action || 'Activity',
+          time: l.user_log_time || l.user_log_datetime || l.timestamp || l.created_at || l.time || new Date().toISOString(),
+          raw: l,
         })) : [];
         setLogs(mapped);
       } catch (err) {
@@ -139,6 +142,9 @@ function Profile() {
     };
     fetchLogs();
   }, [user?.user_id]);
+
+  const [showLogDetails, setShowLogDetails] = useState(false);
+  const [selectedLog, setSelectedLog] = useState(null);
 
   const saveProfileToStorage = async (updatedProfile) => {
     await AsyncStorage.setItem("userProfile", JSON.stringify(updatedProfile));
@@ -623,7 +629,11 @@ function Profile() {
                   }}
                 >
                   <Clock size={20} color="#0B3D91" style={{ marginTop: 2 }} />
-                  <View style={{ flex: 1 }}>
+                  <TouchableOpacity
+                    style={{ flex: 1 }}
+                    activeOpacity={0.7}
+                    onPress={() => { setSelectedLog(log.raw || log); setShowLogDetails(true); }}
+                  >
                     <Text
                       style={{
                         fontSize: 15,
@@ -637,7 +647,7 @@ function Profile() {
                     <Text style={{ fontSize: 13, color: "#555" }}>
                       {log.time}
                     </Text>
-                  </View>
+                  </TouchableOpacity>
                 </View>
               ))
             ) : (
@@ -656,6 +666,13 @@ function Profile() {
           </ScrollView>
         </SafeAreaView>
       </Modal>
+
+      {/* Log Details Modal */}
+      <LogDetailsModal
+        visible={showLogDetails}
+        onClose={() => setShowLogDetails(false)}
+        log={selectedLog}
+      />
 
       {/* Notification Preferences Modal */}
       <Modal visible={showNotifications} animationType="slide">
