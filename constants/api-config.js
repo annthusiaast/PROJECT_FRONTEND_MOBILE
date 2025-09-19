@@ -12,13 +12,27 @@ function resolveFromExpoExtra() {
   return extra.API_BASE_URL || extra.apiBaseUrl || extra.api_base_url || null;
 }
 
+// Normalize host extraction from a variety of inputs (URLs, host:port, IPv6)
+function extractHost(input) {
+  try {
+    const value = String(input);
+    const url = value.includes('://') ? new URL(value) : new URL(`http://${value}`);
+    return url.hostname.replace(/^[\[]|[\]]$/g, '');
+  } catch {
+    // Fallback: naive cleanup
+    return String(input)
+      .replace(/^[a-z]+:\/\//i, '')
+      .replace(/:\d+$/, '')
+      .replace(/^[\[]|[\]]$/g, '');
+  }
+}
+
 function resolveFromScriptURL() {
   // RN provides the packager/bundle host via SourceCode.scriptURL in dev
   try {
     const scriptURL = NativeModules?.SourceCode?.scriptURL;
     if (!scriptURL) return null;
-    const url = new URL(scriptURL);
-    const host = url.hostname; // e.g., 192.168.1.5, localhost, 10.0.2.2
+    const host = extractHost(scriptURL); // e.g., 192.168.1.5, localhost, 10.0.2.2, ::1
     if (!host) return null;
     // If host is localhost on a physical device, fallback to hostUri
     if ((host === 'localhost' || host === '127.0.0.1') && Platform.OS === 'android') {
@@ -34,8 +48,21 @@ function resolveFromHostUri() {
   try {
     const hostUri = Constants?.expoConfig?.hostUri || Constants?.manifest?.hostUri || Constants?.manifest?.debuggerHost;
     if (!hostUri) return null;
-    // hostUri examples: "192.168.1.5:19000", "192.168.1.5:8081"
-    const host = hostUri.split(':')[0];
+    // hostUri examples: "exp://192.168.1.5:19000", "192.168.1.5:8081", "[::1]:19000"
+    const host = extractHost(hostUri);
+    if (!host) return null;
+    return `http://${host}:3000/api`;
+  } catch {
+    return null;
+  }
+}
+
+// Some Expo SDKs expose the device link via Constants.linkingUri (e.g., exp://192.168.1.15:8081)
+function resolveFromLinkingUri() {
+  try {
+    const linkingUri = Constants?.linkingUri;
+    if (!linkingUri) return null;
+    const host = extractHost(linkingUri);
     if (!host) return null;
     return `http://${host}:3000/api`;
   } catch {
@@ -64,13 +91,20 @@ function resolveBaseUrl() {
     // Fallback to Expo hostUri (reliable in Expo Go on device)
     const fromHostUri = resolveFromHostUri();
     if (fromHostUri) return fromHostUri;
+    // Additional fallback: Expo linkingUri (often matches Metro's exp://... output)
+    const fromLinking = resolveFromLinkingUri();
+    if (fromLinking) return fromLinking;
     // Fall back to platform defaults
     return resolveDevFallback();
   }
 
   // Production fallback: if not provided via extra, keep previous default or set to your prod API
   // Tip: set expo.extra.API_BASE_URL in app.json for production/staging builds.
-  return 'http://192.168.1.10:3000/api';
+  // Warn and return a safe default placeholder so crashes don't occur silently.
+  // Update this to your real production API or configure via expo.extra.API_BASE_URL.
+  // eslint-disable-next-line no-console
+  console.warn('[api-config] Missing expo.extra.API_BASE_URL. Configure it in app.json/app.config.* for prod/staging builds.');
+  return 'https://your-api.example.com/api';
 }
 
 const BASE_URL = resolveBaseUrl();
@@ -83,6 +117,11 @@ export const API_CONFIG = {
 };
 
 // Helper function to get the full endpoint URL
-export const getEndpoint = (path) => `${API_CONFIG.BASE_URL}${path}`;
+export const getEndpoint = (path = '') => {
+  const base = String(API_CONFIG.BASE_URL || '').replace(/\/+$/, '');
+  const suffix = String(path || '');
+  const normalized = suffix.startsWith('/') ? suffix : `/${suffix}`;
+  return `${base}${normalized}`;
+};
 
 export default API_CONFIG;
