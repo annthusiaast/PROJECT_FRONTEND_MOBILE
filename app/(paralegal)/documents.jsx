@@ -1,0 +1,1 @@
+// Paralegal does not have access to documents, so leave this file empty or do not create it.

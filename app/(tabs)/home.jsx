@@ -2,12 +2,19 @@ import { RecentActivity as SampleData, today } from "@/constants/sample_data";
 import { styles } from "@/constants/styles/(tabs)/home_styles";
 import { router } from "expo-router";
 import { Bell, CheckCircle, ClipboardList, FileText, Folder, Logs, Scale, Search, Trash2 } from 'lucide-react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
+import { useAuth } from '@/context/auth-context';
+import { getEndpoint } from '@/constants/api-config';
+import LogDetailsModal from '@/components/log-details-modal';
 
 const Dashboard = () => {
+  const { user } = useAuth();
   const [recentActivity, setRecentActivity] = useState(SampleData);
+  const [loading, setLoading] = useState(false);
+  const [selectedLog, setSelectedLog] = useState(null);
+  const [showDetails, setShowDetails] = useState(false);
 
   const clearAllActivities = () => {
     setRecentActivity([]);
@@ -22,6 +29,40 @@ const Dashboard = () => {
       <Trash2 size={24} color="#fff" />
     </TouchableOpacity>
   );
+
+  // Fetch recent activity from backend when user is available
+  useEffect(() => {
+    const fetchLogs = async () => {
+      if (!user?.user_id) return;
+      setLoading(true);
+      try {
+        const res = await fetch(getEndpoint(`/user-logs/${user.user_id}`), {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          // cookies are used by backend verifyUser
+          credentials: 'include',
+        });
+        if (!res.ok) throw new Error('Failed to fetch recent activity');
+        const data = await res.json();
+        const mapped = Array.isArray(data)
+          ? data.map((l, idx) => ({
+              id: l.user_log_id || l.log_id || idx,
+              user_log_description: l.user_log_description || l.description || l.user_log_action || 'Activity',
+              user_log_datetime: l.user_log_datetime || l.user_log_time || l.timestamp || l.created_at || new Date().toISOString(),
+              user_log_type: l.user_log_type || l.type,
+              raw: l,
+            }))
+          : [];
+        setRecentActivity(mapped);
+      } catch (e) {
+        // keep sample data as fallback
+        console.warn('Recent activity fetch failed:', e.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchLogs();
+  }, [user?.user_id]);
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -83,7 +124,14 @@ const Dashboard = () => {
               {recentActivity.length > 0 ? (
                 recentActivity.map((activity, index) => (
                   <Swipeable key={`${activity.id}-${index}`} renderRightActions={() => renderRightActions(activity.id)}>
-                    <TouchableOpacity style={styles.activityItem} activeOpacity={0.7}>
+                    <TouchableOpacity
+                      style={styles.activityItem}
+                      activeOpacity={0.7}
+                      onPress={() => {
+                        setSelectedLog(activity.raw || activity);
+                        setShowDetails(true);
+                      }}
+                    >
                       <Logs size={22} color="#1d1d66ff" />
                       <View style={styles.activityTextWrapper}>
                         <Text style={styles.activityText}>{activity.user_log_description}</Text>
@@ -100,6 +148,12 @@ const Dashboard = () => {
               )}
             </View>
           </View>
+          {/* Details Modal */}
+          <LogDetailsModal
+            visible={showDetails}
+            onClose={() => setShowDetails(false)}
+            log={selectedLog}
+          />
         </ScrollView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
