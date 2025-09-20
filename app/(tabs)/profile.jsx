@@ -492,7 +492,7 @@ function Profile() {
         {/* Settings and Logs */}
         {!isEditing && (
           <View style={styles.settingsCard}>
-          <TouchableOpacity style={styles.settingsItem} onPress={() => router.push('/userlogs')}>
+          <TouchableOpacity style={styles.settingsItem} onPress={() => setShowLogs(true)}>
               <Settings size={20} color="#0B3D91" />
               <Text style={styles.settingsText}>Activity Logs</Text>
             </TouchableOpacity>
