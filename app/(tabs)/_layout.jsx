@@ -1,15 +1,15 @@
-import { Tabs, useSegments, useRouter } from "expo-router";
+import { Tabs, useSegments } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Bell } from "lucide-react-native";
-import { View, Text, TouchableOpacity, Platform, StatusBar, ActivityIndicator } from "react-native";
+import { View, Text, TouchableOpacity, Platform, StatusBar, ActivityIndicator, Modal } from "react-native";
 import { useState, useEffect, useMemo } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ProtectedRoute from "@/components/protected-route";
 import { useAuth } from "@/context/auth-context";
 import { baseTabs, getAllowedTabs } from "@/constants/role-tabs";
+import Notifications from "@/components/notifications";
 
-function CustomHeader({ title }) {
-  const router = useRouter();
+function CustomHeader({ title, onPressBell }) {
   const [today, setToday] = useState("");
 
   useEffect(() => {
@@ -48,7 +48,7 @@ function CustomHeader({ title }) {
         </View>
 
         {/* bell */}
-        <TouchableOpacity onPress={() => router.push("/notifications")}>
+        <TouchableOpacity onPress={onPressBell}>
           <Bell size={26} color="#0B3D91" strokeWidth={2} />
         </TouchableOpacity>
       </View>
@@ -60,6 +60,7 @@ export default function TabsLayout() {
   const segments = useSegments().filter((seg) => seg !== "(tabs)");
   const currentTab = segments[segments.length - 1] || "home";
   const { user, loading } = useAuth();
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const role = user?.user_role;
 
@@ -84,7 +85,17 @@ export default function TabsLayout() {
         <View style={{ flex: 1 }}>
           <CustomHeader
             title={(filteredTabs.find(t => t.name === currentTab)?.label) || (currentTab.charAt(0).toUpperCase() + currentTab.slice(1))}
+            onPressBell={() => setShowNotifications(true)}
           />
+          {/* Notifications Modal shown from any tab via header bell */}
+          <Modal
+            visible={showNotifications}
+            animationType="slide"
+            onRequestClose={() => setShowNotifications(false)}
+            presentationStyle={Platform.OS === 'ios' ? 'pageSheet' : 'fullScreen'}
+          >
+            <Notifications onClose={() => setShowNotifications(false)} />
+          </Modal>
           {(loading || filteredTabs.length === 0) && (
             <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
               <ActivityIndicator size="large" color="#0B3D91" />
