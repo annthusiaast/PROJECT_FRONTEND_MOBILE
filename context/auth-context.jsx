@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API_CONFIG } from '@/constants/api-config';
+import { API_CONFIG, getEndpoint } from '@/constants/api-config';
 
 const AuthContext = createContext();
 
@@ -33,6 +33,28 @@ export const AuthProvider = ({ children }) => {
 
       if (userId) {
         setPendingUserId(userId);
+      }
+
+      // Session verify: refresh user from server to reflect server-side updates
+      try {
+        const res = await fetch(getEndpoint('/verify'), {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.user) {
+            setUser(data.user);
+            await AsyncStorage.setItem('user', JSON.stringify(data.user));
+          }
+        } else if (res.status === 401) {
+          // Not authenticated on server; clear stale local user
+          await AsyncStorage.removeItem('user');
+          setUser(null);
+        }
+      } catch (e) {
+        // Silently ignore network errors here; app will rely on cached user
       }
     } catch (error) {
       console.error('Error checking auth status:', error);
@@ -75,11 +97,12 @@ export const AuthProvider = ({ children }) => {
         throw new Error('No pending verification. Please login again.');
       }
 
-      const response = await fetch(`${API_CONFIG.BASE_URL}/verify-2fa`, {
+      const response = await fetch(getEndpoint('/verify-2fa'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // ensure Set-Cookie is persisted and sent later
         body: JSON.stringify({
           user_id: pendingUserId,
           code: code
@@ -136,6 +159,16 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
+      // Inform server to invalidate session/cookie
+      try {
+        await fetch(getEndpoint('/logout'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        });
+      } catch (e) {
+        // proceed to local clear even if network fails
+      }
       // Clear local storage
       await AsyncStorage.multiRemove(['user', 'pendingUserId', 'pendingUserEmail']);
       setUser(null);
