@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { getEndpoint } from "@/constants/api-config";
 import { Pencil } from "lucide-react-native";
+import PaymentsModal from "./payments-modal";
 
 const CaseModal = ({ visible, onClose, caseData, onSave }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -21,6 +22,7 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
   const [error, setError] = useState(null);
   const [showFullDesc, setShowFullDesc] = useState(false);
   const [showAllDocs, setShowAllDocs] = useState(false);
+  const [showPayments, setShowPayments] = useState(false);
 
   useEffect(() => {
     // When a different case is selected, reset both editable and base to the incoming data
@@ -164,6 +166,7 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
   const statusColor = statusColors[statusValue] || '#656162ff';
 
   return (
+    <>
     <Modal visible={visible} animationType="slide" transparent>
       <TouchableWithoutFeedback onPress={onClose}>
         <View style={styles.overlay}>
@@ -281,7 +284,7 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
                     <Text style={[styles.payLabel, { marginLeft: 6 }]}>Balance</Text>
                     <Text style={[styles.payValue, { color: remaining === 0 ? '#0c8744ff' : '#b00020', fontWeight: '700' }]}>₱{remaining.toFixed(2)}</Text>
                   </View>
-                  <TouchableOpacity onPress={() => { /* open payments screen hook */ }}>
+                  <TouchableOpacity onPress={() => setShowPayments(true)}>
                     <Text style={styles.linkInline}>View payment record</Text>
                   </TouchableOpacity>
                 </View>
@@ -348,6 +351,15 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
         </View>
       </TouchableWithoutFeedback>
     </Modal>
+
+    {/* Payments Modal */}
+    <PaymentsModal
+      visible={showPayments}
+      onClose={() => setShowPayments(false)}
+      caseId={caseData?.id || caseData?.case_id}
+      title={editableCase?.title}
+    />
+    </>
   );
 };
 
