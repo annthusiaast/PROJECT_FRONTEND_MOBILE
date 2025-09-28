@@ -67,9 +67,9 @@ const Login = () => {
     setLoading(true);
 
     try {
-      await login(email, password);
-
-      router.push('/auth/verification');
+  await login(email, password);
+  // Use replace to avoid stacking login behind verification
+  router.replace('/auth/verification');
     } catch (error) {
       if (error.message?.toLowerCase().includes('user') || error.message?.toLowerCase().includes('email')) {
         setEmailError('Username/Email is incorrect');
