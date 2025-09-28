@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Linking,
   Modal,
@@ -11,10 +11,26 @@ import {
   View,
 } from "react-native";
 import { getEndpoint } from "@/constants/api-config";
+import DropDownPicker from "react-native-dropdown-picker";
 import { Pencil } from "lucide-react-native";
+import { useAuth } from "@/context/auth-context";
 import PaymentsModal from "./payments-modal";
 
+const formatUserDisplayName = (record) => {
+  if (!record) return "Unknown";
+  const middle = record.user_mname ? `${record.user_mname[0]}.` : "";
+  const raw = `${record.user_fname || ""} ${middle} ${record.user_lname || ""}`
+    .replace(/\s+/g, " ")
+    .trim();
+  if (raw) return raw;
+  if (record.user_email) return record.user_email;
+  return `User ${record.user_id ?? ""}`.trim();
+};
+
 const CaseModal = ({ visible, onClose, caseData, onSave }) => {
+  const { user } = useAuth();
+  const isAdmin = user?.user_role === "Admin";
+
   const [isEditing, setIsEditing] = useState(false);
   const [editableCase, setEditableCase] = useState(caseData || {});
   const [baseCase, setBaseCase] = useState(caseData || {}); // persisted snapshot (last fetched)
@@ -23,6 +39,22 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
   const [showFullDesc, setShowFullDesc] = useState(false);
   const [showAllDocs, setShowAllDocs] = useState(false);
   const [showPayments, setShowPayments] = useState(false);
+  const [clientItems, setClientItems] = useState([]);
+  const [clientLookup, setClientLookup] = useState({});
+  const [clientDropdownOpen, setClientDropdownOpen] = useState(false);
+  const [clientsLoading, setClientsLoading] = useState(false);
+  const [caseCategoryItems, setCaseCategoryItems] = useState([]);
+  const [caseCategoryLookup, setCaseCategoryLookup] = useState({});
+  const [caseCategoryDropdownOpen, setCaseCategoryDropdownOpen] = useState(false);
+  const [caseCategoriesLoading, setCaseCategoriesLoading] = useState(false);
+  const [caseTypeItems, setCaseTypeItems] = useState([]);
+  const [caseTypeLookup, setCaseTypeLookup] = useState({});
+  const [caseTypeDropdownOpen, setCaseTypeDropdownOpen] = useState(false);
+  const [caseTypesLoading, setCaseTypesLoading] = useState(false);
+  const [lawyerItems, setLawyerItems] = useState([]);
+  const [lawyerDropdownOpen, setLawyerDropdownOpen] = useState(false);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [userLookup, setUserLookup] = useState({});
 
   useEffect(() => {
     // When a different case is selected, reset both editable and base to the incoming data
@@ -33,6 +65,24 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
     setShowFullDesc(false);
     setShowAllDocs(false);
   }, [caseData]);
+
+  useEffect(() => {
+    if (!visible) {
+      setClientDropdownOpen(false);
+      setLawyerDropdownOpen(false);
+      setCaseCategoryDropdownOpen(false);
+      setCaseTypeDropdownOpen(false);
+    }
+  }, [visible]);
+
+  useEffect(() => {
+    if (!isEditing) {
+      setClientDropdownOpen(false);
+      setLawyerDropdownOpen(false);
+      setCaseCategoryDropdownOpen(false);
+      setCaseTypeDropdownOpen(false);
+    }
+  }, [isEditing]);
 
   // Fetch latest case details from backend when modal opens
   useEffect(() => {
@@ -54,9 +104,13 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
         const mapped = {
           ...editableCase,
           id: data.case_id ?? editableCase.id,
+          caseTypeId: data.ct_id ?? editableCase.caseTypeId,
           title: data.ct_name || data.case_title || editableCase.title,
+          categoryId: data.cc_id ?? editableCase.categoryId,
           category: data.cc_name || editableCase.category,
+          clientId: data.client_id ?? editableCase.clientId,
           client: data.client_fullname || editableCase.client,
+          lawyerId: data.user_id ?? editableCase.lawyerId,
           lawyer: data.user_fname ? `${data.user_fname} ${data.user_lname || ''}`.trim() : (editableCase.lawyer || ''),
           totalFee: data.case_fee ?? editableCase.totalFee,
           caseBalance: data.case_balance ?? editableCase.caseBalance,
@@ -71,6 +125,9 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
           status: (data.case_status || editableCase.status || 'Pending'),
           cabinetNo: data.case_cabinet ?? editableCase.cabinetNo,
           drawerNo: data.case_drawer ?? editableCase.drawerNo,
+          lastUpdatedAt: data.case_last_updated ?? editableCase.lastUpdatedAt,
+          lastUpdatedBy: data.last_updated_by ?? editableCase.lastUpdatedBy,
+          lastUpdatedByName: data.last_updated_by_name || editableCase.lastUpdatedByName,
           documents: Array.isArray(data.documents) ? data.documents.map(d => ({
             name: d.name || d.filename || 'Document',
             status: d.status || 'available',
@@ -88,6 +145,230 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
     fetchCaseDetails();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible, caseData?.id, caseData?.case_id]);
+
+  useEffect(() => {
+    if (!visible) return;
+    let ignore = false;
+
+    const loadClients = async () => {
+      setClientsLoading(true);
+      try {
+        let endpoint = "/clients";
+        if (user?.user_role === "Admin") {
+          endpoint = "/all-clients";
+        } else if (user?.user_role === "Lawyer" && user?.user_id) {
+          endpoint = `/clients/${user.user_id}`;
+        }
+        const res = await fetch(getEndpoint(endpoint), {
+          method: "GET",
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("Failed to load clients");
+        const data = await res.json();
+        if (ignore) return;
+        const items = (Array.isArray(data) ? data : []).map((client) => ({
+          label: client.client_fullname || `Client ${client.client_id}`,
+          value: client.client_id,
+        }));
+        items.sort((a, b) => a.label.localeCompare(b.label));
+        const lookup = Object.fromEntries(items.map((item) => [item.value, item.label]));
+        setClientItems(items);
+        setClientLookup(lookup);
+      } catch (_e) {
+        // silently ignore
+      } finally {
+        if (!ignore) setClientsLoading(false);
+      }
+    };
+
+    const loadUsers = async () => {
+      setUsersLoading(true);
+      try {
+        const res = await fetch(getEndpoint("/users"), {
+          method: "GET",
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("Failed to load users");
+        const data = await res.json();
+        if (ignore) return;
+        const lookup = {};
+        const lawyerList = [];
+        (Array.isArray(data) ? data : []).forEach((u) => {
+          lookup[u.user_id] = formatUserDisplayName(u);
+          if (u.user_role === "Lawyer") {
+            lawyerList.push({
+              label: formatUserDisplayName(u),
+              value: u.user_id,
+            });
+          }
+        });
+        lawyerList.sort((a, b) => a.label.localeCompare(b.label));
+        setUserLookup(lookup);
+        setLawyerItems(lawyerList);
+      } catch (_e) {
+        // silently ignore
+      } finally {
+        if (!ignore) setUsersLoading(false);
+      }
+    };
+
+    const loadCaseCategories = async () => {
+      setCaseCategoriesLoading(true);
+      try {
+        const res = await fetch(getEndpoint("/case-categories"), {
+          method: "GET",
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("Failed to load case categories");
+        const data = await res.json();
+        if (ignore) return;
+        const items = (Array.isArray(data) ? data : []).map((cat) => {
+          const id = cat.cc_id ?? cat.category_id ?? cat.id ?? null;
+          return {
+            label: cat.cc_name || cat.category_name || cat.name || (id != null ? `Category ${id}` : "Category"),
+            value: id,
+          };
+        }).filter((item) => item.value != null);
+        items.sort((a, b) => a.label.localeCompare(b.label));
+        const lookup = Object.fromEntries(items.map((item) => [item.value, item.label]));
+        setCaseCategoryItems(items);
+        setCaseCategoryLookup(lookup);
+      } catch (_e) {
+        // silently ignore
+      } finally {
+        if (!ignore) setCaseCategoriesLoading(false);
+      }
+    };
+
+    const loadCaseTypes = async () => {
+      setCaseTypesLoading(true);
+      try {
+        const res = await fetch(getEndpoint("/case-category-types"), {
+          method: "GET",
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("Failed to load case types");
+        const data = await res.json();
+        if (ignore) return;
+        const items = (Array.isArray(data) ? data : []).map((type) => {
+          const id = type.ct_id ?? type.case_type_id ?? type.id ?? null;
+          const categoryId = type.cc_id ?? type.category_id ?? null;
+          return {
+            label: type.ct_name || type.case_type || type.name || (id != null ? `Type ${id}` : "Type"),
+            value: id,
+            categoryId,
+          };
+        }).filter((item) => item.value != null);
+        items.sort((a, b) => a.label.localeCompare(b.label));
+        const lookup = Object.fromEntries(items.map((item) => [item.value, item.label]));
+        setCaseTypeItems(items);
+        setCaseTypeLookup(lookup);
+      } catch (_e) {
+        // silently ignore
+      } finally {
+        if (!ignore) setCaseTypesLoading(false);
+      }
+    };
+
+    loadClients();
+    loadUsers();
+    loadCaseCategories();
+    loadCaseTypes();
+
+    return () => {
+      ignore = true;
+    };
+  }, [visible, user?.user_role, user?.user_id]);
+
+  useEffect(() => {
+    if (clientDropdownOpen) {
+      setLawyerDropdownOpen(false);
+      setCaseCategoryDropdownOpen(false);
+      setCaseTypeDropdownOpen(false);
+    }
+  }, [clientDropdownOpen]);
+
+  useEffect(() => {
+    if (lawyerDropdownOpen) {
+      setClientDropdownOpen(false);
+      setCaseCategoryDropdownOpen(false);
+      setCaseTypeDropdownOpen(false);
+    }
+  }, [lawyerDropdownOpen]);
+
+  useEffect(() => {
+    if (caseCategoryDropdownOpen) {
+      setClientDropdownOpen(false);
+      setLawyerDropdownOpen(false);
+      setCaseTypeDropdownOpen(false);
+    }
+  }, [caseCategoryDropdownOpen]);
+
+  useEffect(() => {
+    if (caseTypeDropdownOpen) {
+      setClientDropdownOpen(false);
+      setLawyerDropdownOpen(false);
+      setCaseCategoryDropdownOpen(false);
+    }
+  }, [caseTypeDropdownOpen]);
+
+  const clientId = editableCase?.clientId;
+  const currentClientName = editableCase?.client;
+  const lawyerId = editableCase?.lawyerId;
+  const currentLawyerName = editableCase?.lawyer;
+  const categoryId = editableCase?.categoryId ?? null;
+  const currentCategoryName = editableCase?.category;
+  const caseTypeId = editableCase?.caseTypeId ?? null;
+  const currentCaseTypeName = editableCase?.title;
+
+  useEffect(() => {
+    if (!clientId) return;
+    const resolvedName = clientLookup[clientId];
+    if (resolvedName && resolvedName !== currentClientName) {
+      setEditableCase((prev) => ({ ...prev, client: resolvedName }));
+    }
+  }, [clientId, currentClientName, clientLookup]);
+
+  useEffect(() => {
+    if (!lawyerId) return;
+    const resolvedName = userLookup[lawyerId];
+    if (resolvedName && resolvedName !== currentLawyerName) {
+      setEditableCase((prev) => ({ ...prev, lawyer: resolvedName }));
+    }
+  }, [lawyerId, currentLawyerName, userLookup]);
+
+  useEffect(() => {
+    if (categoryId == null) return;
+    const resolvedName = caseCategoryLookup[categoryId];
+    if (resolvedName && resolvedName !== currentCategoryName) {
+      setEditableCase((prev) => ({ ...prev, category: resolvedName }));
+    }
+  }, [categoryId, currentCategoryName, caseCategoryLookup]);
+
+  useEffect(() => {
+    if (caseTypeId == null) return;
+    const resolvedName = caseTypeLookup[caseTypeId];
+    if (resolvedName && resolvedName !== currentCaseTypeName) {
+      setEditableCase((prev) => ({ ...prev, title: resolvedName }));
+    }
+  }, [caseTypeId, currentCaseTypeName, caseTypeLookup]);
+
+  const filteredCaseTypeItems = useMemo(() => {
+    if (!caseTypeItems.length) return caseTypeItems;
+    if (categoryId == null) return caseTypeItems;
+    return caseTypeItems.filter(
+      (item) => item.categoryId == null || item.categoryId === categoryId
+    );
+  }, [caseTypeItems, categoryId]);
+
+  const lastUpdatedByResolved = useMemo(() => {
+    if (editableCase?.lastUpdatedBy && userLookup[editableCase.lastUpdatedBy]) {
+      return userLookup[editableCase.lastUpdatedBy];
+    }
+    if (editableCase?.lastUpdatedByName) return editableCase.lastUpdatedByName;
+    if (editableCase?.lastUpdatedBy) return `User ${editableCase.lastUpdatedBy}`;
+    return null;
+  }, [editableCase?.lastUpdatedBy, editableCase?.lastUpdatedByName, userLookup]);
 
   const handleChange = (field, value) => {
     setEditableCase((prev) => ({ ...prev, [field]: value }));
@@ -119,28 +400,40 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
     if (canOpen) Linking.openURL(url);
   };
 
-  const Field = ({ label, fieldKey, placeholder, editable = true, formatter }) => (
-    <View style={styles.rowCompact}>
-      <Text style={styles.labelCompact}>{label}</Text>
-      {(isEditing && editable) ? (
-        <TextInput
-          style={styles.inputCompact}
-          value={editableCase[fieldKey] ?? ''}
-          placeholder={placeholder}
-          onChangeText={(text) => handleChange(fieldKey, text)}
-        />
-      ) : (
-        <Text style={styles.valueCompact} numberOfLines={1}>
-          {(() => {
-            const raw = editableCase[fieldKey];
-            if (!raw) return 'N/A';
-            if (formatter) return formatter(raw);
-            return raw;
-          })()}
-        </Text>
-      )}
-    </View>
-  );
+  const Field = ({ label, fieldKey, placeholder, editable = true, formatter, renderEdit }) => {
+    const renderValue = () => {
+      const raw = editableCase[fieldKey];
+      if (raw === 0) return '0';
+      if (!raw) return 'N/A';
+      if (formatter) return formatter(raw);
+      return raw;
+    };
+
+    return (
+      <View style={styles.rowCompact}>
+        <Text style={styles.labelCompact}>{label}</Text>
+        {(isEditing && editable) ? (
+          renderEdit ? (
+            renderEdit({
+              value: editableCase[fieldKey],
+              onChange: (text) => handleChange(fieldKey, text),
+            })
+          ) : (
+            <TextInput
+              style={styles.inputCompact}
+              value={editableCase[fieldKey] ?? ''}
+              placeholder={placeholder}
+              onChangeText={(text) => handleChange(fieldKey, text)}
+            />
+          )
+        ) : (
+          <Text style={styles.valueCompact} numberOfLines={1}>
+            {renderValue()}
+          </Text>
+        )}
+      </View>
+    );
+  };
 
   const formatDateTime = (value) => {
     if (!value) return 'N/A';
@@ -164,6 +457,10 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
   const statusValueRaw = editableCase.status || 'Pending';
   const statusValue = statusValueRaw.toLowerCase();
   const statusColor = statusColors[statusValue] || '#656162ff';
+  const assignedLawyerId = editableCase?.lawyerId ?? baseCase?.lawyerId;
+  const isSelfAssignedLawyer = user?.user_role === 'Lawyer' && user?.user_id && assignedLawyerId && Number(user.user_id) === Number(assignedLawyerId);
+  const canEditAssignedLawyer = isAdmin || !isSelfAssignedLawyer;
+  const formattedLastUpdatedAt = editableCase?.lastUpdatedAt ? formatDateTime(editableCase.lastUpdatedAt) : null;
 
   return (
     <>
@@ -234,7 +531,7 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
                       <Text style={styles.chipText}>Drawer</Text>
                       <TextInput
                         style={styles.metaInput}
-                        value={editableCase.drawerNo ? String(editableCase.drawerNo) : ''}
+                        value={(editableCase.drawerNo !== undefined && editableCase.drawerNo !== null && editableCase.drawerNo !== '') ? String(editableCase.drawerNo) : 'N/A'}
                         placeholder="Drawer"
                         onChangeText={(t) => handleChange('drawerNo', t)}
                       />
@@ -248,22 +545,183 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
                 )}
               </View>
 
+              {(lastUpdatedByResolved || (formattedLastUpdatedAt && formattedLastUpdatedAt !== 'N/A')) ? (
+                <View style={styles.lastUpdatedRow}>
+                  <Text style={styles.lastUpdatedLabel}>Last updated by</Text>
+                  <Text style={styles.lastUpdatedValue} numberOfLines={2}>
+                    {lastUpdatedByResolved || 'N/A'}
+                    {(formattedLastUpdatedAt && formattedLastUpdatedAt !== 'N/A') ? ` (${formattedLastUpdatedAt})` : ''}
+                  </Text>
+                </View>
+              ) : null}
+
               {/* Scrollable content */}
               <ScrollView style={{ marginTop: 8 }}>
                 {loading ? (
                   <Text style={{ marginBottom: 10 }}>Loading details...</Text>
                 ) : null}
-                {/* Case Type (editable) */}
-                <Field label="Case Type" fieldKey="title" placeholder="Type" editable />
+                {/* Case Type (dropdown) */}
+                <Field
+                  label="Case Type"
+                  fieldKey="title"
+                  placeholder="Case Type"
+                  editable
+                  renderEdit={() => (
+                    <View style={[styles.dropdownCompact, { zIndex: 3600 }]}>
+                      <DropDownPicker
+                        open={caseTypeDropdownOpen}
+                        value={caseTypeId}
+                        items={filteredCaseTypeItems}
+                        setOpen={setCaseTypeDropdownOpen}
+                        setValue={(callback) => {
+                          setEditableCase((prev) => {
+                            const current = prev.caseTypeId ?? null;
+                            const nextVal = typeof callback === 'function' ? callback(current) : callback;
+                            const resolved = nextVal ?? null;
+                            return {
+                              ...prev,
+                              caseTypeId: resolved,
+                              title: resolved != null ? (caseTypeLookup[resolved] || prev.title) : '',
+                            };
+                          });
+                        }}
+                        setItems={setCaseTypeItems}
+                        placeholder="Select case type"
+                        style={styles.dropdownInput}
+                        dropDownContainerStyle={styles.dropdownList}
+                        listMode="SCROLLVIEW"
+                        disabled={caseTypesLoading}
+                        loading={caseTypesLoading}
+                        zIndex={3600}
+                        zIndexInverse={1300}
+                      />
+                    </View>
+                  )}
+                />
 
-                {/* Category (editable) */}
-                <Field label="Category" fieldKey="category" placeholder="Category" editable />
+                {/* Category (dropdown) */}
+                <Field
+                  label="Category"
+                  fieldKey="category"
+                  placeholder="Category"
+                  editable
+                  renderEdit={() => (
+                    <View style={[styles.dropdownCompact, { zIndex: 3400 }]}>
+                      <DropDownPicker
+                        open={caseCategoryDropdownOpen}
+                        value={categoryId}
+                        items={caseCategoryItems}
+                        setOpen={setCaseCategoryDropdownOpen}
+                        setValue={(callback) => {
+                          setEditableCase((prev) => {
+                            const current = prev.categoryId ?? null;
+                            const nextVal = typeof callback === 'function' ? callback(current) : callback;
+                            const resolved = nextVal ?? null;
+                            const resolvedName = resolved != null ? (caseCategoryLookup[resolved] || prev.category) : '';
+                            const shouldResetType = resolved == null
+                              ? prev.caseTypeId != null
+                              : (prev.caseTypeId != null && !caseTypeItems.some((item) => item.value === prev.caseTypeId && (item.categoryId == null || item.categoryId === resolved)));
+                            return {
+                              ...prev,
+                              categoryId: resolved,
+                              category: resolvedName,
+                              ...(shouldResetType ? { caseTypeId: null, title: '' } : {}),
+                            };
+                          });
+                        }}
+                        setItems={setCaseCategoryItems}
+                        placeholder="Select category"
+                        style={styles.dropdownInput}
+                        dropDownContainerStyle={styles.dropdownList}
+                        listMode="SCROLLVIEW"
+                        disabled={caseCategoriesLoading}
+                        loading={caseCategoriesLoading}
+                        zIndex={3400}
+                        zIndexInverse={1200}
+                      />
+                    </View>
+                  )}
+                />
 
-                {/* Client (editable) */}
-                <Field label="Client" fieldKey="client" placeholder="Client" editable />
+                {/* Client (dropdown) */}
+                <Field
+                  label="Client"
+                  fieldKey="client"
+                  placeholder="Client"
+                  editable
+                  renderEdit={() => (
+                    <View
+                      style={[styles.dropdownCompact, { zIndex: 3000 }]}
+                    >
+                      <DropDownPicker
+                        open={clientDropdownOpen}
+                        value={editableCase.clientId ?? null}
+                        items={clientItems}
+                        setOpen={setClientDropdownOpen}
+                        setValue={(callback) => {
+                          setEditableCase((prev) => {
+                            const current = prev.clientId ?? null;
+                            const nextVal = typeof callback === 'function' ? callback(current) : callback;
+                            const resolved = nextVal ?? null;
+                            return {
+                              ...prev,
+                              clientId: resolved,
+                              client: resolved != null ? (clientLookup[resolved] || prev.client) : '',
+                            };
+                          });
+                        }}
+                        setItems={setClientItems}
+                        placeholder="Select client"
+                        style={styles.dropdownInput}
+                        dropDownContainerStyle={styles.dropdownList}
+                        listMode="SCROLLVIEW"
+                        disabled={clientsLoading}
+                        loading={clientsLoading}
+                        zIndex={3000}
+                        zIndexInverse={1000}
+                      />
+                    </View>
+                  )}
+                />
 
-                {/* Assign to Lawyer (editable) */}
-                <Field label="Assign Lawyer" fieldKey="lawyer" placeholder="Lawyer" editable />
+                {/* Assigned Lawyer */}
+                <Field
+                  label="Assigned Lawyer"
+                  fieldKey="lawyer"
+                  placeholder="Lawyer"
+                  editable={canEditAssignedLawyer}
+                  renderEdit={() => (
+                    <View style={[styles.dropdownCompact, { zIndex: 2500 }]}>
+                      <DropDownPicker
+                        open={lawyerDropdownOpen}
+                        value={editableCase.lawyerId ?? null}
+                        items={lawyerItems}
+                        setOpen={setLawyerDropdownOpen}
+                        setValue={(callback) => {
+                          setEditableCase((prev) => {
+                            const current = prev.lawyerId ?? null;
+                            const nextVal = typeof callback === 'function' ? callback(current) : callback;
+                            const resolved = nextVal ?? null;
+                            return {
+                              ...prev,
+                              lawyerId: resolved,
+                              lawyer: resolved != null ? (userLookup[resolved] || prev.lawyer) : '',
+                            };
+                          });
+                        }}
+                        setItems={setLawyerItems}
+                        placeholder="Select lawyer"
+                        style={styles.dropdownInput}
+                        dropDownContainerStyle={styles.dropdownList}
+                        listMode="SCROLLVIEW"
+                        disabled={usersLoading || !canEditAssignedLawyer}
+                        loading={usersLoading}
+                        zIndex={2500}
+                        zIndexInverse={900}
+                      />
+                    </View>
+                  )}
+                />
 
                 {/* Date Filed (read-only, formatted) */}
                 <Field label="Date Filed" fieldKey="dateFiled" placeholder="YYYY-MM-DD" editable={false} formatter={formatDateTime} />
@@ -276,13 +734,24 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
 
                 {/* Payment (condensed) */}
                 <View style={styles.paymentBox}>
-                  <View style={styles.paymentRow}>
-                    <Text style={styles.payLabel}>Fee</Text>
-                    <Text style={styles.payValue}>₱{totalFee.toFixed(2)}</Text>
-                    <Text style={styles.payLabel}>Paid</Text>
-                    <Text style={styles.payValue}>₱{totalPaid.toFixed(2)}</Text>
-                    <Text style={[styles.payLabel, { marginLeft: 6 }]}>Balance</Text>
-                    <Text style={[styles.payValue, { color: remaining === 0 ? '#0c8744ff' : '#b00020', fontWeight: '700' }]}>₱{remaining.toFixed(2)}</Text>
+                  <View style={styles.paymentMatrix}>
+                    <View style={styles.paymentColumnLabels}>
+                      <Text style={styles.payLabel}>Fee</Text>
+                      <Text style={styles.payLabel}>Paid</Text>
+                      <Text style={styles.payLabel}>Balance</Text>
+                    </View>
+                    <View style={styles.paymentColumnValues}>
+                      <Text style={styles.payValue}>₱{totalFee.toFixed(2)}</Text>
+                      <Text style={styles.payValue}>₱{totalPaid.toFixed(2)}</Text>
+                      <Text
+                        style={[
+                          styles.payValue,
+                          remaining === 0 ? styles.payValuePositive : styles.payValueNegative,
+                        ]}
+                      >
+                        ₱{remaining.toFixed(2)}
+                      </Text>
+                    </View>
                   </View>
                   <TouchableOpacity onPress={() => setShowPayments(true)}>
                     <Text style={styles.linkInline}>View payment record</Text>
@@ -391,6 +860,9 @@ const styles = StyleSheet.create({
   metaRow: { flexDirection: 'row', gap: 8, marginTop: 4 },
   chip: { backgroundColor: '#f2f4f7', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 9999 },
   chipText: { color: '#475467', fontSize: 12 },
+  lastUpdatedRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 },
+  lastUpdatedLabel: { fontSize: 12, color: '#666', width: 120 },
+  lastUpdatedValue: { fontSize: 12, color: '#1f2937', flex: 1, textAlign: 'right' },
 
   // Compact field
   rowCompact: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 },
@@ -405,6 +877,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     flex: 1,
     textAlign: 'right',
+  },
+  dropdownCompact: { flex: 1 },
+  dropdownInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 6,
+    minHeight: 36,
+    paddingHorizontal: 8,
+  },
+  dropdownList: {
+    borderColor: '#ddd',
   },
 
   label: { fontSize: 13, color: "#666" },
@@ -425,9 +908,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 10,
   },
-  paymentRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  paymentMatrix: { flexDirection: 'row', justifyContent: 'space-between' },
+  paymentColumnLabels: { flex: 1 },
+  paymentColumnValues: { flex: 1, alignItems: 'flex-end' },
   payLabel: { fontSize: 12, color: '#666' },
-  payValue: { fontSize: 14, fontWeight: '600' },
+  payValue: { fontSize: 14, fontWeight: '600', textAlign: 'right' },
+  payValuePositive: { color: '#0c8744ff', fontWeight: '700' },
+  payValueNegative: { color: '#b00020', fontWeight: '700' },
   linkInline: { color: '#1e90ff', marginTop: 6, textDecorationLine: 'underline', alignSelf: 'flex-start' },
 
   docRow: {

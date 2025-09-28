@@ -326,7 +326,9 @@ function Profile() {
             )}
           </View>
           <Text style={styles.name}>{profile.name}</Text>
-          <Text style={styles.role}>{profile.user_role}</Text>
+          <Text style={styles.role}>
+            {profile.user_role === 'Admin' ? 'Super Lawyer' : profile.user_role}
+          </Text>
 
           {!isEditing ? (
             <TouchableOpacity style={styles.editBtn} onPress={() => setIsEditing(true)} disabled={saving}>
