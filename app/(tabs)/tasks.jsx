@@ -1,6 +1,6 @@
 import ActiveTask from '@/components/active-task';
 import CompletedTask from '@/components/completed-task';
-import CreateTask from '@/components/create-task';
+// import CreateTask from '@/components/create-task';
 import { styles } from "@/constants/styles/(tabs)/tasks_styles";
 import { Search } from 'lucide-react-native';
 import { useAuth } from '@/context/auth-context';
@@ -40,7 +40,7 @@ const Tasks = () => {
 
           {/* ==== Tab Buttons ==== */}
             <View style={styles.taskButtonAlignments}>
-            {['active', 'completed', 'create'].map((tab) => {
+            {['active', 'completed'].map((tab) => {
               const isActive = activeTab === tab;
 
               return (
@@ -48,9 +48,7 @@ const Tasks = () => {
                   key={tab}
                   style={[
                     styles.taskButton,
-                    tab === 'create' && !isActive && { backgroundColor: 'green' }, //  Green only if not active
-                    isActive && styles.taskButtonPressed // Normal active style
-                    
+                    isActive && styles.taskButtonPressed
                   ]}
                   onPress={() => setActiveTab(tab)}
                   activeOpacity={0.7}
@@ -58,15 +56,10 @@ const Tasks = () => {
                   <Text
                     style={[
                       styles.taskButtonText,
-                      isActive && styles.taskButtonTextPressed,
-                      tab === 'create' && !isActive && { color: 'white' } // White text only when green
+                      isActive && styles.taskButtonTextPressed
                     ]}
                   >
-                    {tab === 'active'
-                      ? 'Active Task'
-                      : tab === 'completed'
-                      ? 'Completed Task'
-                      : '+ Create Task'}
+                    {tab === 'active' ? 'Active Task' : 'Completed Task'}
                   </Text>
                 </TouchableOpacity>
               );
@@ -77,7 +70,7 @@ const Tasks = () => {
           <View style={{ flex: 1 }}>
             {activeTab === 'active' && <ActiveTask user={user} />}
             {activeTab === 'completed' && <CompletedTask user={user} />}
-            {activeTab === 'create' && <CreateTask user={user} />}
+            {/* {activeTab === 'create' && <CreateTask user={user} />} */}
           </View>
         </View>
       </TouchableWithoutFeedback>
