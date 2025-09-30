@@ -132,6 +132,8 @@ const ViewClients = ({ user, navigation }) => {
       <View style={styles.clientInfo}>
         <Text style={styles.clientName}>{item.client_fullname}</Text>
         <Text style={styles.clientEmail}>{item.client_email}</Text>
+        <Text style={styles.clientPhone}>{item.client_phonenum}</Text>
+        <Text style={styles.clientAddress}>{item.client_address}</Text>
         <Text style={styles.clientCreatedBy}>
           {getUserFullName(item.created_by)}
         </Text>
@@ -304,6 +306,12 @@ const ViewClients = ({ user, navigation }) => {
               Email: {selectedClient.client_email}
             </Text>
             <Text style={{ marginBottom: 2 }}>
+              Phone: {selectedClient.client_phonenum}
+            </Text>
+            <Text style={{ marginBottom: 2 }}>
+              Address: {selectedClient.client_address}
+            </Text>
+            <Text style={{ marginBottom: 2 }}>
               Created By: {getUserFullName(selectedClient.created_by)}
             </Text>
             <Text style={{ marginBottom: 8 }}>
@@ -402,7 +410,22 @@ const ViewClients = ({ user, navigation }) => {
             </Text>
 
             {/* Full Name */}
-            <Text>Full Name</Text>
+            <Text>First Name</Text>
+            <TextInput
+              style={{
+                borderWidth: 1,
+                borderColor: "#ccc",
+                borderRadius: 6,
+                marginBottom: 10,
+                padding: 8,
+              }}
+              value={editClient.client_fullname}
+              onChangeText={(text) =>
+                setEditClient({ ...editClient, client_fullname: text })
+              }
+            />
+
+            <Text>Last Name</Text>
             <TextInput
               style={{
                 borderWidth: 1,
@@ -430,6 +453,38 @@ const ViewClients = ({ user, navigation }) => {
               value={editClient.client_email}
               onChangeText={(text) =>
                 setEditClient({ ...editClient, client_email: text })
+              }
+            />
+
+            {/* Phone */}
+            <Text>Phone</Text>
+            <TextInput
+              style={{
+                borderWidth: 1,
+                borderColor: "#ccc",
+                borderRadius: 6,
+                marginBottom: 10,
+                padding: 8,
+              }}
+              value={editClient.client_phonenum}
+              onChangeText={(text) =>
+                setEditClient({ ...editClient, client_phonenum: text })
+              }
+            />
+
+            {/* Address */}
+            <Text>Address</Text>
+            <TextInput
+              style={{
+                borderWidth: 1,
+                borderColor: "#ccc",
+                borderRadius: 6,
+                marginBottom: 10,
+                padding: 8,
+              }}
+              value={editClient.client_address}
+              onChangeText={(text) =>
+                setEditClient({ ...editClient, client_address: text })
               }
             />
 

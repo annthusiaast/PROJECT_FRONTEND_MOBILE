@@ -30,6 +30,7 @@ const ClientContact = () => {
     contact_fullname: '',
     contact_email: '',
     contact_phone: '',
+    contact_address: '',
     contact_role: '',
     client_id: '',
   });
@@ -113,6 +114,7 @@ const ClientContact = () => {
       contact_fullname: item.contact_fullname || '',
       contact_email: item.contact_email || '',
       contact_phone: item.contact_phone || '',
+      contact_address: item.contact_address || '',
       contact_role: item.contact_role || '',
       client_id: item.client_id,
     });
@@ -159,6 +161,7 @@ const ClientContact = () => {
         <Text style={styles.contactName}>{item.contact_fullname}</Text>
         <Text style={styles.contactText}>{item.contact_email}</Text>
         {item.contact_phone ? <Text style={styles.contactText}>{item.contact_phone}</Text> : null}
+        {item.contact_address ? <Text style={styles.contactText}>{item.contact_address}</Text> : null}
         {item.contact_role ? <Text style={styles.contactText}>{item.contact_role}</Text> : null}
         <Text style={styles.contactText}>{getClientNameById(item.client_id)}</Text>
       </View>
@@ -293,9 +296,11 @@ const ClientContact = () => {
             </View>
             {/* Inputs */}
             <View style={{ marginTop: 4 }}>
-              <EditableField label="Full Name" value={editForm.contact_fullname} onChange={(v) => setEditForm(f => ({ ...f, contact_fullname: v }))} />
+              <EditableField label="First Name" value={editForm.contact_fullname} onChange={(v) => setEditForm(f => ({ ...f, contact_fullname: v }))} />
+              <EditableField label="Last Name" value={editForm.contact_fullname} onChange={(v) => setEditForm(f => ({ ...f, contact_fullname: v }))} />
               <EditableField label="Email" value={editForm.contact_email} onChange={(v) => setEditForm(f => ({ ...f, contact_email: v }))} keyboardType="email-address" />
               <EditableField label="Phone" value={editForm.contact_phone} onChange={(v) => setEditForm(f => ({ ...f, contact_phone: v }))} keyboardType="phone-pad" />
+              <EditableField label="Address" value={editForm.contact_address} onChange={(v) => setEditForm(f => ({ ...f, contact_address: v }))} />
               <EditableField label="Role" value={editForm.contact_role} onChange={(v) => setEditForm(f => ({ ...f, contact_role: v }))} />
             </View>
             <View style={styles.modalActions}>

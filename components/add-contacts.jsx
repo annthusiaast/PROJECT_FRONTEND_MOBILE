@@ -24,6 +24,7 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
     contact_fullname: "",
     contact_email: "",
     contact_phone: "",
+    contact_address: "",
     contact_role: "",
     client_id: null, // null means no selection yet so placeholder shows
   });
@@ -47,9 +48,9 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
   };
 
   const handleSubmit = () => {
-    const { contact_fullname, contact_email, contact_phone, client_id } = formData;
+    const { contact_fullname, contact_email, contact_phone, contact_address, client_id } = formData;
     setErrorMsg('');
-    if (!contact_fullname || !contact_email || !contact_phone || !client_id) {
+    if (!contact_fullname || !contact_email || !contact_phone || !contact_address || !client_id) {
       Alert.alert('Validation Error', 'Please fill in all required fields.');
       return;
     }
@@ -85,7 +86,7 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
       try { saved = await res.json(); } catch { }
       if (onAdd) onAdd(saved);
       Alert.alert('Success', 'Contact added.');
-      setFormData({ contact_fullname: '', contact_email: '', contact_phone: '', contact_role: '', client_id: null });
+      setFormData({ contact_fullname: '', contact_email: '', contact_phone: '', contact_address: '', contact_role: '', client_id: null });
       onClose && onClose();
     } catch (e) {
       setErrorMsg(e.message);
@@ -131,7 +132,15 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
           />
 
           <TextInput
-            placeholder="Full Name"
+            placeholder="First Name"
+            placeholderTextColor={"#666"}
+            value={formData.contact_fullname}
+            onChangeText={(text) => handleChange("contact_fullname", text)}
+            style={styles.input}
+            editable={!isSubmitting}
+          />
+          <TextInput
+            placeholder="Last Name"
             placeholderTextColor={"#666"}
             value={formData.contact_fullname}
             onChangeText={(text) => handleChange("contact_fullname", text)}
@@ -153,6 +162,14 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
             keyboardType="phone-pad"
             value={formData.contact_phone}
             onChangeText={(text) => handleChange("contact_phone", text)}
+            style={styles.input}
+            editable={!isSubmitting}
+          />
+          <TextInput
+            placeholder="Address"
+            placeholderTextColor={"#666"}
+            value={formData.contact_address}
+            onChangeText={(text) => handleChange("contact_address", text)}
             style={styles.input}
             editable={!isSubmitting}
           />

@@ -20,6 +20,7 @@ const AddClient = ({ visible, onClose, onCreated }) => {
     client_fullname: "",
     client_email: "",
     client_phonenum: "",
+    client_address: "",
     client_password: "",
     created_by: user?.user_id,
   });
@@ -28,6 +29,7 @@ const AddClient = ({ visible, onClose, onCreated }) => {
     contact_fullname: "",
     contact_email: "",
     contact_phone: "",
+    contact_address: "",
     contact_role: "",
   });
 
@@ -42,14 +44,14 @@ const AddClient = ({ visible, onClose, onCreated }) => {
   };
 
   const handleAddContact = () => {
-    const { contact_fullname, contact_email, contact_phone, contact_role } = contact;
-    if (!contact_fullname || !contact_email || !contact_phone || !contact_role) {
+    const { contact_fullname, contact_email, contact_phone, contact_address, contact_role } = contact;
+    if (!contact_fullname || !contact_email || !contact_phone || !contact_address || !contact_role) {
       showToast("Fill all contact fields", 'error');
       return;
     }
 
     setContacts([...contacts, contact]);
-    setContact({ contact_fullname: "", contact_email: "", contact_phone: "", contact_role: "" });
+    setContact({ contact_fullname: "", contact_email: "", contact_phone: "", contact_address: "", contact_role: "" });
   };
 
   const handleRemoveContact = (index) => {
@@ -57,8 +59,8 @@ const AddClient = ({ visible, onClose, onCreated }) => {
   };
 
   const validateClient = () => {
-    const { client_fullname, client_email, client_phonenum, client_password } = clientData;
-    if (!client_fullname || !client_email || !client_phonenum || !client_password) {
+    const { client_fullname, client_email, client_phonenum, client_address, client_password } = clientData;
+    if (!client_fullname || !client_email || !client_phonenum || !client_address || !client_password) {
       setErrorMsg('Please fill all required client fields.');
       return false;
     }
@@ -115,9 +117,9 @@ const AddClient = ({ visible, onClose, onCreated }) => {
       onCreated && onCreated({ client: createdClient, contacts: createdContacts });
 
       // Reset form
-      setClientData({ client_fullname: '', client_email: '', client_phonenum: '', client_password: '', created_by: user?.user_id });
+      setClientData({ client_fullname: '', client_email: '', client_phonenum: '',client_address: '', client_password: '', created_by: user?.user_id });
       setContacts([]);
-      setContact({ contact_fullname: '', contact_email: '', contact_phone: '', contact_role: '' });
+      setContact({ contact_fullname: '', contact_email: '', contact_phone: '',contact_address:'', contact_role: '' });
       onClose && onClose();
     } catch (e) {
       setErrorMsg(e.message);
@@ -146,7 +148,15 @@ const AddClient = ({ visible, onClose, onCreated }) => {
             <Text style={styles.sectionTitle}>Client Information</Text>
             <TextInput
               style={styles.input}
-              placeholder="Name / Company"
+              placeholder="First Name"
+              placeholderTextColor={"#666"}
+              value={clientData.client_fullname}
+              editable={!isSubmitting}
+              onChangeText={(text) => setClientData({ ...clientData, client_fullname: text })}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Last Name"
               placeholderTextColor={"#666"}
               value={clientData.client_fullname}
               editable={!isSubmitting}
@@ -172,19 +182,35 @@ const AddClient = ({ visible, onClose, onCreated }) => {
             />
             <TextInput
               style={styles.input}
+              placeholder="Address"
+              placeholderTextColor={"#666"}
+              value={clientData.client_address}
+              editable={!isSubmitting}
+              onChangeText={(text) => setClientData({ ...clientData, client_address: text })}
+            />
+            {/* <TextInput
+              style={styles.input}
               placeholder="Password"
               placeholderTextColor={"#666"}
               secureTextEntry
               value={clientData.client_password}
               editable={!isSubmitting}
               onChangeText={(text) => setClientData({ ...clientData, client_password: text })}
-            />
+            /> */}
 
             {/* Contact person */}
             <Text style={styles.sectionTitle}>Contact Person</Text>
             <TextInput
               style={styles.input}
-              placeholder="Full Name"
+              placeholder="First Name"
+              placeholderTextColor={"#666"}
+              value={contact.contact_fullname}
+              editable={!isSubmitting}
+              onChangeText={(text) => setContact({ ...contact, contact_fullname: text })}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Last Name"
               placeholderTextColor={"#666"}
               value={contact.contact_fullname}
               editable={!isSubmitting}
@@ -210,6 +236,14 @@ const AddClient = ({ visible, onClose, onCreated }) => {
             />
             <TextInput
               style={styles.input}
+              placeholder="Address"
+              placeholderTextColor={"#666"}
+              value={contact.contact_address}
+              editable={!isSubmitting}
+              onChangeText={(text) => setContact({ ...contact, contact_address: text })}
+            />
+            <TextInput
+              style={styles.input}
               placeholder="Relation / Role"
               placeholderTextColor={"#666"}
               value={contact.contact_role}
@@ -227,6 +261,7 @@ const AddClient = ({ visible, onClose, onCreated }) => {
                 <Text style={{ flex: 1 }}>{item.contact_fullname}</Text>
                 <Text style={{ flex: 1 }}>{item.contact_email}</Text>
                 <Text style={{ flex: 1 }}>{item.contact_phone}</Text>
+                <Text style={{ flex: 1 }}>{item.contact_address}</Text>
                 <Text style={{ flex: 1 }}>{item.contact_role}</Text>
                 <TouchableOpacity onPress={() => handleRemoveContact(index)}>
                   <Icon name="trash-2" size={18} color="red" />

@@ -17,6 +17,8 @@ export const styles = StyleSheet.create({
   clientInfo: { flex: 1 },
   clientName: { fontWeight: "600", fontSize: 16 },
   clientEmail: { color: "#6b7280" },
+  clientPhone: { color: "#6b7280" },
+  clientAddress: { color: "#6b7280" },
   clientCreatedBy: { color: "#9ca3af", fontSize: 12 },
   clientActions: { flexDirection: "row", gap: 10 },
   emptyText: { textAlign: "center", color: "#9ca3af", marginTop: 20 },
