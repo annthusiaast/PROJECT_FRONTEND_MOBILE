@@ -180,13 +180,9 @@ const Documents = () => {
                   </View>
                 </View>
 
-                {/* Buttons (View & Download close together) */}
+                {/* Buttons ( Download close together) */}
                 <View style={{ flexDirection: "row", justifyContent: "flex-end", marginTop: 10 }}>
-                  <TouchableOpacity style={[styles.viewButton, { marginRight: 6 }]} onPress={() => openUrl(doc.fileUrl)} disabled={!doc.fileUrl}>
-                    <Eye size={16} color="#1E3A8A" />
-                    <Text style={styles.viewButtonText}>View</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.viewButton} onPress={() => openUrl(doc.fileUrl)} disabled={!doc.fileUrl}>
+                  <TouchableOpacity style={styles.downloadButton} onPress={() => openUrl(doc.fileUrl)} disabled={!doc.fileUrl}>
                     <Download size={16} color="#1E3A8A" />
                     <Text style={styles.ButtonText}>Download</Text>
                   </TouchableOpacity>

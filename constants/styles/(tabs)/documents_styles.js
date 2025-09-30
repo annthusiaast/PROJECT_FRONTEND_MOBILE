@@ -139,19 +139,22 @@ export const styles = StyleSheet.create({
         gap: 10,
         marginTop: 10,
     },
-    viewButton: {
-        flex: 1,
-        borderWidth: 1,
-        borderColor: "#1E3A8A",
-        borderRadius: 8,
-        paddingVertical: 10,
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "center",
-        gap: 6,
+
+    downloadButton: {
+    borderWidth: 1,
+    borderColor: "#1E3A8A",
+    backgroundColor: "#f3f5faff",
+    borderRadius: 6,
+    paddingVertical: 8,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 10,
+    alignSelf: "center", // 👈 push button to the right
     },
-    viewButtonText: {
-        color: "#1E3A8A",
+
+    downloadButtonText: {
+        color: "#0e0e0eff",
         fontWeight: "500",
     },
 
