@@ -36,7 +36,8 @@ const Dashboard = () => {
       if (!user?.user_id) return;
       setLoading(true);
       try {
-        const res = await fetch(getEndpoint(`/user-logs/${user.user_id}`), {
+        const endpointPath = user?.user_role === 'Admin' ? `/user-logs` : `/user-logs/${user.user_id}`;
+        const res = await fetch(getEndpoint(endpointPath), {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
           // cookies are used by backend verifyUser
@@ -62,7 +63,7 @@ const Dashboard = () => {
       }
     };
     fetchLogs();
-  }, [user?.user_id]);
+  }, [user?.user_id, user?.user_role]);
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>

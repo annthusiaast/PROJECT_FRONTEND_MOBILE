@@ -113,7 +113,8 @@ function Profile() {
       if (!user?.user_id) return;
       setLoadingLogs(true);
       try {
-        const res = await fetch(getEndpoint(`/user-logs/${user.user_id}`), {
+        const endpointPath = user?.user_role === 'Admin' ? `/user-logs` : `/user-logs/${user.user_id}`;
+        const res = await fetch(getEndpoint(endpointPath), {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
@@ -135,7 +136,7 @@ function Profile() {
       }
     };
     fetchLogs();
-  }, [user?.user_id]);
+  }, [user?.user_id, user?.user_role]);
 
   const [showLogDetails, setShowLogDetails] = useState(false);
   const [selectedLog, setSelectedLog] = useState(null);

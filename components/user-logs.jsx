@@ -27,7 +27,9 @@ export default function UserLogs({ onClose }) {
       if (!user?.user_id) return;
       setLoading(true);
       try {
-        const res = await fetch(getEndpoint(`/user-logs/${user.user_id}`), {
+        // Admins should see all logs; others see their own
+        const endpointPath = user?.user_role === 'Admin' ? `/user-logs` : `/user-logs/${user.user_id}`;
+        const res = await fetch(getEndpoint(endpointPath), {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
@@ -61,7 +63,7 @@ export default function UserLogs({ onClose }) {
       }
     };
     fetchLogs();
-  }, [user?.user_id]);
+  }, [user?.user_id, user?.user_role]);
 
   const filteredLogs = useMemo(() => {
     const q = searchText.trim().toLowerCase();

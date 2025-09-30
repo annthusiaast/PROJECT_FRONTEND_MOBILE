@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,10 +9,12 @@ import {
   Platform,
   TouchableWithoutFeedback,
   Keyboard,
+  Linking,
 } from "react-native";
-import { Bell, Calendar, Clock, Download, Eye, Search, ChevronDown } from "lucide-react-native";
-import { today, documents, CASE_FILTERS, DOC_TYPES } from "@/constants/sample_data";
+import { Calendar, Clock, Download, Eye, Search, ChevronDown } from "lucide-react-native";
+import { CASE_FILTERS, DOC_TYPES } from "@/constants/sample_data";
 import { styles } from "../../constants/styles/(tabs)/documents_styles";
+import { API_CONFIG, getEndpoint } from "@/constants/api-config";
 
 const Dropdown = ({ label, options, value, onSelect, topOffset }) => {
   const [open, setOpen] = useState(false);
@@ -67,15 +69,58 @@ const Documents = () => {
   const [activeTab, setActiveTab] = useState("Recent");
   const [caseFilter, setCaseFilter] = useState("All Cases");
   const [typeFilter, setTypeFilter] = useState("All Types");
+  const [docs, setDocs] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // Filtered Documents
-  const filteredDocs = documents.filter(
+  // Fetch documents from backend
+  useEffect(() => {
+    const fetchDocs = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(getEndpoint('/documents'), {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        });
+        if (!res.ok) throw new Error('Failed to fetch documents');
+        const data = await res.json();
+        const origin = String(API_CONFIG.BASE_URL || '').replace('/api', '');
+        const mapped = Array.isArray(data) ? data.map((d, idx) => ({
+          id: d.doc_id || idx,
+          title: d.doc_name || 'Untitled',
+          caseName: d.case_id ? `Case #${d.case_id}` : 'No Case',
+          type: d.doc_type || 'Document',
+          date: d.doc_due_date || d.created_at || d.updated_at || '',
+          size: d.size || '',
+          fileUrl: d.doc_file ? `${origin}${d.doc_file}` : null,
+          raw: d,
+        })) : [];
+        setDocs(mapped);
+      } catch (e) {
+        console.warn('Documents fetch failed:', e.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDocs();
+  }, []);
+
+  const filteredDocs = docs.filter(
     (doc) =>
       (caseFilter === "All Cases" || doc.caseName === caseFilter) &&
       (typeFilter === "All Types" || doc.type === typeFilter)
   );
 
   const finalDocs = activeTab === "Recent" ? filteredDocs.slice(0, 5) : filteredDocs;
+
+  const openUrl = async (url) => {
+    if (!url) return;
+    try {
+      await Linking.openURL(url);
+    } catch (e) {
+      console.warn('Failed to open URL:', e.message);
+    }
+  };
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
@@ -127,21 +172,21 @@ const Documents = () => {
                 <View style={styles.docMeta}>
                   <View style={styles.metaItem}>
                     <Calendar size={14} color="#666" />
-                    <Text style={styles.metaText}>{doc.date}</Text>
+                    <Text style={styles.metaText}>{doc.date ? String(doc.date) : ''}</Text>
                   </View>
                   <View style={styles.metaItem}>
                     <Clock size={14} color="#666" />
-                    <Text style={styles.metaText}>{doc.size}</Text>
+                    <Text style={styles.metaText}>{doc.size || '-'}</Text>
                   </View>
                 </View>
 
                 {/* Buttons (View & Download close together) */}
                 <View style={{ flexDirection: "row", justifyContent: "flex-end", marginTop: 10 }}>
-                  <TouchableOpacity style={[styles.viewButton, { marginRight: 6 }]}>
+                  <TouchableOpacity style={[styles.viewButton, { marginRight: 6 }]} onPress={() => openUrl(doc.fileUrl)} disabled={!doc.fileUrl}>
                     <Eye size={16} color="#1E3A8A" />
                     <Text style={styles.viewButtonText}>View</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.viewButton}>
+                  <TouchableOpacity style={styles.viewButton} onPress={() => openUrl(doc.fileUrl)} disabled={!doc.fileUrl}>
                     <Download size={16} color="#1E3A8A" />
                     <Text style={styles.ButtonText}>Download</Text>
                   </TouchableOpacity>
