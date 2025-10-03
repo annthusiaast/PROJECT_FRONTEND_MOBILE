@@ -6,6 +6,7 @@ import {
   FlatList,
   Alert,
   TextInput,
+  ScrollView,
 } from "react-native";
 import { Pencil, Trash2, Eye, RefreshCcw } from "lucide-react-native";
 import { styles } from "../constants/styles/view-clients";
@@ -39,7 +40,6 @@ const ViewClients = ({ user, navigation }) => {
   // fetch all
   const fetchAll = useCallback(async () => {
     if (!user) return;
-
     try {
       const clients_endpoint =
         user.user_role === "Admin"
@@ -128,7 +128,25 @@ const ViewClients = ({ user, navigation }) => {
   };
 
   const renderItem = ({ item }) => (
-    <View style={styles.clientRow}>
+    <View
+      style={[
+        styles.clientRow,
+        {
+          backgroundColor: "#ffffff",
+          borderWidth: 1,
+          borderColor: "#e5e7eb", // gray-200
+          borderRadius: 12,
+          padding: 12,
+          marginHorizontal: 16,
+          marginBottom: 6,
+          shadowColor: "#000",
+          shadowOpacity: 0.06,
+          shadowRadius: 6,
+          shadowOffset: { width: 0, height: 2 },
+          elevation: 2,
+        },
+      ]}
+    >
       <View style={styles.clientInfo}>
         <Text style={styles.clientName}>{item.client_fullname}</Text>
         <Text style={styles.clientEmail}>{item.client_email}</Text>
@@ -164,7 +182,7 @@ const ViewClients = ({ user, navigation }) => {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { flex: 1 }]}> 
       {/* TABS */}
       <View style={styles.tabContainer}>
         <TouchableOpacity
@@ -211,6 +229,8 @@ const ViewClients = ({ user, navigation }) => {
             data={paginated}
             keyExtractor={(item) => item.client_id.toString()}
             renderItem={renderItem}
+            style={{ flex: 1 }}
+            contentContainerStyle={{ paddingBottom: 120 }}
             ListEmptyComponent={
               <Text style={styles.emptyText}>No clients found.</Text>
             }
@@ -299,68 +319,100 @@ const ViewClients = ({ user, navigation }) => {
               maxHeight: "80%",
             }}
           >
-            <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 6 }}>
-              {selectedClient.client_fullname}
-            </Text>
-            <Text style={{ marginBottom: 2 }}>
-              Email: {selectedClient.client_email}
-            </Text>
-            <Text style={{ marginBottom: 2 }}>
-              Phone: {selectedClient.client_phonenum}
-            </Text>
-            <Text style={{ marginBottom: 2 }}>
-              Address: {selectedClient.client_address}
-            </Text>
-            <Text style={{ marginBottom: 2 }}>
-              Created By: {getUserFullName(selectedClient.created_by)}
-            </Text>
-            <Text style={{ marginBottom: 8 }}>
-              Status: {selectedClient.client_status}
-            </Text>
-            <View style={{ marginBottom: 6 }}>
-              <Text style={{ fontWeight: "600", marginBottom: 4 }}>
-                Contacts:
-              </Text>
-              {contacts.filter(
-                (c) => c.client_id === selectedClient.client_id
-              ).length === 0 ? (
-                <Text style={{ fontStyle: "italic", color: "#555" }}>
-                  No contacts.
+            {/* Header with name and status badge */}
+            <View style={{ marginBottom: 8 }}>
+              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                <Text style={{ fontSize: 20, fontWeight: "800", color: "#111827", flex: 1, paddingRight: 8 }}>
+                  {selectedClient.client_fullname}
                 </Text>
-              ) : (
-                <View style={{ gap: 6 }}>
-                  {contacts
-                    .filter((c) => c.client_id === selectedClient.client_id)
-                    .map((c) => (
-                      <View
-                        key={c.contact_id || c.contact_email}
-                        style={{
-                          borderBottomWidth: 1,
-                          borderBottomColor: "#eee",
-                          paddingBottom: 4,
-                        }}
-                      >
-                        <Text style={{ fontWeight: "500" }}>
-                          {c.contact_fullname}
-                        </Text>
-                        <Text style={{ color: "#333" }}>{c.contact_email}</Text>
-                        {c.contact_phone ? (
-                          <Text style={{ color: "#555", fontSize: 12 }}>
-                            {c.contact_phone}
-                          </Text>
-                        ) : null}
-                      </View>
-                    ))}
+                <View
+                  style={{
+                    backgroundColor:
+                      selectedClient.client_status === "Active"
+                        ? "#16a34a"
+                        : selectedClient.client_status === "Removed"
+                        ? "#dc2626"
+                        : "#64748b",
+                    paddingVertical: 4,
+                    paddingHorizontal: 10,
+                    borderRadius: 999,
+                  }}
+                >
+                  <Text style={{ color: "#fff", fontWeight: "700", fontSize: 12 }}>
+                    {selectedClient.client_status || "Unknown"}
+                  </Text>
                 </View>
-              )}
+              </View>
             </View>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "flex-end",
-                gap: 12,
-              }}
-            >
+
+            {/* Scrollable details */}
+            <ScrollView style={{ maxHeight: "75%" }} showsVerticalScrollIndicator={false}>
+              <View style={{ gap: 10 }}>
+                {/* Info rows */}
+                <View style={{ borderWidth: 1, borderColor: "#e5e7eb", borderRadius: 10, padding: 12, backgroundColor: "#f9fafb" }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
+                    <Text style={{ color: "#6b7280", fontWeight: "700" }}>Email</Text>
+                    <Text style={{ color: "#111827", fontWeight: "600" }}>
+                      {selectedClient.client_email || "—"}
+                    </Text>
+                  </View>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
+                    <Text style={{ color: "#6b7280", fontWeight: "700" }}>Phone</Text>
+                    <Text style={{ color: "#111827" }}>
+                      {selectedClient.client_phonenum || "—"}
+                    </Text>
+                  </View>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
+                    <Text style={{ color: "#6b7280", fontWeight: "700" }}>Address</Text>
+                    <Text style={{ color: "#111827", flex: 1, textAlign: "right", paddingLeft: 12 }}>
+                      {selectedClient.client_address || "—"}
+                    </Text>
+                  </View>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                    <Text style={{ color: "#6b7280", fontWeight: "700" }}>Created By</Text>
+                    <Text style={{ color: "#111827" }}>
+                      {getUserFullName(selectedClient.created_by)}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Contacts section */}
+                <View>
+                  <Text style={{ fontWeight: "800", marginBottom: 6, color: "#111827" }}>Contacts</Text>
+                  {contacts.filter((c) => c.client_id === selectedClient.client_id).length === 0 ? (
+                    <Text style={{ fontStyle: "italic", color: "#6b7280" }}>No contacts.</Text>
+                  ) : (
+                    <View style={{ gap: 8 }}>
+                      {contacts
+                        .filter((c) => c.client_id === selectedClient.client_id)
+                        .map((c) => (
+                          <View
+                            key={c.contact_id || c.contact_email}
+                            style={{
+                              borderWidth: 1,
+                              borderColor: "#e5e7eb",
+                              backgroundColor: "#ffffff",
+                              padding: 10,
+                              borderRadius: 10,
+                            }}
+                          >
+                            <Text style={{ fontWeight: "700", marginBottom: 2 }}>
+                              {c.contact_fullname}
+                            </Text>
+                            <Text style={{ color: "#374151", marginBottom: 2 }}>{c.contact_email}</Text>
+                            {c.contact_phone ? (
+                              <Text style={{ color: "#6b7280", fontSize: 12 }}>{c.contact_phone}</Text>
+                            ) : null}
+                          </View>
+                        ))}
+                    </View>
+                  )}
+                </View>
+              </View>
+            </ScrollView>
+
+            {/* Actions */}
+            <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 12, marginTop: 10 }}>
               <TouchableOpacity
                 onPress={() => {
                   setShowDetail(false);
@@ -368,13 +420,13 @@ const ViewClients = ({ user, navigation }) => {
                 }}
                 style={{
                   backgroundColor: "#114d89",
-                  paddingVertical: 8,
+                  paddingVertical: 10,
                   paddingHorizontal: 18,
-                  borderRadius: 8,
+                  borderRadius: 10,
                 }}
                 activeOpacity={0.8}
               >
-                <Text style={{ color: "#fff", fontWeight: "600" }}>Close</Text>
+                <Text style={{ color: "#fff", fontWeight: "700" }}>Close</Text>
               </TouchableOpacity>
             </View>
           </View>

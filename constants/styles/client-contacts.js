@@ -1,12 +1,22 @@
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f9fafb", padding: 16 },
+  container: { flex: 1, backgroundColor: "#000000", padding: 16 },
   errorText: { color: "red", marginBottom: 10 },
   header: { marginBottom: 12 },
   title: { fontSize: 18, fontWeight: "bold" },
   subtitle: { fontSize: 12, color: "gray" },
   searchRow: { flexDirection: "row", marginBottom: 12 },
+
+  contactRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 12,
+    borderBottomWidth: 1,
+    borderColor: "#e5e7eb",
+  },
+
   input: {
     flex: 1,
     borderWidth: 1,

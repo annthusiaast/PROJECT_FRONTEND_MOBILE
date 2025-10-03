@@ -156,7 +156,28 @@ const ClientContact = () => {
   };
 
   const renderContactItem = ({ item }) => (
-    <View style={[styles.contactCard, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}>
+    <View
+      style={[
+        styles.contactCard,
+        {
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          backgroundColor: '#ffffff',
+          borderWidth: 1,
+          borderColor: '#d1d5db', // gray-300 for clearer border
+          borderRadius: 12,
+          padding: 12,
+          marginHorizontal: 16, // add side gap similar to view-clients
+          marginBottom: 6,
+          shadowColor: '#000',
+          shadowOpacity: 0.06,
+          shadowRadius: 6,
+          shadowOffset: { width: 0, height: 2 },
+          elevation: 2,
+        },
+      ]}
+    >
       <View style={{ flex: 1, paddingRight: 8 }}>
         <Text style={styles.contactName}>{item.contact_fullname}</Text>
         <Text style={styles.contactText}>{item.contact_email}</Text>
@@ -185,7 +206,7 @@ const ClientContact = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView >
       {error && <Text style={styles.errorText}>{error.message}</Text>}
 
 
