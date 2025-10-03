@@ -13,6 +13,7 @@ import { Pencil, Trash2 } from "lucide-react-native"; // works with lucide-react
 import { useAuth } from "@/context/auth-context"; // keep same context
 import { getEndpoint } from "../constants/api-config";
 import { styles } from "../constants/styles/client-contacts"; // base styles
+import { colors } from "../constants/styles/colors";
 import AddContact from "./add-contacts"; // modal component
 
 const ClientContact = () => {
@@ -156,28 +157,7 @@ const ClientContact = () => {
   };
 
   const renderContactItem = ({ item }) => (
-    <View
-      style={[
-        styles.contactCard,
-        {
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          backgroundColor: '#ffffff',
-          borderWidth: 1,
-          borderColor: '#d1d5db', // gray-300 for clearer border
-          borderRadius: 12,
-          padding: 12,
-          marginHorizontal: 16, // add side gap similar to view-clients
-          marginBottom: 6,
-          shadowColor: '#000',
-          shadowOpacity: 0.06,
-          shadowRadius: 6,
-          shadowOffset: { width: 0, height: 2 },
-          elevation: 2,
-        },
-      ]}
-    >
+    <View style={[styles.card, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}>
       <View style={{ flex: 1, paddingRight: 8 }}>
         <Text style={styles.contactName}>{item.contact_fullname}</Text>
         <Text style={styles.contactText}>{item.contact_email}</Text>
@@ -187,10 +167,11 @@ const ClientContact = () => {
         <Text style={styles.contactText}>{getClientNameById(item.client_id)}</Text>
       </View>
       <View style={[styles.actionsRow, { marginTop: 0 }]}>
-        <TouchableOpacity onPress={() => openEdit(item)} accessibilityLabel="Edit Contact">
+        <TouchableOpacity hitSlop={styles.iconHitSlop} onPress={() => openEdit(item)} accessibilityLabel="Edit Contact">
           <Pencil color="orange" size={20} />
         </TouchableOpacity>
         <TouchableOpacity
+          hitSlop={styles.iconHitSlop}
           onPress={() => { setContactToBeRemoved(item); setRemoveContactModalOpen(true); }}
           accessibilityLabel="Delete Contact"
         >
@@ -206,27 +187,13 @@ const ClientContact = () => {
   };
 
   return (
-    <SafeAreaView >
+    <SafeAreaView style={{ flex: 1 }}>
       {error && <Text style={styles.errorText}>{error.message}</Text>}
 
 
       {/* Floating Add Contact Button */}
       <TouchableOpacity
-        style={{
-          position: 'absolute',
-          bottom: 20,
-          right: 20,
-          backgroundColor: '#114d89',
-          paddingVertical: 14,
-          paddingHorizontal: 16,
-          borderRadius: 28,
-          shadowColor: '#000',
-          shadowOpacity: 0.2,
-          shadowRadius: 4,
-          shadowOffset: { width: 0, height: 2 },
-          elevation: 4,
-          zIndex: 10,
-        }}
+        style={styles.fab}
         onPress={() => setShowAddModal(true)}
         activeOpacity={0.85}
         accessibilityLabel="Add Contact"
@@ -239,6 +206,8 @@ const ClientContact = () => {
         data={paginatedContacts}
         keyExtractor={(item) => item.contact_id.toString()}
         renderItem={renderContactItem}
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: 120 }}
         ListEmptyComponent={
           <Text style={styles.emptyText}>No client contacts found.</Text>
         }

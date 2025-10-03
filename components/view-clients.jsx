@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { Pencil, Trash2, Eye, RefreshCcw } from "lucide-react-native";
 import { styles } from "../constants/styles/view-clients";
+import { colors } from "../constants/styles/colors";
 
 // api
 import { getEndpoint } from "../constants/api-config";
@@ -128,25 +129,7 @@ const ViewClients = ({ user, navigation }) => {
   };
 
   const renderItem = ({ item }) => (
-    <View
-      style={[
-        styles.clientRow,
-        {
-          backgroundColor: "#ffffff",
-          borderWidth: 1,
-          borderColor: "#e5e7eb", // gray-200
-          borderRadius: 12,
-          padding: 12,
-          marginHorizontal: 16,
-          marginBottom: 6,
-          shadowColor: "#000",
-          shadowOpacity: 0.06,
-          shadowRadius: 6,
-          shadowOffset: { width: 0, height: 2 },
-          elevation: 2,
-        },
-      ]}
-    >
+    <View style={[styles.card, styles.clientRow]}>
       <View style={styles.clientInfo}>
         <Text style={styles.clientName}>{item.client_fullname}</Text>
         <Text style={styles.clientEmail}>{item.client_email}</Text>
@@ -158,6 +141,7 @@ const ViewClients = ({ user, navigation }) => {
       </View>
       <View style={styles.clientActions}>
         <TouchableOpacity
+          hitSlop={styles.iconHitSlop}
           onPress={() => {
             setSelectedClient(item);
             setShowDetail(true);
@@ -165,15 +149,15 @@ const ViewClients = ({ user, navigation }) => {
         >
           <Eye size={20} color="blue" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => setEditClient(item)}>
+        <TouchableOpacity hitSlop={styles.iconHitSlop} onPress={() => setEditClient(item)}>
           <Pencil size={20} color="orange" />
         </TouchableOpacity>
         {item.client_status !== "Removed" ? (
-          <TouchableOpacity onPress={() => confirmRemove(item)}>
+          <TouchableOpacity hitSlop={styles.iconHitSlop} onPress={() => confirmRemove(item)}>
             <Trash2 size={20} color="red" />
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity onPress={() => {}}>
+          <TouchableOpacity hitSlop={styles.iconHitSlop} onPress={() => {}}>
             <RefreshCcw size={20} color="green" />
           </TouchableOpacity>
         )}
@@ -262,21 +246,7 @@ const ViewClients = ({ user, navigation }) => {
 
           {/* Floating Add Client Button */}
           <TouchableOpacity
-            style={{
-              position: "absolute",
-              bottom: 20,
-              right: 20,
-              backgroundColor: "#114d89",
-              paddingVertical: 14,
-              paddingHorizontal: 16,
-              borderRadius: 28,
-              shadowColor: "#000",
-              shadowOpacity: 0.2,
-              shadowRadius: 4,
-              shadowOffset: { width: 0, height: 2 },
-              elevation: 4,
-              zIndex: 10,
-            }}
+            style={styles.fab}
             activeOpacity={0.8}
             accessibilityRole="button"
             accessibilityLabel="Add Client"

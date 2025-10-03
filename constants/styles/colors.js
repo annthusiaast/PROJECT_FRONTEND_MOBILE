@@ -1,0 +1,15 @@
+export const colors = {
+  white: "#ffffff",
+  black: "#000000",
+  gray200: "#e5e7eb",
+  gray300: "#d1d5db",
+  gray400: "#9ca3af",
+  gray500: "#6b7280",
+  slate500: "#64748b",
+  bluePrimary: "#114d89",
+  error: "#dc2626",
+  success: "#16a34a",
+  shadow: "#000000",
+  textPrimary: "#111827",
+  overlayDim: "rgba(0,0,0,0.45)",
+};

@@ -1,7 +1,8 @@
 import { StyleSheet } from "react-native";
+import { colors } from "./colors";
 
 export const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#000000", padding: 16 },
+  container: { flex: 1, backgroundColor: colors.white, padding: 16 },
   errorText: { color: "red", marginBottom: 10 },
   header: { marginBottom: 12 },
   title: { fontSize: 18, fontWeight: "bold" },
@@ -14,7 +15,7 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     padding: 12,
     borderBottomWidth: 1,
-    borderColor: "#e5e7eb",
+    borderColor: colors.gray200,
   },
 
   input: {
@@ -32,8 +33,22 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
   },
   addButtonText: { color: "white", fontWeight: "600" },
+  card: {
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.gray200,
+    borderRadius: 12,
+    padding: 12,
+    marginHorizontal: 16,
+    marginBottom: 6,
+    shadowColor: colors.shadow,
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
   contactCard: {
-    backgroundColor: "white",
+    backgroundColor: colors.white,
     padding: 12,
     borderRadius: 10,
     marginBottom: 8,
@@ -81,4 +96,20 @@ export const styles = StyleSheet.create({
     backgroundColor: "#dc2626",
     borderRadius: 8,
   },
+  fab: {
+    position: "absolute",
+    bottom: 20,
+    right: 20,
+    backgroundColor: colors.bluePrimary,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 28,
+    shadowColor: colors.shadow,
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 4,
+    zIndex: 10,
+  },
+  iconHitSlop: { top: 8, bottom: 8, left: 8, right: 8 },
 });
