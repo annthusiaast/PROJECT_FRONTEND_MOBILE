@@ -1,8 +1,23 @@
 import { StyleSheet } from "react-native";
+import { colors } from "./colors";
 
 export const styles = StyleSheet.create({
   container: { flex: 1},
   errorText: { backgroundColor: "#ef4444", color: "#fff", padding: 8, textAlign: "center" },
+  card: {
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.gray200,
+    borderRadius: 12,
+    padding: 12,
+    marginHorizontal: 16,
+    marginBottom: 6,
+    shadowColor: colors.shadow,
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
   
   clientRow: {
     flexDirection: "row",
@@ -10,7 +25,7 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     padding: 12,
     borderBottomWidth: 1,
-    borderColor: "#e5e7eb",
+    borderColor: colors.gray200,
   },
 
 
@@ -33,16 +48,16 @@ export const styles = StyleSheet.create({
   pageButton: { paddingHorizontal: 12, fontSize: 16 },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: colors.overlayDim,
     justifyContent: "center",
     alignItems: "center",
   },
 
   
-  modalBox: { backgroundColor: "#fff", padding: 24, borderRadius: 8, width: "90%" },
+  modalBox: { backgroundColor: colors.white, padding: 24, borderRadius: 8, width: "90%" },
   modalTitle: { fontSize: 18, fontWeight: "700", marginBottom: 12 },
-  modalButton: { marginTop: 16, backgroundColor: "#2563eb", padding: 10, borderRadius: 6 },
-  modalButtonText: { color: "#fff", textAlign: "center" },
+  modalButton: { marginTop: 16, backgroundColor: colors.bluePrimary, padding: 10, borderRadius: 6 },
+  modalButtonText: { color: colors.white, textAlign: "center" },
 
   tabContainer: {
     flexDirection: "row",
@@ -59,7 +74,7 @@ export const styles = StyleSheet.create({
     backgroundColor: "#f0f0f0",
     borderRadius: 20,
     marginRight: 10,
-    shadowColor: "#000",
+    shadowColor: colors.shadow,
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 3,
@@ -80,6 +95,23 @@ export const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "600",
   },
+
+  fab: {
+    position: "absolute",
+    bottom: 20,
+    right: 20,
+    backgroundColor: colors.bluePrimary,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 28,
+    shadowColor: colors.shadow,
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 4,
+    zIndex: 10,
+  },
+  iconHitSlop: { top: 8, bottom: 8, left: 8, right: 8 },
 
 
 });
