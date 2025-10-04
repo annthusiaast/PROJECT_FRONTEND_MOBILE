@@ -19,6 +19,8 @@ import { getEndpoint } from "../constants/api-config";
 import AddContact from "../components/add-contacts";
 import ClientContact from "../components/client-contacts"; // integrated contacts view
 import AddClient from "../components/add-clients";
+import ClientDetailModal from "../components/client-detail-modal";
+import EditClientModal from "../components/edit-client-modal";
 
 const ViewClients = ({ user, navigation }) => {
   const [clients, setClients] = useState([]);
@@ -29,6 +31,10 @@ const ViewClients = ({ user, navigation }) => {
   const [error, setError] = useState(null);
 
   const [editClient, setEditClient] = useState(null); // <-- edit state
+  // Option B: Local split name state for editing (first + last -> recombine to single full name field)
+  const [editFirstName, setEditFirstName] = useState("");
+  const [editMiddleName, setEditMiddleName] = useState("");
+  const [editLastName, setEditLastName] = useState("");
   const [selectedClient, setSelectedClient] = useState(null);
   const [showDetail, setShowDetail] = useState(false);
 
@@ -149,7 +155,30 @@ const ViewClients = ({ user, navigation }) => {
         >
           <Eye size={20} color="blue" />
         </TouchableOpacity>
-        <TouchableOpacity hitSlop={styles.iconHitSlop} onPress={() => setEditClient(item)}>
+        <TouchableOpacity
+          hitSlop={styles.iconHitSlop}
+          onPress={() => {
+            // Split existing full name into first / middle / last (simple heuristic)
+            const parts = (item.client_fullname || "").trim().split(/\s+/).filter(Boolean);
+            let first = "";
+            let middle = "";
+            let last = "";
+            if (parts.length === 1) {
+              first = parts[0];
+            } else if (parts.length === 2) {
+              first = parts[0];
+              last = parts[1];
+            } else if (parts.length > 2) {
+              first = parts[0];
+              last = parts[parts.length - 1];
+              middle = parts.slice(1, -1).join(" ");
+            }
+            setEditFirstName(first);
+            setEditMiddleName(middle);
+            setEditLastName(last);
+            setEditClient(item);
+          }}
+        >
           <Pencil size={20} color="orange" />
         </TouchableOpacity>
         {item.client_status !== "Removed" ? (
@@ -182,7 +211,7 @@ const ViewClients = ({ user, navigation }) => {
               activeTab === "clients" && styles.activeTabText,
             ]}
           >
-            Add Clients
+            Clients
           </Text>
         </TouchableOpacity>
 
@@ -264,343 +293,35 @@ const ViewClients = ({ user, navigation }) => {
         </>
       )}
 
-      {/* Client Detail Overlay */}
-      {showDetail && selectedClient && (
-        <View
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.45)",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: 20,
-            zIndex: 50,
-          }}
-        >
-          <View
-            style={{
-              backgroundColor: "#fff",
-              padding: 18,
-              borderRadius: 12,
-              width: "92%",
-              maxHeight: "80%",
-            }}
-          >
-            {/* Header with name and status badge */}
-            <View style={{ marginBottom: 8 }}>
-              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                <Text style={{ fontSize: 20, fontWeight: "800", color: "#111827", flex: 1, paddingRight: 8 }}>
-                  {selectedClient.client_fullname}
-                </Text>
-                <View
-                  style={{
-                    backgroundColor:
-                      selectedClient.client_status === "Active"
-                        ? "#16a34a"
-                        : selectedClient.client_status === "Removed"
-                        ? "#dc2626"
-                        : "#64748b",
-                    paddingVertical: 4,
-                    paddingHorizontal: 10,
-                    borderRadius: 999,
-                  }}
-                >
-                  <Text style={{ color: "#fff", fontWeight: "700", fontSize: 12 }}>
-                    {selectedClient.client_status || "Unknown"}
-                  </Text>
-                </View>
-              </View>
-            </View>
+      <ClientDetailModal
+        visible={showDetail && !!selectedClient}
+        client={selectedClient}
+        contacts={contacts}
+        getUserFullName={getUserFullName}
+        onClose={() => {
+          setShowDetail(false);
+          setSelectedClient(null);
+        }}
+      />
 
-            {/* Scrollable details */}
-            <ScrollView style={{ maxHeight: "75%" }} showsVerticalScrollIndicator={false}>
-              <View style={{ gap: 10 }}>
-                {/* Info rows */}
-                <View style={{ borderWidth: 1, borderColor: "#e5e7eb", borderRadius: 10, padding: 12, backgroundColor: "#f9fafb" }}>
-                  <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
-                    <Text style={{ color: "#6b7280", fontWeight: "700" }}>Email</Text>
-                    <Text style={{ color: "#111827", fontWeight: "600" }}>
-                      {selectedClient.client_email || "—"}
-                    </Text>
-                  </View>
-                  <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
-                    <Text style={{ color: "#6b7280", fontWeight: "700" }}>Phone</Text>
-                    <Text style={{ color: "#111827" }}>
-                      {selectedClient.client_phonenum || "—"}
-                    </Text>
-                  </View>
-                  <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
-                    <Text style={{ color: "#6b7280", fontWeight: "700" }}>Address</Text>
-                    <Text style={{ color: "#111827", flex: 1, textAlign: "right", paddingLeft: 12 }}>
-                      {selectedClient.client_address || "—"}
-                    </Text>
-                  </View>
-                  <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                    <Text style={{ color: "#6b7280", fontWeight: "700" }}>Created By</Text>
-                    <Text style={{ color: "#111827" }}>
-                      {getUserFullName(selectedClient.created_by)}
-                    </Text>
-                  </View>
-                </View>
-
-                {/* Contacts section */}
-                <View>
-                  <Text style={{ fontWeight: "800", marginBottom: 6, color: "#111827" }}>Contacts</Text>
-                  {contacts.filter((c) => c.client_id === selectedClient.client_id).length === 0 ? (
-                    <Text style={{ fontStyle: "italic", color: "#6b7280" }}>No contacts.</Text>
-                  ) : (
-                    <View style={{ gap: 8 }}>
-                      {contacts
-                        .filter((c) => c.client_id === selectedClient.client_id)
-                        .map((c) => (
-                          <View
-                            key={c.contact_id || c.contact_email}
-                            style={{
-                              borderWidth: 1,
-                              borderColor: "#e5e7eb",
-                              backgroundColor: "#ffffff",
-                              padding: 10,
-                              borderRadius: 10,
-                            }}
-                          >
-                            <Text style={{ fontWeight: "700", marginBottom: 2 }}>
-                              {c.contact_fullname}
-                            </Text>
-                            <Text style={{ color: "#374151", marginBottom: 2 }}>{c.contact_email}</Text>
-                            {c.contact_phone ? (
-                              <Text style={{ color: "#6b7280", fontSize: 12 }}>{c.contact_phone}</Text>
-                            ) : null}
-                          </View>
-                        ))}
-                    </View>
-                  )}
-                </View>
-              </View>
-            </ScrollView>
-
-            {/* Actions */}
-            <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 12, marginTop: 10 }}>
-              <TouchableOpacity
-                onPress={() => {
-                  setShowDetail(false);
-                  setSelectedClient(null);
-                }}
-                style={{
-                  backgroundColor: "#114d89",
-                  paddingVertical: 10,
-                  paddingHorizontal: 18,
-                  borderRadius: 10,
-                }}
-                activeOpacity={0.8}
-              >
-                <Text style={{ color: "#fff", fontWeight: "700" }}>Close</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      )}
-
-      {/* Edit Client Modal */}
-      {editClient && (
-        <View
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.45)",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: 20,
-            zIndex: 60,
-          }}
-        >
-          <View
-            style={{
-              backgroundColor: "#fff",
-              padding: 18,
-              borderRadius: 12,
-              width: "92%",
-            }}
-          >
-            <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 6 }}>
-              Edit Client
-            </Text>
-
-            {/* Full Name */}
-            <Text>First Name</Text>
-            <TextInput
-              style={{
-                borderWidth: 1,
-                borderColor: "#ccc",
-                borderRadius: 6,
-                marginBottom: 10,
-                padding: 8,
-              }}
-              value={editClient.client_fullname}
-              onChangeText={(text) =>
-                setEditClient({ ...editClient, client_fullname: text })
-              }
-            />
-
-            <Text>Last Name</Text>
-            <TextInput
-              style={{
-                borderWidth: 1,
-                borderColor: "#ccc",
-                borderRadius: 6,
-                marginBottom: 10,
-                padding: 8,
-              }}
-              value={editClient.client_fullname}
-              onChangeText={(text) =>
-                setEditClient({ ...editClient, client_fullname: text })
-              }
-            />
-
-            {/* Email */}
-            <Text>Email</Text>
-            <TextInput
-              style={{
-                borderWidth: 1,
-                borderColor: "#ccc",
-                borderRadius: 6,
-                marginBottom: 10,
-                padding: 8,
-              }}
-              value={editClient.client_email}
-              onChangeText={(text) =>
-                setEditClient({ ...editClient, client_email: text })
-              }
-            />
-
-            {/* Phone */}
-            <Text>Phone</Text>
-            <TextInput
-              style={{
-                borderWidth: 1,
-                borderColor: "#ccc",
-                borderRadius: 6,
-                marginBottom: 10,
-                padding: 8,
-              }}
-              value={editClient.client_phonenum}
-              onChangeText={(text) =>
-                setEditClient({ ...editClient, client_phonenum: text })
-              }
-            />
-
-            {/* Address */}
-            <Text>Address</Text>
-            <TextInput
-              style={{
-                borderWidth: 1,
-                borderColor: "#ccc",
-                borderRadius: 6,
-                marginBottom: 10,
-                padding: 8,
-              }}
-              value={editClient.client_address}
-              onChangeText={(text) =>
-                setEditClient({ ...editClient, client_address: text })
-              }
-            />
-
-            {/* Created By (disabled input) */}
-            <Text>Created By</Text>
-            <TextInput
-              style={{
-                borderWidth: 1,
-                borderColor: "#ccc",
-                borderRadius: 6,
-                marginBottom: 10,
-                padding: 8,
-                backgroundColor: "#f2f2f2", // gray background to show disabled
-                color: "#555",
-              }}
-              value={getUserFullName(editClient.created_by)}
-              editable={false}
-            />
-
-            {/* Status */}
-            <Text>Status</Text>
-            <View
-              style={{
-                borderWidth: 1,
-                borderColor: "#ccc",
-                borderRadius: 6,
-                marginBottom: 10,
-                padding: 8,
-              }}
-            >
-              <TouchableOpacity
-                onPress={() =>
-                  setEditClient({
-                    ...editClient,
-                    client_status:
-                      editClient.client_status === "Active" ? "Inactive" : "Active",
-                  })
-                }
-              >
-                <Text>{editClient.client_status || "Active"}</Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Actions */}
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "flex-end",
-                gap: 12,
-              }}
-            >
-              <TouchableOpacity
-                onPress={() => setEditClient(null)}
-                style={{
-                  backgroundColor: "#ccc",
-                  paddingVertical: 8,
-                  paddingHorizontal: 18,
-                  borderRadius: 8,
-                }}
-              >
-                <Text>Cancel</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={async () => {
-                  try {
-                    await fetch(getEndpoint(`/clients/${editClient.client_id}`), {
-                      method: "PUT",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        client_fullname: editClient.client_fullname,
-                        client_email: editClient.client_email,
-                        client_status: editClient.client_status,
-                      }), // now includes status
-                    });
-                    setEditClient(null);
-                    fetchAll();
-                  } catch (err) {
-                    console.error("Update error:", err);
-                  }
-                }}
-                style={{
-                  backgroundColor: "#114d89",
-                  paddingVertical: 8,
-                  paddingHorizontal: 18,
-                  borderRadius: 8,
-                }}
-              >
-                <Text style={{ color: "#fff", fontWeight: "600" }}>Save</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      )}
+      <EditClientModal
+        visible={!!editClient}
+        client={editClient}
+        onClose={() => {
+          setEditClient(null);
+          setEditFirstName('');
+          setEditMiddleName('');
+          setEditLastName('');
+        }}
+        onSaved={() => {
+          setEditClient(null);
+          setEditFirstName('');
+          setEditMiddleName('');
+          setEditLastName('');
+          fetchAll();
+        }}
+        getUserFullName={getUserFullName}
+      />
 
 
 

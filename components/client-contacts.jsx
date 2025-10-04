@@ -15,6 +15,7 @@ import { getEndpoint } from "../constants/api-config";
 import { styles } from "../constants/styles/client-contacts"; // base styles
 import { colors } from "../constants/styles/colors";
 import AddContact from "./add-contacts"; // modal component
+import ModalWrapper from "./common/modal-wrapper"; // added
 
 const ClientContact = () => {
   const { user } = useAuth();
@@ -35,6 +36,10 @@ const ClientContact = () => {
     contact_role: '',
     client_id: '',
   });
+  // Option B local split name pieces (first + middle + last)
+  const [editFirstName, setEditFirstName] = useState('');
+  const [editMiddleName, setEditMiddleName] = useState('');
+  const [editLastName, setEditLastName] = useState('');
   const [removeContactModalOpen, setRemoveContactModalOpen] = useState(false);
   const [contactToBeRemoved, setContactToBeRemoved] = useState(null);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
@@ -119,6 +124,25 @@ const ClientContact = () => {
       contact_role: item.contact_role || '',
       client_id: item.client_id,
     });
+    // Split current full name into first / middle / last (heuristic)
+    const parts = (item.contact_fullname || '').trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) {
+      setEditFirstName('');
+      setEditMiddleName('');
+      setEditLastName('');
+    } else if (parts.length === 1) {
+      setEditFirstName(parts[0]);
+      setEditMiddleName('');
+      setEditLastName('');
+    } else if (parts.length === 2) {
+      setEditFirstName(parts[0]);
+      setEditMiddleName('');
+      setEditLastName(parts[1]);
+    } else {
+      setEditFirstName(parts[0]);
+      setEditLastName(parts[parts.length - 1]);
+      setEditMiddleName(parts.slice(1, -1).join(' '));
+    }
   };
 
   const handleEditSave = async () => {
@@ -141,19 +165,40 @@ const ClientContact = () => {
       const res = await fetch(getEndpoint(`/client-contacts/${editContact.contact_id}`), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editForm),
+        body: JSON.stringify({
+          ...editForm,
+          contact_fullname: [editFirstName, editMiddleName, editLastName]
+            .filter(Boolean)
+            .join(' ')
+            .trim() || editForm.contact_fullname,
+        }),
       });
       if (!res.ok) throw new Error('Failed to update contact');
       let updated;
       try { updated = await res.json(); } catch { updated = { ...editContact, ...editForm }; }
       setTableData(prev => prev.map(c => c.contact_id === editContact.contact_id ? updated : c));
-      setEditContact(null);
+      handleCloseEdit();
       showToast('Contact updated successfully', 'success');
     } catch (e) {
       Alert.alert('Error', e.message);
     } finally {
       setIsSavingEdit(false);
     }
+  };
+
+  const handleCloseEdit = () => {
+    setEditContact(null);
+    setEditFirstName('');
+    setEditMiddleName('');
+    setEditLastName('');
+    setEditForm({
+      contact_fullname: '',
+      contact_email: '',
+      contact_phone: '',
+      contact_address: '',
+      contact_role: '',
+      client_id: '',
+    });
   };
 
   const renderContactItem = ({ item }) => (
@@ -268,46 +313,65 @@ const ClientContact = () => {
         </View>
       </Modal>
       {/* Edit Contact Modal */}
-      <Modal
+      {/* Replaced native Modal with ModalWrapper */}
+      <ModalWrapper
         visible={!!editContact}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setEditContact(null)}
+        onClose={handleCloseEdit}
+        animationType="fade"
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Edit Contact</Text>
-            <View style={{ gap: 8 }}>
-              <View>
-                <TouchableOpacity>
-                  {/* Using basic inputs replaced with Text + temp quick edit approach due to style file; can be swapped to TextInput if style allows */}
-                </TouchableOpacity>
-              </View>
-            </View>
-            {/* Inputs */}
-            <View style={{ marginTop: 4 }}>
-              <EditableField label="First Name" value={editForm.contact_fullname} onChange={(v) => setEditForm(f => ({ ...f, contact_fullname: v }))} />
-              <EditableField label="Last Name" value={editForm.contact_fullname} onChange={(v) => setEditForm(f => ({ ...f, contact_fullname: v }))} />
-              <EditableField label="Email" value={editForm.contact_email} onChange={(v) => setEditForm(f => ({ ...f, contact_email: v }))} keyboardType="email-address" />
-              <EditableField label="Phone" value={editForm.contact_phone} onChange={(v) => setEditForm(f => ({ ...f, contact_phone: v }))} keyboardType="phone-pad" />
-              <EditableField label="Address" value={editForm.contact_address} onChange={(v) => setEditForm(f => ({ ...f, contact_address: v }))} />
-              <EditableField label="Role" value={editForm.contact_role} onChange={(v) => setEditForm(f => ({ ...f, contact_role: v }))} />
-            </View>
-            <View style={styles.modalActions}>
-              <TouchableOpacity style={styles.cancelBtn} onPress={() => setEditContact(null)}>
-                <Text>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.removeBtn, isSavingEdit && { opacity: 0.6 }]}
-                onPress={handleEditSave}
-                disabled={isSavingEdit}
-              >
-                <Text style={{ color: '#fff' }}>{isSavingEdit ? 'Saving...' : 'Save'}</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+        <Text style={styles.modalTitle}>Edit Contact</Text>
+        <View style={{ marginTop: 4 }}>
+          <EditableField
+            label="First Name"
+            value={editFirstName}
+            onChange={(v) => {
+              setEditFirstName(v);
+              setEditForm(f => ({
+                ...f,
+                contact_fullname: [v, editMiddleName, editLastName].filter(Boolean).join(' ')
+              }));
+            }}
+          />
+          <EditableField
+            label="Middle Name(s)"
+            value={editMiddleName}
+            onChange={(v) => {
+              setEditMiddleName(v);
+              setEditForm(f => ({
+                ...f,
+                contact_fullname: [editFirstName, v, editLastName].filter(Boolean).join(' ')
+              }));
+            }}
+          />
+          <EditableField
+            label="Last Name"
+            value={editLastName}
+            onChange={(v) => {
+              setEditLastName(v);
+              setEditForm(f => ({
+                ...f,
+                contact_fullname: [editFirstName, editMiddleName, v].filter(Boolean).join(' ')
+              }));
+            }}
+          />
+          <EditableField label="Email" value={editForm.contact_email} onChange={(v) => setEditForm(f => ({ ...f, contact_email: v }))} keyboardType="email-address" />
+          <EditableField label="Phone" value={editForm.contact_phone} onChange={(v) => setEditForm(f => ({ ...f, contact_phone: v }))} keyboardType="phone-pad" />
+          <EditableField label="Address" value={editForm.contact_address} onChange={(v) => setEditForm(f => ({ ...f, contact_address: v }))} />
+          <EditableField label="Role" value={editForm.contact_role} onChange={(v) => setEditForm(f => ({ ...f, contact_role: v }))} />
         </View>
-      </Modal>
+        <View style={styles.modalActions}>
+          <TouchableOpacity style={styles.cancelBtn} onPress={handleCloseEdit}>
+            <Text>Cancel</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.removeBtn, isSavingEdit && { opacity: 0.6 }]}
+            onPress={handleEditSave}
+            disabled={isSavingEdit}
+          >
+            <Text style={{ color: '#fff' }}>{isSavingEdit ? 'Saving...' : 'Save'}</Text>
+          </TouchableOpacity>
+        </View>
+      </ModalWrapper>
       {/* Add Contact Modal */}
       <AddContact
         visible={showAddModal}

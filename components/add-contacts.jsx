@@ -21,7 +21,9 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
   }, [visible, isControlled]);
 
   const [formData, setFormData] = useState({
-    contact_fullname: "",
+    contact_firstname: "",
+    contact_middlename: "",
+    contact_lastname: "",
     contact_email: "",
     contact_phone: "",
     contact_address: "",
@@ -48,9 +50,9 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
   };
 
   const handleSubmit = () => {
-    const { contact_fullname, contact_email, contact_phone, contact_address, client_id } = formData;
+    const { contact_firstname, contact_middlename, contact_lastname, contact_email, contact_phone, contact_address, client_id } = formData;
     setErrorMsg('');
-    if (!contact_fullname || !contact_email || !contact_phone || !contact_address || !client_id) {
+    if (!contact_firstname || !contact_lastname || !contact_email || !contact_phone || !contact_address || !client_id) {
       Alert.alert('Validation Error', 'Please fill in all required fields.');
       return;
     }
@@ -72,21 +74,32 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
   const doSubmit = async () => {
     try {
       setIsSubmitting(true);
+      const contact_fullname = [formData.contact_firstname, formData.contact_middlename, formData.contact_lastname]
+        .filter(Boolean)
+        .join(' ');
+      const payload = {
+        contact_fullname,
+        contact_email: formData.contact_email,
+        contact_phone: formData.contact_phone,
+        contact_address: formData.contact_address,
+        contact_role: formData.contact_role,
+        client_id: formData.client_id,
+      };
       const res = await fetch(getEndpoint('/client-contacts'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) {
         let msg = 'Failed to add contact';
         try { const j = await res.json(); if (j?.message) msg = j.message; } catch { }
         throw new Error(msg);
       }
-      let saved = formData;
+  let saved = payload;
       try { saved = await res.json(); } catch { }
       if (onAdd) onAdd(saved);
       Alert.alert('Success', 'Contact added.');
-      setFormData({ contact_fullname: '', contact_email: '', contact_phone: '', contact_address: '', contact_role: '', client_id: null });
+  setFormData({ contact_firstname: '', contact_middlename: '', contact_lastname: '', contact_email: '', contact_phone: '', contact_address: '', contact_role: '', client_id: null });
       onClose && onClose();
     } catch (e) {
       setErrorMsg(e.message);
@@ -134,16 +147,24 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
           <TextInput
             placeholder="First Name"
             placeholderTextColor={"#666"}
-            value={formData.contact_fullname}
-            onChangeText={(text) => handleChange("contact_fullname", text)}
+            value={formData.contact_firstname}
+            onChangeText={(text) => handleChange("contact_firstname", text)}
+            style={styles.input}
+            editable={!isSubmitting}
+          />
+          <TextInput
+            placeholder="Middle Name(s)"
+            placeholderTextColor={"#666"}
+            value={formData.contact_middlename}
+            onChangeText={(text) => handleChange("contact_middlename", text)}
             style={styles.input}
             editable={!isSubmitting}
           />
           <TextInput
             placeholder="Last Name"
             placeholderTextColor={"#666"}
-            value={formData.contact_fullname}
-            onChangeText={(text) => handleChange("contact_fullname", text)}
+            value={formData.contact_lastname}
+            onChangeText={(text) => handleChange("contact_lastname", text)}
             style={styles.input}
             editable={!isSubmitting}
           />
