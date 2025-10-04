@@ -13,6 +13,10 @@ const Dashboard = () => {
   const { user } = useAuth();
   const [recentActivity, setRecentActivity] = useState(SampleData);
   const [error, setError] = useState(null);
+  const [clientsCount, setClientsCount] = useState(0);
+  const [processingDocumentsCount, setProcessingDocumentsCount] = useState(0);
+  // const [pendingApprovalsCount, setPendingApprovalsCount] = useState(0);
+  // const [pendingTasksCount, setPendingTasksCount] = useState(0);
   const [processingCasesCount, setProcessingCasesCount] = useState(0);
   const [archivedCasesCount, setArchivedCasesCount] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -181,7 +185,7 @@ const Dashboard = () => {
             <View style={styles.card}>
               <User2 size={20} color="#edf0f6ff" />
               <Text style={styles.processDocuments}>Clients</Text>
-              <Text style={styles.cardCount}>48</Text>
+              <Text style={styles.cardCount}>{clientsCount}</Text>
             </View>
             <View style={styles.card}>
               <CheckCircle size={20} color="#edf0f6ff" />
