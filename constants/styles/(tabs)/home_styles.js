@@ -50,7 +50,7 @@ export const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     padding: 15,
-    marginTop: -30,
+    marginTop: 20,
   },
 
   card: {

@@ -12,6 +12,9 @@ import LogDetailsModal from '@/components/log-details-modal';
 const Dashboard = () => {
   const { user } = useAuth();
   const [recentActivity, setRecentActivity] = useState(SampleData);
+  const [error, setError] = useState(null);
+  const [processingCasesCount, setProcessingCasesCount] = useState(0);
+  const [archivedCasesCount, setArchivedCasesCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [selectedLog, setSelectedLog] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
@@ -29,6 +32,8 @@ const Dashboard = () => {
       <Trash2 size={24} color="#fff" />
     </TouchableOpacity>
   );
+
+
 
   // Fetch recent activity from backend when user is available
   useEffect(() => {
@@ -66,15 +71,15 @@ const Dashboard = () => {
   }, [user?.user_id, user?.user_role]);
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <KeyboardAvoidingView style={{ flex: 3}} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
           
-          {/* Searh input */}
+          {/* Searh input
           <View style={styles.searchInputContainer}>
             <Search size={20} color="#999" />
             <TextInput style={styles.searchInput} placeholder="Search..." placeholderTextColor="#999" />
-          </View>
+          </View> */}
 
           {/* Cards */}
           <View style={styles.cardsContainer}>
