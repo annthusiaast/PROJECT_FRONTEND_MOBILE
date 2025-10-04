@@ -180,7 +180,7 @@ const Dashboard = () => {
             <View style={styles.card}>
               <FileText size={20} color="#edf0f6ff" />
               <Text style={styles.processDocuments}>Processing{'\n'}Documents</Text>
-              <Text style={styles.cardCount}>48</Text>
+              <Text style={styles.cardCount}>{processingDocumentsCount}</Text>
             </View>
             <View style={styles.card}>
               <User2 size={20} color="#edf0f6ff" />
