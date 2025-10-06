@@ -151,7 +151,7 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     gap: 10,
-    alignSelf: "center", //  push button to the right
+    alignSelf: "center", 
     },
 
     downloadButtonText: {

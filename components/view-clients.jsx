@@ -211,7 +211,7 @@ const ViewClients = ({ user, navigation }) => {
               activeTab === "clients" && styles.activeTabText,
             ]}
           >
-            Clients
+           Clients
           </Text>
         </TouchableOpacity>
 

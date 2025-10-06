@@ -383,17 +383,16 @@ function Profile() {
             </View>
           </View>
 
-          {/* Email */}
-          {/* First Name */}
+          {/* First Name
           <View style={styles.infoRow}>
             <User2Icon size={20} color="#0B3D91" />
             <View>
               <Text style={styles.infoLabel}>First Name</Text>
               <Text style={styles.infoValue}>{profile.user_fname}</Text>
             </View>
-          </View>
+          </View> */}
 
-          {/* Middle Name */}
+          {/* Middle Name
           <View style={styles.infoRow}>
             <User2Icon size={20} color="#0B3D91" />
             <View>
@@ -402,14 +401,14 @@ function Profile() {
             </View>
           </View>
 
-          {/* Last Name */}
+          {/* Last Name 
           <View style={styles.infoRow}>
             <User2Icon size={20} color="#0B3D91" />
             <View>
               <Text style={styles.infoLabel}>Last Name</Text>
               <Text style={styles.infoValue}>{profile.user_lname}</Text>
             </View>
-          </View>
+          </View> */}
 
           {/* Email */}
           <View style={styles.infoRow}>

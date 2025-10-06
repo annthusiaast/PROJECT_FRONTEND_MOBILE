@@ -1,7 +1,7 @@
 import { RecentActivity as SampleData, today } from "@/constants/sample_data";
 import { styles } from "@/constants/styles/(tabs)/home_styles";
 import { router } from "expo-router";
-import { Bell, CheckCircle, ClipboardList, FileText, Folder, Logs, Scale, Search, Trash2 } from 'lucide-react-native';
+import { Bell, CheckCircle, ClipboardList, FileText, Folder, Logs, Scale, Search, Trash2, User2 } from 'lucide-react-native';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
@@ -12,6 +12,13 @@ import LogDetailsModal from '@/components/log-details-modal';
 const Dashboard = () => {
   const { user } = useAuth();
   const [recentActivity, setRecentActivity] = useState(SampleData);
+  const [error, setError] = useState(null);
+  const [clientsCount, setClientsCount] = useState(0);
+  const [processingDocumentsCount, setProcessingDocumentsCount] = useState(0);
+  // const [pendingApprovalsCount, setPendingApprovalsCount] = useState(0);
+  // const [pendingTasksCount, setPendingTasksCount] = useState(0);
+  const [processingCasesCount, setProcessingCasesCount] = useState(0);
+  const [archivedCasesCount, setArchivedCasesCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [selectedLog, setSelectedLog] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
@@ -29,6 +36,88 @@ const Dashboard = () => {
       <Trash2 size={24} color="#fff" />
     </TouchableOpacity>
   );
+
+  // Fetch dashboard counts from backend
+  useEffect(() => {
+    const fetchDashboardCounts = async () => {
+      if (!user?.user_id) return;
+      
+      try {
+        // Fetch processing cases count
+        const processingCasesRes = await fetch(getEndpoint('/cases/count/processing'), {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        });
+        if (processingCasesRes.ok) {
+          const data = await processingCasesRes.json();
+          setProcessingCasesCount(data.count || 0);
+        }
+
+        // Fetch archived cases count
+        // const archivedCasesRes = await fetch(getEndpoint('/cases/count/archived'), {
+        //   method: 'GET',
+        //   headers: { 'Content-Type': 'application/json' },
+        //   credentials: 'include',
+        // });
+        // if (archivedCasesRes.ok) {
+        //   const data = await archivedCasesRes.json();
+        //   setArchivedCasesCount(data.count || 0);
+        // }
+
+        // Fetch processing documents count
+        const processingDocsRes = await fetch(getEndpoint('/documents/count/processing'), {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        });
+        if (processingDocsRes.ok) {
+          const data = await processingDocsRes.json();
+          setProcessingDocumentsCount(data.count || 0);
+        }
+
+        // Fetch clients count
+        const clientsRes = await fetch(getEndpoint('/clients/count'), {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        });
+        if (clientsRes.ok) {
+          const data = await clientsRes.json();
+          setClientsCount(data.count || 0);
+        }
+
+        // Fetch pending approvals count
+        // const pendingApprovalsRes = await fetch(getEndpoint('/approvals/count/pending'), {
+        //   method: 'GET',
+        //   headers: { 'Content-Type': 'application/json' },
+        //   credentials: 'include',
+        // });
+        // if (pendingApprovalsRes.ok) {
+        //   const data = await pendingApprovalsRes.json();
+        //   setPendingApprovalsCount(data.count || 0);
+        // }
+
+        // Fetch pending tasks count
+        // const pendingTasksRes = await fetch(getEndpoint('/tasks/count/pending'), {
+        //   method: 'GET',
+        //   headers: { 'Content-Type': 'application/json' },
+        //   credentials: 'include',
+        // });
+        // if (pendingTasksRes.ok) {
+        //   const data = await pendingTasksRes.json();
+        //   setPendingTasksCount(data.count || 0);
+        // }
+
+      } catch (e) {
+        console.warn('Dashboard counts fetch failed:', e.message);
+        setError('Failed to load dashboard data');
+      }
+    };
+
+    fetchDashboardCounts();
+  }, [user?.user_id]);
+
 
   // Fetch recent activity from backend when user is available
   useEffect(() => {
@@ -66,37 +155,37 @@ const Dashboard = () => {
   }, [user?.user_id, user?.user_role]);
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <KeyboardAvoidingView style={{ flex: 3}} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
           
-          {/* Searh input */}
+          {/* Searh input
           <View style={styles.searchInputContainer}>
             <Search size={20} color="#999" />
             <TextInput style={styles.searchInput} placeholder="Search..." placeholderTextColor="#999" />
-          </View>
+          </View> */}
 
           {/* Cards */}
           <View style={styles.cardsContainer}>
             <View style={styles.card}>
               <Folder size={20} color="#edf0f6ff" />
               <Text style={styles.cardTitle}>Archived Cases</Text>
-              <Text style={styles.cardCount}>24</Text>
+              <Text style={styles.cardCount}>{archivedCasesCount}</Text>
             </View>
             <View style={styles.card}>
               <Scale size={20} color="#edf0f6ff" />
               <Text style={styles.cardTitle}>Processing Cases</Text>
-              <Text style={styles.cardCount}>24</Text>
+              <Text style={styles.cardCount}>{processingCasesCount}</Text>
             </View>
             <View style={styles.card}>
               <FileText size={20} color="#edf0f6ff" />
               <Text style={styles.processDocuments}>Processing{'\n'}Documents</Text>
-              <Text style={styles.cardCount}>48</Text>
+              <Text style={styles.cardCount}>{processingDocumentsCount}</Text>
             </View>
             <View style={styles.card}>
-              <FileText size={20} color="#edf0f6ff" />
-              <Text style={styles.processDocuments}>Archived{'\n'}Documents</Text>
-              <Text style={styles.cardCount}>48</Text>
+              <User2 size={20} color="#edf0f6ff" />
+              <Text style={styles.processDocuments}>Clients</Text>
+              <Text style={styles.cardCount}>{clientsCount}</Text>
             </View>
             <View style={styles.card}>
               <CheckCircle size={20} color="#edf0f6ff" />
