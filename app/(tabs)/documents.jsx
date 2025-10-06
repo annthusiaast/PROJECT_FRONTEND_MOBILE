@@ -65,6 +65,23 @@ const Dropdown = ({ label, options, value, onSelect, topOffset }) => {
   );
 };
 
+// Helper to format dates: Month day, Year. Hour:Minute AM/PM
+const formatDateTime = (value) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (isNaN(date.getTime())) return String(value); // Fallback to raw if unparsable
+  const datePart = date.toLocaleDateString(undefined, {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+  const timePart = date.toLocaleTimeString(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  return `${datePart}. ${timePart}`;
+};
+
 const Documents = () => {
   const [activeTab, setActiveTab] = useState("Recent");
   const [caseFilter, setCaseFilter] = useState("All Cases");
@@ -172,7 +189,7 @@ const Documents = () => {
                 <View style={styles.docMeta}>
                   <View style={styles.metaItem}>
                     <Calendar size={14} color="#666" />
-                    <Text style={styles.metaText}>{doc.date ? String(doc.date) : ''}</Text>
+                    <Text style={styles.metaText}>{doc.date ? formatDateTime(doc.date) : ''}</Text>
                   </View>
                   <View style={styles.metaItem}>
                     <Clock size={14} color="#666" />
