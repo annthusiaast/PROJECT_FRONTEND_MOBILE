@@ -146,11 +146,12 @@ export const styles = StyleSheet.create({
     backgroundColor: "#f3f5faff",
     borderRadius: 6,
     paddingVertical: 8,
+    paddingHorizontal: 12,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     gap: 10,
-    alignSelf: "center", // 👈 push button to the right
+    alignSelf: "center", //  push button to the right
     },
 
     downloadButtonText: {
