@@ -16,8 +16,11 @@ import { useAuth } from "@/context/auth-context";
 const AddClient = ({ visible, onClose, onCreated }) => {
   const { user } = useAuth();
 
+  // Store split fields locally; recombine to client_fullname only on submit
   const [clientData, setClientData] = useState({
-    client_fullname: "",
+    client_firstname: "",
+    client_middlename: "",
+    client_lastname: "",
     client_email: "",
     client_phonenum: "",
     client_address: "",
@@ -26,7 +29,9 @@ const AddClient = ({ visible, onClose, onCreated }) => {
   });
 
   const [contact, setContact] = useState({
-    contact_fullname: "",
+    contact_firstname: "",
+    contact_middlename: "",
+    contact_lastname: "",
     contact_email: "",
     contact_phone: "",
     contact_address: "",
@@ -44,14 +49,14 @@ const AddClient = ({ visible, onClose, onCreated }) => {
   };
 
   const handleAddContact = () => {
-    const { contact_fullname, contact_email, contact_phone, contact_address, contact_role } = contact;
-    if (!contact_fullname || !contact_email || !contact_phone || !contact_address || !contact_role) {
+    const { contact_firstname, contact_middlename, contact_lastname, contact_email, contact_phone, contact_address, contact_role } = contact;
+    if (!contact_firstname || !contact_lastname || !contact_email || !contact_phone || !contact_address || !contact_role) {
       showToast("Fill all contact fields", 'error');
       return;
     }
-
-    setContacts([...contacts, contact]);
-    setContact({ contact_fullname: "", contact_email: "", contact_phone: "", contact_address: "", contact_role: "" });
+    const contact_fullname = [contact_firstname, contact_middlename, contact_lastname].filter(Boolean).join(' ');
+    setContacts([...contacts, { ...contact, contact_fullname }]);
+    setContact({ contact_firstname: "", contact_middlename: "", contact_lastname: "", contact_email: "", contact_phone: "", contact_address: "", contact_role: "" });
   };
 
   const handleRemoveContact = (index) => {
@@ -59,8 +64,8 @@ const AddClient = ({ visible, onClose, onCreated }) => {
   };
 
   const validateClient = () => {
-    const { client_fullname, client_email, client_phonenum, client_address, client_password } = clientData;
-    if (!client_fullname || !client_email || !client_phonenum || !client_address || !client_password) {
+    const { client_firstname, client_lastname, client_email, client_phonenum, client_address, client_password } = clientData;
+    if (!client_firstname || !client_lastname || !client_email || !client_phonenum || !client_address || !client_password) {
       setErrorMsg('Please fill all required client fields.');
       return false;
     }
@@ -82,7 +87,15 @@ const AddClient = ({ visible, onClose, onCreated }) => {
     try {
       setIsSubmitting(true);
       // Create client first
-      const clientPayload = { ...clientData, created_by: user?.user_id };
+      const client_fullname = [clientData.client_firstname, clientData.client_middlename, clientData.client_lastname].filter(Boolean).join(' ');
+      const clientPayload = {
+        client_fullname,
+        client_email: clientData.client_email,
+        client_phonenum: clientData.client_phonenum,
+        client_address: clientData.client_address,
+        client_password: clientData.client_password,
+        created_by: user?.user_id,
+      };
       const clientRes = await fetch(getEndpoint('/clients'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -117,9 +130,9 @@ const AddClient = ({ visible, onClose, onCreated }) => {
       onCreated && onCreated({ client: createdClient, contacts: createdContacts });
 
       // Reset form
-      setClientData({ client_fullname: '', client_email: '', client_phonenum: '',client_address: '', client_password: '', created_by: user?.user_id });
-      setContacts([]);
-      setContact({ contact_fullname: '', contact_email: '', contact_phone: '',contact_address:'', contact_role: '' });
+  setClientData({ client_firstname: '', client_middlename: '', client_lastname: '', client_email: '', client_phonenum: '',client_address: '', client_password: '', created_by: user?.user_id });
+  setContacts([]);
+  setContact({ contact_firstname: '', contact_middlename: '', contact_lastname: '', contact_email: '', contact_phone: '',contact_address:'', contact_role: '' });
       onClose && onClose();
     } catch (e) {
       setErrorMsg(e.message);
@@ -150,17 +163,25 @@ const AddClient = ({ visible, onClose, onCreated }) => {
               style={styles.input}
               placeholder="First Name"
               placeholderTextColor={"#666"}
-              value={clientData.client_fullname}
+              value={clientData.client_firstname}
               editable={!isSubmitting}
-              onChangeText={(text) => setClientData({ ...clientData, client_fullname: text })}
+              onChangeText={(text) => setClientData({ ...clientData, client_firstname: text })}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Middle Name(s)"
+              placeholderTextColor={"#666"}
+              value={clientData.client_middlename}
+              editable={!isSubmitting}
+              onChangeText={(text) => setClientData({ ...clientData, client_middlename: text })}
             />
             <TextInput
               style={styles.input}
               placeholder="Last Name"
               placeholderTextColor={"#666"}
-              value={clientData.client_fullname}
+              value={clientData.client_lastname}
               editable={!isSubmitting}
-              onChangeText={(text) => setClientData({ ...clientData, client_fullname: text })}
+              onChangeText={(text) => setClientData({ ...clientData, client_lastname: text })}
             />
             <TextInput
               style={styles.input}
@@ -204,17 +225,25 @@ const AddClient = ({ visible, onClose, onCreated }) => {
               style={styles.input}
               placeholder="First Name"
               placeholderTextColor={"#666"}
-              value={contact.contact_fullname}
+              value={contact.contact_firstname}
               editable={!isSubmitting}
-              onChangeText={(text) => setContact({ ...contact, contact_fullname: text })}
+              onChangeText={(text) => setContact({ ...contact, contact_firstname: text })}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Middle Name(s)"
+              placeholderTextColor={"#666"}
+              value={contact.contact_middlename}
+              editable={!isSubmitting}
+              onChangeText={(text) => setContact({ ...contact, contact_middlename: text })}
             />
             <TextInput
               style={styles.input}
               placeholder="Last Name"
               placeholderTextColor={"#666"}
-              value={contact.contact_fullname}
+              value={contact.contact_lastname}
               editable={!isSubmitting}
-              onChangeText={(text) => setContact({ ...contact, contact_fullname: text })}
+              onChangeText={(text) => setContact({ ...contact, contact_lastname: text })}
             />
             <TextInput
               style={styles.input}
