@@ -1,7 +1,6 @@
 import AllCase from "@/components/all-case";
 import CaseModal from "@/components/case-modal";
 import ViewClients from "@/components/view-clients";
-import { today } from "@/constants/sample_data"; // removed raw sample list; AllCase fetches from backend
 import { styles } from "@/constants/styles/(tabs)/case_styles";
 import { useAuth } from "@/context/auth-context";
 import { Bell, Search } from "lucide-react-native";
@@ -20,7 +19,7 @@ import {
 
 const Cases = () => {
   const { user } = useAuth();
-  const [caseTab, setcaseTab] = useState("All Case");
+  const [caseTab, setcaseTab] = useState("All Cases");
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedCase, setSelectedCase] = useState(null);
   // Local cases state removed; AllCase handles fetching based on role
@@ -55,7 +54,7 @@ const Cases = () => {
 
             <View style={styles.taskButtonAlignments}>
               <View style={{ flexDirection: "row" }}>
-                {["All Case"].map((tab) => (
+                {["All Cases"].map((tab) => (
                   <TouchableOpacity
                     key={tab}
                     style={[
@@ -98,7 +97,7 @@ const Cases = () => {
             </View>
 
             <View style={{ flex: 1 }}>
-              {caseTab === "All Case" && (
+              {caseTab === "All Cases" && (
                 <AllCase onCasePress={handleCasePress} user={user} />
               )}
               {caseTab === "View Clients" && <ViewClients user={user} />}
