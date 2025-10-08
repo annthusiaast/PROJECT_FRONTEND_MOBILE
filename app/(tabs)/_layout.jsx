@@ -9,7 +9,7 @@ import { useAuth } from "@/context/auth-context";
 import { baseTabs, getAllowedTabs } from "@/constants/role-tabs";
 import Notifications from "@/components/notifications";
 
-function CustomHeader({ title, onPressBell }) {
+function CustomHeader({ title, onPressBell, unreadCount }) {
   const [today, setToday] = useState("");
 
   useEffect(() => {
@@ -48,8 +48,30 @@ function CustomHeader({ title, onPressBell }) {
         </View>
 
         {/* bell */}
-        <TouchableOpacity onPress={onPressBell}>
-          <Bell size={26} color="#0B3D91" strokeWidth={2} />
+        <TouchableOpacity onPress={onPressBell} style={{ padding: 4 }}>
+          <View>
+            <Bell size={26} color="#0B3D91" strokeWidth={2} />
+            {unreadCount > 0 && (
+              <View
+                style={{
+                  position: 'absolute',
+                  top: -2,
+                  right: -2,
+                  backgroundColor: '#dc2626',
+                  borderRadius: 10,
+                  minWidth: 18,
+                  paddingHorizontal: 4,
+                  height: 18,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Text style={{ color: '#fff', fontSize: 10, fontWeight: '700' }} numberOfLines={1}>
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </Text>
+              </View>
+            )}
+          </View>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -61,6 +83,7 @@ export default function TabsLayout() {
   const currentTab = segments[segments.length - 1] || "home";
   const { user, loading } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const role = user?.user_role;
 
@@ -86,6 +109,7 @@ export default function TabsLayout() {
           <CustomHeader
             title={(filteredTabs.find(t => t.name === currentTab)?.label) || (currentTab.charAt(0).toUpperCase() + currentTab.slice(1))}
             onPressBell={() => setShowNotifications(true)}
+            unreadCount={unreadCount}
           />
           {/* Notifications Modal shown from any tab via header bell */}
           <Modal
@@ -94,7 +118,7 @@ export default function TabsLayout() {
             onRequestClose={() => setShowNotifications(false)}
             presentationStyle={Platform.OS === 'ios' ? 'pageSheet' : 'fullScreen'}
           >
-            <Notifications onClose={() => setShowNotifications(false)} />
+            <Notifications onClose={() => setShowNotifications(false)} onUnreadChange={setUnreadCount} />
           </Modal>
           {(loading || filteredTabs.length === 0) && (
             <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>

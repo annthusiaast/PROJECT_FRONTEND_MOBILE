@@ -9,7 +9,9 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "linking": {
-      "prefixes": ["legalvaultmobile://"]
+      "prefixes": [
+        "legalvaultmobile://"
+      ]
     },
     "ios": {
       "supportsTablet": true
@@ -30,7 +32,8 @@
       [
         "expo-splash-screen",
         {}
-      ]
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
