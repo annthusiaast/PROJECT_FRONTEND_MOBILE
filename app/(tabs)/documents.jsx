@@ -11,7 +11,7 @@ import {
   Keyboard,
   Linking,
 } from "react-native";
-import { Calendar, Clock, Download, Eye, Search, ChevronDown } from "lucide-react-native";
+import { Calendar, User, Download, Search, ChevronDown } from "lucide-react-native";
 import { CASE_FILTERS, DOC_TYPES } from "@/constants/sample_data";
 import { styles } from "../../constants/styles/(tabs)/documents_styles";
 import { API_CONFIG, getEndpoint } from "@/constants/api-config";
@@ -110,6 +110,7 @@ const Documents = () => {
           date: d.doc_due_date || d.created_at || d.updated_at || '',
           size: d.size || '',
           fileUrl: d.doc_file ? `${origin}${d.doc_file}` : null,
+          submittedBy: d.doc_submitted_by || 'Unknown',
           raw: d,
         })) : [];
         setDocs(mapped);
@@ -192,8 +193,11 @@ const Documents = () => {
                     <Text style={styles.metaText}>{doc.date ? formatDateTime(doc.date) : ''}</Text>
                   </View>
                   <View style={styles.metaItem}>
-                    <Clock size={14} color="#666" />
                     <Text style={styles.metaText}>{doc.size || '-'}</Text>
+                  </View>
+                  <View style={styles.metaItem}>
+                    <User size={14} color="#666" />
+                    <Text style={styles.metaText}>{doc.submittedBy}</Text>
                   </View>
                 </View>
 

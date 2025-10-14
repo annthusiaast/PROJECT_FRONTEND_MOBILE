@@ -65,24 +65,39 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await fetch(`${API_CONFIG.BASE_URL}/login`, {
+      const response = await fetch(getEndpoint('/login'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Login failed');
+      let data;
+      try {
+        data = await response.json();
+      } catch (e) {
+        // If server didn't return JSON, create a helpful error
+        throw new Error('Login failed: invalid server response');
       }
 
-      // Store pending user data for 2FA
-      await AsyncStorage.setItem('pendingUserId', data.user_id.toString());
+      if (!response.ok) {
+        throw new Error(data?.error || 'Login failed');
+      }
+
+      // Extract user id from common shapes
+      const userId = data?.user_id || data?.user?.user_id || data?.pending_user_id || data?.pendingUserId;
+      if (!userId) {
+        // Provide diagnostic info for backend mismatch
+        const keys = data && typeof data === 'object' ? Object.keys(data).join(', ') : String(data);
+        throw new Error(`Login succeeded but user_id is missing. Response keys: ${keys}`);
+      }
+
+      const userIdStr = String(userId);
+      await AsyncStorage.setItem('pendingUserId', userIdStr);
       await AsyncStorage.setItem('pendingUserEmail', email);
-      setPendingUserId(data.user_id.toString());
+      setPendingUserId(userIdStr);
 
       return data;
     } catch (error) {

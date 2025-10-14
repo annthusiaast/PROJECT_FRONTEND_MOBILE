@@ -24,7 +24,7 @@ const ClientContact = () => {
   const [clients, setClients] = useState([]);
   const [error, setError] = useState(null);
 
-  const [currentPage, setCurrentPage] = useState(1);
+  // Pagination removed; show entire list
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [editContact, setEditContact] = useState(null); // object being edited
@@ -87,13 +87,7 @@ const ClientContact = () => {
     return client ? client.client_fullname : "Unknown";
   };
 
-  // Pagination logic (no search now)
-  const rowsPerPage = 5;
-  const totalPages = Math.ceil(tableData.length / rowsPerPage);
-  const paginatedContacts = tableData.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage
-  );
+  const paginatedContacts = tableData; // retain variable name for minimal downstream changes
 
   const handleContactRemoval = async (contact) => {
     try {
@@ -258,26 +252,7 @@ const ClientContact = () => {
         }
       />
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <View style={styles.pagination}>
-          <TouchableOpacity
-            onPress={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-            disabled={currentPage === 1}
-          >
-            <Text style={styles.pageButton}>{"<"}</Text>
-          </TouchableOpacity>
-          <Text>
-            Page {currentPage} of {totalPages}
-          </Text>
-          <TouchableOpacity
-            onPress={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-            disabled={currentPage === totalPages}
-          >
-            <Text style={styles.pageButton}>{">"}</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+      {/* Pagination removed */}
 
       {/* Remove Confirmation Modal */}
       <Modal

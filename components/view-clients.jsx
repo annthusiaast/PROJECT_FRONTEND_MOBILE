@@ -38,8 +38,7 @@ const ViewClients = ({ user, navigation }) => {
   const [selectedClient, setSelectedClient] = useState(null);
   const [showDetail, setShowDetail] = useState(false);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 5;
+  // Pagination removed: show all filtered clients
 
   const [activeTab, setActiveTab] = useState("clients");
   const [showAddClient, setShowAddClient] = useState(false);
@@ -99,11 +98,7 @@ const ViewClients = ({ user, navigation }) => {
       c.client_email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const totalPages = Math.ceil(filtered.length / rowsPerPage);
-  const paginated = filtered.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage
-  );
+  const paginated = filtered; // legacy var name retained for minimal code changes
 
   // handle remove
   const confirmRemove = (client) => {
@@ -250,28 +245,7 @@ const ViewClients = ({ user, navigation }) => {
             scrollEnabled={true}
           />
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <View style={styles.pagination}>
-              <TouchableOpacity
-                disabled={currentPage === 1}
-                onPress={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              >
-                <Text style={styles.pageButton}>&lt;</Text>
-              </TouchableOpacity>
-              <Text>
-                Page {currentPage} of {totalPages}
-              </Text>
-              <TouchableOpacity
-                disabled={currentPage === totalPages}
-                onPress={() =>
-                  setCurrentPage((p) => Math.min(totalPages, p + 1))
-                }
-              >
-                <Text style={styles.pageButton}>&gt;</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+          {/* Pagination removed */}
 
           {/* Floating Add Client Button */}
           <TouchableOpacity

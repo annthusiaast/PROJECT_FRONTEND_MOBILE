@@ -6,7 +6,7 @@ import { getEndpoint } from "@/constants/api-config";
 
 // Fetches and displays all cases (Admin & Lawyer) or user-specific cases otherwise.
 // Props: onCasePress (function), user (object with role & id)
-const AllCase = ({ onCasePress, user }) => {
+const AllCase = ({ onCasePress, user, showArchived = false }) => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [cases, setCases] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -58,9 +58,13 @@ const AllCase = ({ onCasePress, user }) => {
     completed: "#0c8744ff",
   };
 
-  const filteredCases = cases.filter(
-    (t) => statusFilter === 'all' || t.status === statusFilter
-  );
+  const filteredCases = cases.filter((t) => {
+    if (showArchived) {
+      // assume archived status comes as 'archived' or case_status === 'archived'
+      return (t.status || '').toLowerCase() === 'archived';
+    }
+    return statusFilter === 'all' || t.status === statusFilter;
+  });
 
   return (
     <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>

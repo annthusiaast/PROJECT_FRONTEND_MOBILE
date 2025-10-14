@@ -1,7 +1,6 @@
 import AllCase from "@/components/all-case";
 import CaseModal from "@/components/case-modal";
 import ViewClients from "@/components/view-clients";
-import { today } from "@/constants/sample_data"; // removed raw sample list; AllCase fetches from backend
 import { styles } from "@/constants/styles/(tabs)/case_styles";
 import { useAuth } from "@/context/auth-context";
 import { Bell, Search } from "lucide-react-native";
@@ -20,7 +19,8 @@ import {
 
 const Cases = () => {
   const { user } = useAuth();
-  const [caseTab, setcaseTab] = useState("All Case");
+  const [caseTab, setcaseTab] = useState("All Cases");
+  const [showArchived, setShowArchived] = useState(false); // toggle for archived cases
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedCase, setSelectedCase] = useState(null);
   // Local cases state removed; AllCase handles fetching based on role
@@ -54,8 +54,8 @@ const Cases = () => {
             </View>
 
             <View style={styles.taskButtonAlignments}>
-              <View style={{ flexDirection: "row" }}>
-                {["All Case"].map((tab) => (
+              <View style={{ flexDirection: "row", alignItems: 'center' }}>
+                {["All Cases"].map((tab) => (
                   <TouchableOpacity
                     key={tab}
                     style={[
@@ -76,6 +76,25 @@ const Cases = () => {
                     </Text>
                   </TouchableOpacity>
                 ))}
+                {/* Archive toggle */}
+                <TouchableOpacity
+                  style={[
+                    styles.taskButton,
+                    showArchived && styles.taskButtonPressed,
+                    { marginRight: 8 },
+                  ]}
+                  onPress={() => setShowArchived((p) => !p)}
+                  activeOpacity={0.7}
+                >
+                  <Text
+                    style={[
+                      styles.taskButtonText,
+                      showArchived && styles.taskButtonTextPressed,
+                    ]}
+                  >
+                    {showArchived ? 'Archived' : 'Archive Cases'}
+                  </Text>
+                </TouchableOpacity>
               </View>
 
               <TouchableOpacity
@@ -98,8 +117,8 @@ const Cases = () => {
             </View>
 
             <View style={{ flex: 1 }}>
-              {caseTab === "All Case" && (
-                <AllCase onCasePress={handleCasePress} user={user} />
+              {caseTab === "All Cases" && (
+                <AllCase onCasePress={handleCasePress} user={user} showArchived={showArchived} />
               )}
               {caseTab === "View Clients" && <ViewClients user={user} />}
             </View>

@@ -8,10 +8,32 @@ import { getEndpoint } from '@/constants/api-config';
 // Props:
 // - onClose?: () => void  -> when provided, shows a close button.
 // - style?: object        -> optional style overrides for the container.
-export default function Notifications({ onClose, style }) {
+export default function Notifications({ onClose, style, onUnreadChange }) {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Helper: relative time (e.g., 5m ago)
+  const relativeTime = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '';
+    const diffMs = Date.now() - date.getTime();
+    const sec = Math.floor(diffMs / 1000);
+    if (sec < 60) return `${sec}s ago`;
+    const min = Math.floor(sec / 60);
+    if (min < 60) return `${min}m ago`;
+    const hr = Math.floor(min / 60);
+    if (hr < 24) return `${hr}h ago`;
+    const day = Math.floor(hr / 24);
+    if (day < 7) return `${day}d ago`;
+    const week = Math.floor(day / 7);
+    if (week < 4) return `${week}w ago`;
+    const month = Math.floor(day / 30);
+    if (month < 12) return `${month}mo ago`;
+    const year = Math.floor(day / 365);
+    return `${year}y ago`;
+  };
 
   // Fetch from backend
   useEffect(() => {
@@ -31,6 +53,7 @@ export default function Notifications({ onClose, style }) {
               id: String(n.notification_id || n.id || idx),
               message: n.notification_message || n.message || n.title || 'Notification',
               read: Boolean(n.is_read ?? n.read ?? false),
+              date: n.date_created || n.created_at || n.updated_at || null,
               raw: n,
             }))
           : [];
@@ -43,6 +66,14 @@ export default function Notifications({ onClose, style }) {
     };
     fetchNotifications();
   }, []);
+
+  // Notify parent when unread count changes
+  useEffect(() => {
+    if (typeof onUnreadChange === 'function') {
+      const count = notifications.filter(n => !n.read).length;
+      onUnreadChange(count);
+    }
+  }, [notifications, onUnreadChange]);
 
   const toggleRead = (id) => {
     setNotifications((prev) => prev.map((item) => (item.id === id ? { ...item, read: !item.read } : item)));
@@ -70,9 +101,16 @@ export default function Notifications({ onClose, style }) {
           { backgroundColor: item.read ? '#A0AEC0' : '#0B3D91' },
         ]}
       />
-      <Text style={[styles.notificationText, !item.read && styles.unreadText]}>
-        {item.message}
-      </Text>
+      <View style={{ flex: 1 }}>
+        <Text style={[styles.notificationText, !item.read && styles.unreadText]}>
+          {item.message}
+        </Text>
+        {item.date && (
+          <Text style={{ fontSize: 11, color: '#666', marginTop: 2 }}>
+            {relativeTime(item.date)}
+          </Text>
+        )}
+      </View>
       <Text style={styles.statusLabel}>{item.read ? 'Read' : 'Unread'}</Text>
     </TouchableOpacity>
   );
