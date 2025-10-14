@@ -58,6 +58,7 @@ function Profile() {
   const [logs, setLogs] = useState([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [branches, setBranches] = useState([]); // branch list for name lookup
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -105,6 +106,19 @@ function Profile() {
     };
     loadProfile();
   }, [user]);
+
+  // Fetch branches (best effort)
+  useEffect(() => {
+    const fetchBranches = async () => {
+      try {
+        const res = await fetch(getEndpoint('/branches'), { credentials: 'include' });
+        if (!res.ok) return; // silently ignore
+        const data = await res.json();
+        setBranches(Array.isArray(data) ? data : []);
+      } catch {}
+    };
+    fetchBranches();
+  }, []);
 
   
   // Fetch logs from backend
@@ -486,7 +500,10 @@ function Profile() {
             <Building size={18} color="#0B3D91" />
             <View>
               <Text style={styles.infoLabel}>Branch</Text>
-              <Text style={styles.infoValue}>{profile.branch_id}</Text>
+              <Text style={styles.infoValue}>{(() => {
+                const b = branches.find(br => br.branch_id === profile.branch_id || br.id === profile.branch_id);
+                return b ? (b.branch_name || b.name || `Branch ${profile.branch_id}`) : profile.branch_id;
+              })()}</Text>
             </View>
           </View>
         </View>

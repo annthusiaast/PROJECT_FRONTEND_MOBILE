@@ -20,6 +20,7 @@ import {
 const Cases = () => {
   const { user } = useAuth();
   const [caseTab, setcaseTab] = useState("All Cases");
+  const [showArchived, setShowArchived] = useState(false); // toggle for archived cases
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedCase, setSelectedCase] = useState(null);
   // Local cases state removed; AllCase handles fetching based on role
@@ -53,7 +54,7 @@ const Cases = () => {
             </View>
 
             <View style={styles.taskButtonAlignments}>
-              <View style={{ flexDirection: "row" }}>
+              <View style={{ flexDirection: "row", alignItems: 'center' }}>
                 {["All Cases"].map((tab) => (
                   <TouchableOpacity
                     key={tab}
@@ -75,6 +76,25 @@ const Cases = () => {
                     </Text>
                   </TouchableOpacity>
                 ))}
+                {/* Archive toggle */}
+                <TouchableOpacity
+                  style={[
+                    styles.taskButton,
+                    showArchived && styles.taskButtonPressed,
+                    { marginRight: 8 },
+                  ]}
+                  onPress={() => setShowArchived((p) => !p)}
+                  activeOpacity={0.7}
+                >
+                  <Text
+                    style={[
+                      styles.taskButtonText,
+                      showArchived && styles.taskButtonTextPressed,
+                    ]}
+                  >
+                    {showArchived ? 'Archived' : 'Archive Cases'}
+                  </Text>
+                </TouchableOpacity>
               </View>
 
               <TouchableOpacity
@@ -98,7 +118,7 @@ const Cases = () => {
 
             <View style={{ flex: 1 }}>
               {caseTab === "All Cases" && (
-                <AllCase onCasePress={handleCasePress} user={user} />
+                <AllCase onCasePress={handleCasePress} user={user} showArchived={showArchived} />
               )}
               {caseTab === "View Clients" && <ViewClients user={user} />}
             </View>
