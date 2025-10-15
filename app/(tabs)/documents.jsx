@@ -87,6 +87,7 @@ const Documents = () => {
   const [caseFilter, setCaseFilter] = useState("All Cases");
   const [typeFilter, setTypeFilter] = useState("All Types");
   const [docs, setDocs] = useState([]);
+  const [users, setUsers] = useState([]); // for resolving submitter names
   const [loading, setLoading] = useState(false);
 
   // Fetch documents from backend
@@ -107,10 +108,11 @@ const Documents = () => {
           title: d.doc_name || 'Untitled',
           caseName: d.case_id ? `Case #${d.case_id}` : 'No Case',
           type: d.doc_type || 'Document',
-          date: d.doc_due_date || d.created_at || d.updated_at || '',
+          date: d.doc_date_submitted || '',
           size: d.size || '',
           fileUrl: d.doc_file ? `${origin}${d.doc_file}` : null,
-          submittedBy: d.doc_submitted_by || 'Unknown',
+          submittedById: d.doc_submitted_by || d.submitted_by_id || null,
+          submittedByName: d.submitted_by_name || null,
           raw: d,
         })) : [];
         setDocs(mapped);
@@ -122,6 +124,32 @@ const Documents = () => {
     };
     fetchDocs();
   }, []);
+
+  // Fetch users to resolve submitter names (web-style client-side join)
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await fetch(getEndpoint('/users'), { credentials: 'include' });
+        if (!res.ok) return;
+        const data = await res.json();
+        setUsers(Array.isArray(data) ? data : []);
+      } catch {
+        setUsers([]);
+      }
+    };
+    fetchUsers();
+  }, []);
+
+  const getSubmitterName = (submittedById) => {
+    if (!submittedById) return '-';
+    // compare as strings to avoid type mismatches
+    const idStr = String(submittedById);
+    const u = users.find(x => String(x.user_id) === idStr);
+    if (!u) return idStr; // fallback to showing the id
+    const m = u.user_mname ? `${u.user_mname[0]}.` : '';
+    const name = `${u.user_fname} ${m} ${u.user_lname}`.replace(/\s+/g, ' ').trim();
+    return u.user_role === 'Staff' ? name : `Atty. ${name}`;
+  };
 
   const filteredDocs = docs.filter(
     (doc) =>
@@ -197,7 +225,7 @@ const Documents = () => {
                   </View>
                   <View style={styles.metaItem}>
                     <User size={14} color="#666" />
-                    <Text style={styles.metaText}>{doc.submittedBy}</Text>
+                    <Text style={styles.metaText}>{doc.submittedByName || getSubmitterName(doc.submittedById)}</Text>
                   </View>
                 </View>
 

@@ -17,6 +17,7 @@ import images from '@/constants/images';
 import { useRouter } from 'expo-router';
 import { styles } from '@/constants/styles/auth_styles';
 import { useAuth } from '@/context/auth-context';
+import { roleToGroup } from '@/constants/role-tabs';
 
 const Login = () => {
   const [remember, setRemember] = useState(false);
@@ -29,7 +30,7 @@ const Login = () => {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
-  const { login } = useAuth();
+  const { login, isPendingVerification, user } = useAuth();
   const router = useRouter();
 
   const validateFields = () => {
@@ -67,9 +68,27 @@ const Login = () => {
     setLoading(true);
 
     try {
-  await login(email, password);
-  // Use replace to avoid stacking login behind verification
-  router.replace('/auth/verification');
+      const result = await login(email, password);
+      // If backend returned a full user (already verified), route to role home
+      if (result?.user) {
+        const role = result.user.user_role;
+        const group = roleToGroup(role);
+        if (group) {
+          router.replace(`/${`(${group})`}/home`);
+        } else {
+          router.replace('/(tabs)/home');
+        }
+        return;
+      }
+
+      // Otherwise, if OTP is pending (user is not verified), go to verification
+      if (result?.user_id || isPendingVerification) {
+        router.replace('/auth/verification');
+        return;
+      }
+
+      // Fallback: unexpected response
+      setPasswordError('Unexpected response from server. Please try again.');
     } catch (error) {
       if (error.message?.toLowerCase().includes('user') || error.message?.toLowerCase().includes('email')) {
         setEmailError('Username/Email is incorrect');

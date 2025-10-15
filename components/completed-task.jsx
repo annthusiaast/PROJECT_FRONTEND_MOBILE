@@ -25,10 +25,11 @@ const CompletedTask = ({ user }) => {
 
   // Fetch completed tasks from backend
   const fetchCompleted = useCallback(async () => {
+    if (!user?.user_id) return;
     setLoading(true); setError(null);
     try {
-      const res = await fetch(getEndpoint('/tasks/completed'), { credentials: 'include' });
-      if (!res.ok) throw new Error('Failed to fetch completed tasks');
+      const res = await fetch(getEndpoint(`/documents/task/user/${user.user_id}`), { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to fetch tasks');
       const data = await res.json();
       setTasks(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -36,27 +37,30 @@ const CompletedTask = ({ user }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user?.user_id]);
 
   useEffect(() => { fetchCompleted(); }, [fetchCompleted]);
 
   /** === FILTER COMPLETED TASKS BASED ON SELECTED RANGE === */
   const filterTasks = () => {
     const today = new Date();
-    return tasks.filter(task => {
-      const raw = task.td_date_completed || task.td_due_date; // fallback
-      if (!raw) return false;
-      const base = raw.split('T')[0];
-      const taskDate = new Date(`${base}T00:00:00`);
-      const diffDays = (today.setHours(0,0,0,0) - taskDate.getTime()) / (1000 * 3600 * 24);
-      return diffDays >= 0 && diffDays <= filter;
-    }).map(t => ({
-      id: t.td_id,
-      title: t.td_name,
-      description: t.td_description,
-      completedDate: (t.td_date_completed || '').split('T')[0] || null,
-      staff: t.td_to || 'Unknown'
-    }));
+    return tasks
+      .filter(d => (d.doc_status || '').toLowerCase() === 'done' || (d.doc_status || '').toLowerCase() === 'completed')
+      .filter(d => {
+        const raw = d.doc_due_date || d.td_date_completed || d.updated_at;
+        if (!raw) return false;
+        const base = String(raw).split('T')[0];
+        const taskDate = new Date(`${base}T00:00:00`);
+        const diffDays = (today.setHours(0,0,0,0) - taskDate.getTime()) / (1000 * 3600 * 24);
+        return diffDays >= 0 && diffDays <= filter;
+      })
+      .map(d => ({
+        id: d.doc_id,
+        title: d.doc_name || d.doc_task || 'Untitled Task',
+        description: d.doc_description || d.doc_task || '',
+        completedDate: (d.doc_due_date || d.td_date_completed || '').split('T')[0] || null,
+        staff: d.doc_tasked_to || 'Unknown'
+      }));
   };
 
   /** === OPEN DROPDOWN BELOW FILTER BUTTON === */
