@@ -13,13 +13,14 @@ const ActiveTask = ({ user }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
-  // Fetch pending tasks from backend (td_status null or not Completed)
+  // Fetch task documents for current user, then filter active on client
   const fetchPendingTasks = useCallback(async () => {
+    if (!user?.user_id) return;
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(getEndpoint('/tasks/pending'), { credentials: 'include' });
-      if (!res.ok) throw new Error('Failed to fetch pending tasks');
+      const res = await fetch(getEndpoint(`/documents/task/user/${user.user_id}`), { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to fetch tasks');
       const data = await res.json();
       setTasks(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -27,7 +28,7 @@ const ActiveTask = ({ user }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user?.user_id]);
 
   useEffect(() => { fetchPendingTasks(); }, [fetchPendingTasks]);
 
@@ -44,19 +45,21 @@ const ActiveTask = ({ user }) => {
   };
 
   // Map backend field names to existing UI expectation
-  const mapped = tasks.map(t => ({
-    id: t.td_id,
-    title: t.td_name,
-    description: t.td_description,
-    assignedTo: t.td_to || 'Unassigned',
-    dueDate: t.td_due_date ? t.td_due_date.split('T')[0] : null,
-    status: t.td_status
+  const mapped = tasks.map(d => ({
+    id: d.doc_id,
+    title: d.doc_name || d.doc_task || 'Untitled Task',
+    description: d.doc_description || d.doc_task || '',
+    assignedTo: d.doc_tasked_to || 'Unassigned',
+    dueDate: d.doc_due_date ? String(d.doc_due_date).split('T')[0] : null,
+    status: (d.doc_status || '').toLowerCase(),
   }));
 
-  const filteredTasks = mapped.filter((t) => {
-    const priority = t.dueDate ? getPriority(t.dueDate) : 'low';
-    return priorityFilter === 'all' || priorityFilter === priority;
-  });
+  const filteredTasks = mapped
+    .filter(t => t.status !== 'done' && t.status !== 'completed')
+    .filter((t) => {
+      const priority = t.dueDate ? getPriority(t.dueDate) : 'low';
+      return priorityFilter === 'all' || priorityFilter === priority;
+    });
 
   return (
     <ScrollView
