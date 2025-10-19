@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
+  Alert,
 } from "react-native";
 import { API_CONFIG, getEndpoint } from "@/constants/api-config";
 import DropDownPicker from "react-native-dropdown-picker";
@@ -490,6 +491,64 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
   const canEditAssignedLawyer = isAdmin || !isSelfAssignedLawyer;
   const formattedLastUpdatedAt = editableCase?.lastUpdatedAt ? formatDateTime(editableCase.lastUpdatedAt) : null;
 
+  // Case status actions similar to web view-case.jsx
+  const handleCaseAction = async (type) => {
+    const currentStatus = String(editableCase?.status || '').toLowerCase();
+    if (currentStatus !== 'processing') {
+      Alert.alert('Not allowed', 'Only processing cases can be updated.');
+      return;
+    }
+
+    // Prevent closing if there are pending or in-progress documents
+    if (type === 'close') {
+      const hasPending = (editableCase?.documents || []).some((d) => {
+        const s = String(d?.status || '').toLowerCase();
+        return s === 'todo' || s === 'in_progress';
+      });
+      if (hasPending) {
+        Alert.alert('Cannot close case', 'There are pending or in-progress documents. Complete them before closing.');
+        return;
+      }
+    }
+
+    const actionLabel = type === 'close' ? 'Close Case' : 'Dismiss Case';
+    const newStatus = type === 'close' ? 'Completed' : 'Dismissed';
+
+    Alert.alert(
+      actionLabel,
+      `Are you sure you want to ${type === 'close' ? 'close' : 'dismiss'} this case?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Confirm',
+          style: 'destructive',
+          onPress: async () => {
+            const caseId = caseData?.id || caseData?.case_id;
+            if (!caseId) return;
+            try {
+              const res = await fetch(getEndpoint(`/cases/${caseId}`), {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                  case_status: newStatus,
+                  last_updated_by: user?.user_id || null,
+                }),
+              });
+              const data = await res.json().catch(() => ({}));
+              if (!res.ok) throw new Error(data?.error || `Failed to ${type} case`);
+              // Update local state optimistically
+              setBaseCase((prev) => ({ ...prev, status: newStatus, lastUpdatedBy: user?.user_id ?? prev.lastUpdatedBy }));
+              setEditableCase((prev) => ({ ...prev, status: newStatus, lastUpdatedBy: user?.user_id ?? prev.lastUpdatedBy }));
+            } catch (e) {
+              Alert.alert('Error', e.message || `Failed to ${type} case.`);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <>
     <Modal visible={visible} animationType="slide" transparent>
@@ -879,6 +938,26 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
                     );
                   })()}
                 </View>
+
+                {/* Case Actions (only when Processing) */}
+                {String(editableCase?.status || '').toLowerCase() === 'processing' && (
+                  <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 10, marginTop: 12 }}>
+                    <TouchableOpacity
+                      onPress={() => handleCaseAction('close')}
+                      style={{ backgroundColor: '#16a34a', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8 }}
+                      accessibilityLabel="Close Case"
+                    >
+                      <Text style={{ color: '#fff', fontWeight: '700' }}>Close Case</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => handleCaseAction('dismiss')}
+                      style={{ backgroundColor: '#4b5563', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8 }}
+                      accessibilityLabel="Dismiss Case"
+                    >
+                      <Text style={{ color: '#fff', fontWeight: '700' }}>Dismiss Case</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
               </ScrollView>
             </View>
           </TouchableWithoutFeedback>
