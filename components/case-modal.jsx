@@ -10,7 +10,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { getEndpoint } from "@/constants/api-config";
+import { API_CONFIG, getEndpoint } from "@/constants/api-config";
 import DropDownPicker from "react-native-dropdown-picker";
 import { Pencil } from "lucide-react-native";
 import { useAuth } from "@/context/auth-context";
@@ -128,6 +128,7 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
           lastUpdatedAt: data.case_last_updated ?? editableCase.lastUpdatedAt,
           lastUpdatedBy: data.last_updated_by ?? editableCase.lastUpdatedBy,
           lastUpdatedByName: data.last_updated_by_name || editableCase.lastUpdatedByName,
+          // Placeholder; will be replaced by fetch to /case/documents/:caseId
           documents: Array.isArray(data.documents) ? data.documents.map(d => ({
             name: d.name || d.filename || 'Document',
             status: d.status || 'available',
@@ -136,6 +137,33 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
         };
         setBaseCase(mapped);
         setEditableCase(mapped);
+
+        // After basic case details, fetch associated documents
+        try {
+          const docsRes = await fetch(getEndpoint(`/case/documents/${caseId}`), {
+            method: 'GET',
+            credentials: 'include',
+          });
+          if (docsRes.ok) {
+            const docsData = await docsRes.json();
+            const origin = String(API_CONFIG.BASE_URL || '').replace('/api', '');
+            const docsMapped = (Array.isArray(docsData) ? docsData : [])
+              .map(d => ({
+                id: d.doc_id,
+                name: d.doc_name || 'Document',
+                type: d.doc_type || 'Document',
+                status: d.doc_status || 'available',
+                due: d.doc_due_date || null,
+                submittedById: d.doc_submitted_by || null,
+                taskedById: d.doc_tasked_by || null,
+                link: d.doc_file ? `${origin}${d.doc_file}` : '',
+              }));
+            setBaseCase(prev => ({ ...prev, documents: docsMapped }));
+            setEditableCase(prev => ({ ...prev, documents: docsMapped }));
+          }
+        } catch (_ignored) {
+          // keep existing docs if fetch fails
+        }
       } catch (e) {
         setError(e.message || 'Error loading case details');
       } finally {
@@ -791,15 +819,52 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
                   {(() => {
                     const docs = editableCase.documents || [];
                     const visibleDocs = showAllDocs ? docs : docs.slice(0, 3);
+
+                    const normalizeStatus = (s) => {
+                      if (!s) return '—';
+                      const v = String(s).toLowerCase();
+                      if (v === 'todo') return 'to do';
+                      if (v === 'in_progress') return 'in progress';
+                      return s;
+                    };
+
+                    const resolveByLabel = (doc) => {
+                      const isTask = String(doc.type || '').toLowerCase().includes('task');
+                      return isTask ? 'Assigned by' : 'Submitted by';
+                    };
+
+                    const resolveByName = (doc) => {
+                      const byId = String(String(doc.type || '').toLowerCase().includes('task') ? (doc.taskedById ?? doc.submittedById) : doc.submittedById || '');
+                      if (!byId) return '—';
+                      return userLookup[Number(byId)] || `User ${byId}`;
+                    };
+
                     return (
                       <>
-                        {visibleDocs.map((doc, index) => (
-                          <View key={index} style={styles.docRow}>
-                            <Text style={[styles.docText, { flex: 1.4 }]} numberOfLines={1}>{doc.name}</Text>
-                            <Text style={[styles.docText, { flex: 0.8, textAlign: 'right', color: '#555' }]} numberOfLines={1}>{doc.status}</Text>
-                            <Text style={styles.link} onPress={() => safeOpen(doc.link)}>Open</Text>
-                          </View>
-                        ))}
+                        {visibleDocs.length === 0 ? (
+                          <Text style={{ marginTop: 6, color: '#666' }}>No documents for this case.</Text>
+                        ) : (
+                          visibleDocs.map((doc, index) => (
+                            <View key={index} style={styles.docRow}>
+                              <View style={{ flex: 1 }}>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <Text style={[styles.docText, { fontWeight: '600' }]} numberOfLines={1}>
+                                    {doc.name}
+                                  </Text>
+                                  <View style={[styles.chip, { backgroundColor: '#eef2ff' }]}>
+                                    <Text style={[styles.chipText, { color: '#3730a3' }]}>{doc.type || 'Document'}</Text>
+                                  </View>
+                                </View>
+                                <Text style={[styles.docText, { marginTop: 4, color: '#475467' }]} numberOfLines={2}>
+                                  Status: {normalizeStatus(doc.status)}
+                                  {doc.due ? `   •   Due: ${formatDateTime(doc.due)}` : ''}
+                                  {`   •   ${resolveByLabel(doc)}: ${resolveByName(doc)}`}
+                                </Text>
+                              </View>
+                              <Text style={styles.link} onPress={() => safeOpen(doc.link)}>Open</Text>
+                            </View>
+                          ))
+                        )}
                         {docs.length > 3 && !showAllDocs && (
                           <TouchableOpacity onPress={() => setShowAllDocs(true)}>
                             <Text style={styles.linkInline}>Show all ({docs.length})</Text>
