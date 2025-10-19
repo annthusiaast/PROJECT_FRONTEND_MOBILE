@@ -212,27 +212,34 @@ const Dashboard = () => {
 
             <View style={styles.recentActivityContainer}>
               {recentActivity.length > 0 ? (
-                recentActivity.map((activity, index) => (
-                  <Swipeable key={`${activity.id}-${index}`} renderRightActions={() => renderRightActions(activity.id)}>
-                    <TouchableOpacity
-                      style={styles.activityItem}
-                      activeOpacity={0.7}
-                      onPress={() => {
-                        setSelectedLog(activity.raw || activity);
-                        setShowDetails(true);
-                      }}
-                    >
-                      <Logs size={22} color="#1d1d66ff" />
-                      <View style={styles.activityTextWrapper}>
-                        <Text style={styles.activityText}>{activity.user_log_description}</Text>
-                      </View>
-                      <Text style={styles.activityTime}>
-                        {new Date(activity.user_log_datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}{'\n'}
-                        {new Date(activity.user_log_datetime).toLocaleDateString()}
-                      </Text>
-                    </TouchableOpacity>
-                  </Swipeable>
-                ))
+                <ScrollView
+                  style={{ maxHeight: 280 }}
+                  contentContainerStyle={{ paddingBottom: 6 }}
+                  nestedScrollEnabled
+                  showsVerticalScrollIndicator={false}
+                >
+                  {recentActivity.map((activity, index) => (
+                    <Swipeable key={`${activity.id}-${index}`} renderRightActions={() => renderRightActions(activity.id)}>
+                      <TouchableOpacity
+                        style={[styles.activityItem, { marginBottom: 8 }]}
+                        activeOpacity={0.7}
+                        onPress={() => {
+                          setSelectedLog(activity.raw || activity);
+                          setShowDetails(true);
+                        }}
+                      >
+                        <Logs size={22} color="#1d1d66ff" />
+                        <View style={styles.activityTextWrapper}>
+                          <Text style={styles.activityText}>{activity.user_log_description}</Text>
+                        </View>
+                        <Text style={styles.activityTime}>
+                          {new Date(activity.user_log_datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}{'\n'}
+                          {new Date(activity.user_log_datetime).toLocaleDateString()}
+                        </Text>
+                      </TouchableOpacity>
+                    </Swipeable>
+                  ))}
+                </ScrollView>
               ) : (
                 <Text style={styles.noActivityText}>No recent activity available</Text>
               )}
