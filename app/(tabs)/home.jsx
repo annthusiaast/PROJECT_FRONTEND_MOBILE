@@ -15,8 +15,8 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const [clientsCount, setClientsCount] = useState(0);
   const [processingDocumentsCount, setProcessingDocumentsCount] = useState(0);
-  // const [pendingApprovalsCount, setPendingApprovalsCount] = useState(0);
-  // const [pendingTasksCount, setPendingTasksCount] = useState(0);
+  const [pendingApprovalsCount, setPendingApprovalsCount] = useState(0);
+  const [pendingTasksCount, setPendingTasksCount] = useState(0);
   const [processingCasesCount, setProcessingCasesCount] = useState(0);
   const [archivedCasesCount, setArchivedCasesCount] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -55,15 +55,15 @@ const Dashboard = () => {
         }
 
         // Fetch archived cases count
-        // const archivedCasesRes = await fetch(getEndpoint('/cases/count/archived'), {
-        //   method: 'GET',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   credentials: 'include',
-        // });
-        // if (archivedCasesRes.ok) {
-        //   const data = await archivedCasesRes.json();
-        //   setArchivedCasesCount(data.count || 0);
-        // }
+        const archivedCasesRes = await fetch(getEndpoint('/cases/count/archived'), {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        });
+        if (archivedCasesRes.ok) {
+          const data = await archivedCasesRes.json();
+          setArchivedCasesCount(data.count || 0);
+        }
 
         // Fetch processing documents count
         const processingDocsRes = await fetch(getEndpoint('/documents/count/processing'), {
@@ -87,27 +87,27 @@ const Dashboard = () => {
           setClientsCount(data.count || 0);
         }
 
-        // Fetch pending approvals count
-        // const pendingApprovalsRes = await fetch(getEndpoint('/approvals/count/pending'), {
-        //   method: 'GET',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   credentials: 'include',
-        // });
-        // if (pendingApprovalsRes.ok) {
-        //   const data = await pendingApprovalsRes.json();
-        //   setPendingApprovalsCount(data.count || 0);
-        // }
+        // Fetch pending approvals count (documents awaiting approval)
+        const pendingApprovalsRes = await fetch(getEndpoint('/documents/count/for-approval'), {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        });
+        if (pendingApprovalsRes.ok) {
+          const data = await pendingApprovalsRes.json();
+          setPendingApprovalsCount(data.count || 0);
+        }
 
-        // Fetch pending tasks count
-        // const pendingTasksRes = await fetch(getEndpoint('/tasks/count/pending'), {
-        //   method: 'GET',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   credentials: 'include',
-        // });
-        // if (pendingTasksRes.ok) {
-        //   const data = await pendingTasksRes.json();
-        //   setPendingTasksCount(data.count || 0);
-        // }
+        // Fetch pending tasks count (task documents not yet done)
+        const pendingTasksRes = await fetch(getEndpoint('/documents/count/pending-tasks'), {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        });
+        if (pendingTasksRes.ok) {
+          const data = await pendingTasksRes.json();
+          setPendingTasksCount(data.count || 0);
+        }
 
       } catch (e) {
         console.warn('Dashboard counts fetch failed:', e.message);
@@ -190,12 +190,12 @@ const Dashboard = () => {
             <View style={styles.card}>
               <CheckCircle size={20} color="#edf0f6ff" />
               <Text style={styles.cardTitle}>Pending Approvals</Text>
-              <Text style={styles.cardCount}>8</Text>
+              <Text style={styles.cardCount}>{pendingApprovalsCount}</Text>
             </View>
             <View style={styles.card}>
               <ClipboardList size={20} color="#edf0f6ff" />
               <Text style={styles.cardTitle}>Pending Tasks</Text>
-              <Text style={styles.cardCount}>5</Text>
+              <Text style={styles.cardCount}>{pendingTasksCount}</Text>
             </View>
           </View>
 

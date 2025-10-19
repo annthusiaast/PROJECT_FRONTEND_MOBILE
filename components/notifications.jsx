@@ -3,12 +3,14 @@ import { View, Text, TouchableOpacity, FlatList, StyleSheet, ActivityIndicator }
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { X } from 'lucide-react-native';
 import { getEndpoint } from '@/constants/api-config';
+import { useAuth } from '@/context/auth-context';
 
 // Reusable notifications component. Designed to be placed inside a Modal.
 // Props:
 // - onClose?: () => void  -> when provided, shows a close button.
 // - style?: object        -> optional style overrides for the container.
 export default function Notifications({ onClose, style, onUnreadChange }) {
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -38,10 +40,11 @@ export default function Notifications({ onClose, style, onUnreadChange }) {
   // Fetch from backend
   useEffect(() => {
     const fetchNotifications = async () => {
+      if (!user?.user_id) return;
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(getEndpoint('/notifications'), {
+        const res = await fetch(getEndpoint(`/notifications/${user.user_id}`), {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
@@ -65,7 +68,7 @@ export default function Notifications({ onClose, style, onUnreadChange }) {
       }
     };
     fetchNotifications();
-  }, []);
+  }, [user?.user_id]);
 
   // Notify parent when unread count changes
   useEffect(() => {
