@@ -86,20 +86,29 @@ export const AuthProvider = ({ children }) => {
         throw new Error(data?.error || 'Login failed');
       }
 
-      // Extract user id from common shapes
-      const userId = data?.user_id || data?.user?.user_id || data?.pending_user_id || data?.pendingUserId;
-      if (!userId) {
-        // Provide diagnostic info for backend mismatch
-        const keys = data && typeof data === 'object' ? Object.keys(data).join(', ') : String(data);
-        throw new Error(`Login succeeded but user_id is missing. Response keys: ${keys}`);
+      // If server returned a full user (already verified), finish login immediately
+      if (data?.user && data?.user?.user_id) {
+        await AsyncStorage.setItem('user', JSON.stringify(data.user));
+        await AsyncStorage.removeItem('pendingUserId');
+        await AsyncStorage.removeItem('pendingUserEmail');
+        setUser(data.user);
+        setPendingUserId(null);
+        return { status: 'logged-in', user: data.user };
       }
 
-      const userIdStr = String(userId);
-      await AsyncStorage.setItem('pendingUserId', userIdStr);
-      await AsyncStorage.setItem('pendingUserEmail', email);
-      setPendingUserId(userIdStr);
+      // If server indicates OTP was sent, set pending verification state
+      const pendingId = data?.user_id || data?.pending_user_id || data?.pendingUserId;
+      if (data?.message === 'OTP sent to your email' && pendingId) {
+        const userIdStr = String(pendingId);
+        await AsyncStorage.setItem('pendingUserId', userIdStr);
+        await AsyncStorage.setItem('pendingUserEmail', email);
+        setPendingUserId(userIdStr);
+        return { status: 'otp-required', user_id: userIdStr };
+      }
 
-      return data;
+      // Unexpected shape
+      const keys = data && typeof data === 'object' ? Object.keys(data).join(', ') : String(data);
+      throw new Error(`Login succeeded but response was unexpected. Keys: ${keys}`);
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -151,11 +160,12 @@ export const AuthProvider = ({ children }) => {
         throw new Error('No pending verification. Please login again.');
       }
 
-      const response = await fetch(`${API_CONFIG.BASE_URL}/resend-otp`, {
+      const response = await fetch(getEndpoint('/resend-otp'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ user_id: pendingUserId }),
       });
 
