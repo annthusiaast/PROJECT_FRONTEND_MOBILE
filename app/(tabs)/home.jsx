@@ -167,36 +167,71 @@ const Dashboard = () => {
 
           {/* Cards */}
           <View style={styles.cardsContainer}>
-            <View style={styles.card}>
-              <Folder size={20} color="#edf0f6ff" />
-              <Text style={styles.cardTitle}>Archived Cases</Text>
-              <Text style={styles.cardCount}>{archivedCasesCount}</Text>
-            </View>
-            <View style={styles.card}>
-              <Scale size={20} color="#edf0f6ff" />
-              <Text style={styles.cardTitle}>Processing Cases</Text>
-              <Text style={styles.cardCount}>{processingCasesCount}</Text>
-            </View>
-            <View style={styles.card}>
-              <FileText size={20} color="#edf0f6ff" />
-              <Text style={styles.processDocuments}>Processing{'\n'}Documents</Text>
-              <Text style={styles.cardCount}>{processingDocumentsCount}</Text>
-            </View>
-            <View style={styles.card}>
-              <User2 size={20} color="#edf0f6ff" />
-              <Text style={styles.processDocuments}>Clients</Text>
-              <Text style={styles.cardCount}>{clientsCount}</Text>
-            </View>
-            <View style={styles.card}>
-              <CheckCircle size={20} color="#edf0f6ff" />
-              <Text style={styles.cardTitle}>Pending Approvals</Text>
-              <Text style={styles.cardCount}>{pendingApprovalsCount}</Text>
-            </View>
-            <View style={styles.card}>
-              <ClipboardList size={20} color="#edf0f6ff" />
-              <Text style={styles.cardTitle}>Pending Tasks</Text>
-              <Text style={styles.cardCount}>{pendingTasksCount}</Text>
-            </View>
+            {(() => {
+              const role = user?.user_role;
+              const show = (key) => {
+                if (role === 'Paralegal') {
+                  return key === 'pendingApprovals' || key === 'pendingTasks';
+                }
+                if (role === 'Staff') {
+                  return (
+                    key === 'processingDocuments' ||
+                    key === 'clients' ||
+                    key === 'pendingApprovals' ||
+                    key === 'pendingTasks'
+                  );
+                }
+                // Admin/Lawyer/others: show all
+                return true;
+              };
+
+              return (
+                <>
+                  {show('archivedCases') && (
+                    <View style={styles.card}>
+                      <Folder size={20} color="#edf0f6ff" />
+                      <Text style={styles.cardTitle}>Archived Cases</Text>
+                      <Text style={styles.cardCount}>{archivedCasesCount}</Text>
+                    </View>
+                  )}
+                  {show('processingCases') && (
+                    <View style={styles.card}>
+                      <Scale size={20} color="#edf0f6ff" />
+                      <Text style={styles.cardTitle}>Processing Cases</Text>
+                      <Text style={styles.cardCount}>{processingCasesCount}</Text>
+                    </View>
+                  )}
+                  {show('processingDocuments') && (
+                    <View style={styles.card}>
+                      <FileText size={20} color="#edf0f6ff" />
+                      <Text style={styles.processDocuments}>Processing{'\n'}Documents</Text>
+                      <Text style={styles.cardCount}>{processingDocumentsCount}</Text>
+                    </View>
+                  )}
+                  {show('clients') && (
+                    <View style={styles.card}>
+                      <User2 size={20} color="#edf0f6ff" />
+                      <Text style={styles.processDocuments}>Clients</Text>
+                      <Text style={styles.cardCount}>{clientsCount}</Text>
+                    </View>
+                  )}
+                  {show('pendingApprovals') && (
+                    <View style={styles.card}>
+                      <CheckCircle size={20} color="#edf0f6ff" />
+                      <Text style={styles.cardTitle}>Pending Approvals</Text>
+                      <Text style={styles.cardCount}>{pendingApprovalsCount}</Text>
+                    </View>
+                  )}
+                  {show('pendingTasks') && (
+                    <View style={styles.card}>
+                      <ClipboardList size={20} color="#edf0f6ff" />
+                      <Text style={styles.cardTitle}>Pending Tasks</Text>
+                      <Text style={styles.cardCount}>{pendingTasksCount}</Text>
+                    </View>
+                  )}
+                </>
+              );
+            })()}
           </View>
 
           {/* Recent Activity */}
