@@ -9,18 +9,23 @@ import {
   ScrollView,
 } from "react-native";
 import Icon from "react-native-vector-icons/Feather";
+// Use global Toast via useToast
 import { styles } from "../constants/styles/add-clients";
 import { getEndpoint } from "../constants/api-config";
+import { useToast } from "@/context/toast-context";
 import { useAuth } from "@/context/auth-context";
 
 const AddClient = ({ visible, onClose, onCreated }) => {
   const { user } = useAuth();
+  const { showToast: showGlobalToast } = useToast();
+  const [clientType, setClientType] = useState('person'); // 'person' | 'company'
 
   // Store split fields locally; recombine to client_fullname only on submit
   const [clientData, setClientData] = useState({
     client_firstname: "",
     client_middlename: "",
     client_lastname: "",
+    client_fullname: "",
     client_email: "",
     client_phonenum: "",
     client_address: "",
@@ -41,11 +46,9 @@ const AddClient = ({ visible, onClose, onCreated }) => {
   const [contacts, setContacts] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  const [toast, setToast] = useState({ visible: false, message: "", type: "success" });
-
+  // use global toast instead of local component
   const showToast = (message, type = 'success', duration = 2200) => {
-    setToast({ visible: true, message, type });
-    setTimeout(() => setToast(t => ({ ...t, visible: false })), duration);
+    showGlobalToast({ message, type, duration });
   };
 
   const handleAddContact = () => {
@@ -64,13 +67,24 @@ const AddClient = ({ visible, onClose, onCreated }) => {
   };
 
   const validateClient = () => {
-    const { client_firstname, client_lastname, client_email, client_phonenum, client_address } = clientData;
-    if (!client_firstname || !client_lastname || !client_email || !client_phonenum || !client_address) {
-      setErrorMsg('Please fill all required client fields.');
+    const { client_firstname, client_middlename, client_lastname, client_fullname, client_email, client_phonenum, client_address } = clientData;
+    if (clientType === 'person') {
+      if (!client_firstname || !client_lastname) {
+        setErrorMsg('First and Last Name are required for an individual client.');
+        return false;
+      }
+    } else {
+      if (!(client_fullname || '').trim()) {
+        setErrorMsg('Company Name is required.');
+        return false;
+      }
+    }
+    if (!client_email || !/.+@.+\..+/.test(client_email)) {
+      setErrorMsg('Enter a valid client email.');
       return false;
     }
-    if (!/.+@.+\..+/.test(client_email)) {
-      setErrorMsg('Enter a valid client email.');
+    if (!client_phonenum || !client_address) {
+      setErrorMsg('Phone number and address are required.');
       return false;
     }
     return true;
@@ -86,8 +100,13 @@ const AddClient = ({ visible, onClose, onCreated }) => {
   const doSubmit = async () => {
     try {
       setIsSubmitting(true);
-      // Create client first
-      const client_fullname = [clientData.client_firstname, clientData.client_middlename, clientData.client_lastname].filter(Boolean).join(' ');
+  // Create client first
+  const client_fullname = clientType === 'company'
+    ? (clientData.client_fullname || '').trim()
+    : [clientData.client_firstname, clientData.client_middlename, clientData.client_lastname]
+    .filter(Boolean)
+    .join(' ')
+    .trim();
       const clientPayload = {
         client_fullname,
         client_email: clientData.client_email,
@@ -128,10 +147,13 @@ const AddClient = ({ visible, onClose, onCreated }) => {
       // Notify parent
       onCreated && onCreated({ client: createdClient, contacts: createdContacts });
 
-    // Reset form
-  setClientData({ client_firstname: '', client_middlename: '', client_lastname: '', client_email: '', client_phonenum: '',client_address: '', created_by: user?.user_id });
-  setContacts([]);
-  setContact({ contact_firstname: '', contact_middlename: '', contact_lastname: '', contact_email: '', contact_phone: '',contact_address:'', contact_role: '' });
+      // Reset form
+      setClientData({ client_firstname: '', client_middlename: '', client_lastname: '', client_fullname: '', client_email: '', client_phonenum: '', client_address: '', client_password: '', created_by: user?.user_id });
+      setContacts([]);
+      setContact({ contact_firstname: '', contact_middlename: '', contact_lastname: '', contact_email: '', contact_phone: '', contact_address: '', contact_role: '' });
+      setClientType('person');
+
+      // Close immediately; toast is global and persists across unmount
       onClose && onClose();
     } catch (e) {
       setErrorMsg(e.message);
@@ -158,30 +180,87 @@ const AddClient = ({ visible, onClose, onCreated }) => {
 
             {/* Client info */}
             <Text style={styles.sectionTitle}>Client Information</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="First Name"
-              placeholderTextColor={"#666"}
-              value={clientData.client_firstname}
-              editable={!isSubmitting}
-              onChangeText={(text) => setClientData({ ...clientData, client_firstname: text })}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Middle Name"
-              placeholderTextColor={"#666"}
-              value={clientData.client_middlename}
-              editable={!isSubmitting}
-              onChangeText={(text) => setClientData({ ...clientData, client_middlename: text })}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Last Name"
-              placeholderTextColor={"#666"}
-              value={clientData.client_lastname}
-              editable={!isSubmitting}
-              onChangeText={(text) => setClientData({ ...clientData, client_lastname: text })}
-            />
+
+            {/* Client type toggle */}
+            <View style={{ flexDirection: 'row', alignSelf: 'flex-start', borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 10, overflow: 'hidden', marginBottom: 8 }}>
+              <TouchableOpacity
+                onPress={() => setClientType('person')}
+                disabled={isSubmitting}
+                style={{ paddingVertical: 6, paddingHorizontal: 12, backgroundColor: clientType === 'person' ? '#0B3D91' : '#e5e7eb' }}
+                activeOpacity={0.8}
+              >
+                <Text style={{ color: clientType === 'person' ? '#fff' : '#111827', fontWeight: '700' }}>Individual</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setClientType('company')}
+                disabled={isSubmitting}
+                style={{ paddingVertical: 6, paddingHorizontal: 12, backgroundColor: clientType === 'company' ? '#0B3D91' : '#e5e7eb' }}
+                activeOpacity={0.8}
+              >
+                <Text style={{ color: clientType === 'company' ? '#fff' : '#111827', fontWeight: '700' }}>Company</Text>
+              </TouchableOpacity>
+            </View>
+
+            {clientType === 'person' ? (
+              <>
+                <Text style={{ fontSize: 12, fontWeight: '600', color: '#374151', marginTop: 6, marginBottom: 4 }}>
+                  First Name {!(clientData.client_firstname || '').trim() ? (
+                    <Text style={{ color: '#dc2626' }}>*</Text>
+                  ) : null}
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="First Name"
+                  placeholderTextColor={"#666"}
+                  value={clientData.client_firstname}
+                  editable={!isSubmitting}
+                  onChangeText={(text) => setClientData({ ...clientData, client_firstname: text })}
+                />
+                <Text style={{ fontSize: 12, fontWeight: '600', color: '#374151', marginTop: 6, marginBottom: 4 }}>Middle Name</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Middle Name"
+                  placeholderTextColor={"#666"}
+                  value={clientData.client_middlename}
+                  editable={!isSubmitting}
+                  onChangeText={(text) => setClientData({ ...clientData, client_middlename: text })}
+                />
+                <Text style={{ fontSize: 12, fontWeight: '600', color: '#374151', marginTop: 6, marginBottom: 4 }}>
+                  Last Name {!(clientData.client_lastname || '').trim() ? (
+                    <Text style={{ color: '#dc2626' }}>*</Text>
+                  ) : null}
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Last Name"
+                  placeholderTextColor={"#666"}
+                  value={clientData.client_lastname}
+                  editable={!isSubmitting}
+                  onChangeText={(text) => setClientData({ ...clientData, client_lastname: text })}
+                />
+              </>
+            ) : (
+              <>
+                <Text style={{ fontSize: 12, fontWeight: '600', color: '#374151', marginTop: 6, marginBottom: 4 }}>
+                  Company Name {!(clientData.client_fullname || '').trim() ? (
+                    <Text style={{ color: '#dc2626' }}>*</Text>
+                  ) : null}
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Company Name"
+                  placeholderTextColor={"#666"}
+                  value={clientData.client_fullname}
+                  editable={!isSubmitting}
+                  onChangeText={(text) => setClientData({ ...clientData, client_fullname: text })}
+                />
+              </>
+            )}
+            <Text style={{ fontSize: 12, fontWeight: '600', color: '#374151', marginTop: 6, marginBottom: 4 }}>
+              Email {!(clientData.client_email || '').trim() ? (
+                <Text style={{ color: '#dc2626' }}>*</Text>
+              ) : null}
+            </Text>
             <TextInput
               style={styles.input}
               placeholder="Email"
@@ -191,6 +270,11 @@ const AddClient = ({ visible, onClose, onCreated }) => {
               editable={!isSubmitting}
               onChangeText={(text) => setClientData({ ...clientData, client_email: text })}
             />
+            <Text style={{ fontSize: 12, fontWeight: '600', color: '#374151', marginTop: 6, marginBottom: 4 }}>
+              Phone Number {!(clientData.client_phonenum || '').trim() ? (
+                <Text style={{ color: '#dc2626' }}>*</Text>
+              ) : null}
+            </Text>
             <TextInput
               style={styles.input}
               placeholder="Phone Number"
@@ -200,6 +284,11 @@ const AddClient = ({ visible, onClose, onCreated }) => {
               editable={!isSubmitting}
               onChangeText={(text) => setClientData({ ...clientData, client_phonenum: text })}
             />
+            <Text style={{ fontSize: 12, fontWeight: '600', color: '#374151', marginTop: 6, marginBottom: 4 }}>
+              Address {!(clientData.client_address || '').trim() ? (
+                <Text style={{ color: '#dc2626' }}>*</Text>
+              ) : null}
+            </Text>
             <TextInput
               style={styles.input}
               placeholder="Address"
@@ -212,6 +301,11 @@ const AddClient = ({ visible, onClose, onCreated }) => {
 
             {/* Contact person */}
             <Text style={styles.sectionTitle}>Contact Person</Text>
+            <Text style={{ fontSize: 12, fontWeight: '600', color: '#374151', marginTop: 6, marginBottom: 4 }}>
+              First Name {!(contact.contact_firstname || '').trim() ? (
+                <Text style={{ color: '#dc2626' }}>*</Text>
+              ) : null}
+            </Text>
             <TextInput
               style={styles.input}
               placeholder="First Name"
@@ -220,6 +314,7 @@ const AddClient = ({ visible, onClose, onCreated }) => {
               editable={!isSubmitting}
               onChangeText={(text) => setContact({ ...contact, contact_firstname: text })}
             />
+             <Text style={{ fontSize: 12, fontWeight: '600', color: '#374151', marginTop: 6, marginBottom: 4 }}>Middle Name</Text>
             <TextInput
               style={styles.input}
               placeholder="Middle Name"
@@ -228,6 +323,11 @@ const AddClient = ({ visible, onClose, onCreated }) => {
               editable={!isSubmitting}
               onChangeText={(text) => setContact({ ...contact, contact_middlename: text })}
             />
+            <Text style={{ fontSize: 12, fontWeight: '600', color: '#374151', marginTop: 6, marginBottom: 4 }}>
+              Last Name {!(contact.contact_lastname || '').trim() ? (
+                <Text style={{ color: '#dc2626' }}>*</Text>
+              ) : null}
+            </Text>
             <TextInput
               style={styles.input}
               placeholder="Last Name"
@@ -236,6 +336,11 @@ const AddClient = ({ visible, onClose, onCreated }) => {
               editable={!isSubmitting}
               onChangeText={(text) => setContact({ ...contact, contact_lastname: text })}
             />
+            <Text style={{ fontSize: 12, fontWeight: '600', color: '#374151', marginTop: 6, marginBottom: 4 }}>
+              Email {!(contact.contact_email || '').trim() ? (
+                <Text style={{ color: '#dc2626' }}>*</Text>
+              ) : null}
+            </Text>
             <TextInput
               style={styles.input}
               placeholder="Email"
@@ -245,6 +350,11 @@ const AddClient = ({ visible, onClose, onCreated }) => {
               editable={!isSubmitting}
               onChangeText={(text) => setContact({ ...contact, contact_email: text })}
             />
+            <Text style={{ fontSize: 12, fontWeight: '600', color: '#374151', marginTop: 6, marginBottom: 4 }}>
+              Phone {!(contact.contact_phone || '').trim() ? (
+                <Text style={{ color: '#dc2626' }}>*</Text>
+              ) : null}
+            </Text>
             <TextInput
               style={styles.input}
               placeholder="Phone"
@@ -254,6 +364,11 @@ const AddClient = ({ visible, onClose, onCreated }) => {
               editable={!isSubmitting}
               onChangeText={(text) => setContact({ ...contact, contact_phone: text })}
             />
+            <Text style={{ fontSize: 12, fontWeight: '600', color: '#374151', marginTop: 6, marginBottom: 4 }}>
+              Address {!(contact.contact_address || '').trim() ? (
+                <Text style={{ color: '#dc2626' }}>*</Text>
+              ) : null}
+            </Text>
             <TextInput
               style={styles.input}
               placeholder="Address"
@@ -262,6 +377,11 @@ const AddClient = ({ visible, onClose, onCreated }) => {
               editable={!isSubmitting}
               onChangeText={(text) => setContact({ ...contact, contact_address: text })}
             />
+            <Text style={{ fontSize: 12, fontWeight: '600', color: '#374151', marginTop: 6, marginBottom: 4 }}>
+              Relation / Role {!(contact.contact_role || '').trim() ? (
+                <Text style={{ color: '#dc2626' }}>*</Text>
+              ) : null}
+            </Text>
             <TextInput
               style={styles.input}
               placeholder="Relation / Role"
@@ -296,11 +416,6 @@ const AddClient = ({ visible, onClose, onCreated }) => {
           </ScrollView>
         </View>
       </View>
-      {toast.visible && (
-        <View style={{ position: 'absolute', bottom: 40, left: 20, right: 20, backgroundColor: toast.type === 'error' ? '#dc2626' : '#16a34a', padding: 14, borderRadius: 10, alignItems: 'center', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 4 }}>
-          <Text style={{ color: '#fff', fontWeight: '600' }}>{toast.message}</Text>
-        </View>
-      )}
     </Modal>
   );
 };
