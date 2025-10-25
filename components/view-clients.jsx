@@ -4,11 +4,10 @@ import {
   Text,
   TouchableOpacity,
   FlatList,
-  Alert,
   TextInput,
   ScrollView,
 } from "react-native";
-import { Pencil, Trash2, Eye, RefreshCcw } from "lucide-react-native";
+import { Pencil, Eye, RefreshCcw } from "lucide-react-native";
 import { styles } from "../constants/styles/view-clients";
 import { colors } from "../constants/styles/colors";
 
@@ -102,34 +101,7 @@ const ViewClients = ({ user, navigation }) => {
 
   const paginated = filtered; // legacy var name retained for minimal code changes
 
-  // handle remove
-  const confirmRemove = (client) => {
-    Alert.alert(
-      "Confirm Removal",
-      `Are you sure you want to remove ${client.client_fullname}?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Remove",
-          style: "destructive",
-          onPress: () => handleRemoveClient(client),
-        },
-      ]
-    );
-  };
-
-  const handleRemoveClient = async (client) => {
-    try {
-      await fetch(getEndpoint(`/clients/${client.client_id}`), {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...client, client_status: "Removed" }),
-      });
-      fetchAll();
-    } catch (e) {
-      console.error("Remove error:", e);
-    }
-  };
+  // remove action disabled per requirement; restore button retained for already-removed clients
 
   const renderItem = ({ item }) => (
     <View style={[styles.card, styles.clientRow]}>
@@ -184,11 +156,7 @@ const ViewClients = ({ user, navigation }) => {
         >
           <Pencil size={20} color="orange" />
         </TouchableOpacity>
-        {item.client_status !== "Removed" ? (
-          <TouchableOpacity hitSlop={styles.iconHitSlop} onPress={() => confirmRemove(item)}>
-            <Trash2 size={20} color="red" />
-          </TouchableOpacity>
-        ) : (
+        {item.client_status === "Removed" && (
           <TouchableOpacity hitSlop={styles.iconHitSlop} onPress={() => {}}>
             <RefreshCcw size={20} color="green" />
           </TouchableOpacity>
