@@ -149,13 +149,16 @@ export default function TabsLayout() {
             >
               {baseTabs.map((tab) => {
                 const allowed = filteredTabs.some(t => t.name === tab.name);
+                const override = filteredTabs.find(t => t.name === tab.name);
+                const label = override?.label || tab.label;
+                const IconComp = override?.icon || tab.icon;
                 return (
                   <Tabs.Screen
                     key={tab.name}
                     name={tab.name}
                     options={{
-                      title: tab.label,
-                      tabBarIcon: ({ color }) => <tab.icon color={color} size={26} />,
+                      title: label,
+                      tabBarIcon: ({ color }) => <IconComp color={color} size={26} />,
                       // Hide from tab bar and deep links if not allowed for the current role
                       href: allowed ? undefined : null,
                     }}

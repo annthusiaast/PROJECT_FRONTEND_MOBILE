@@ -1,6 +1,7 @@
 import { Stack } from "expo-router";
 import { useEffect } from "react";
 import { AuthProvider } from "@/context/auth-context";
+import { ToastProvider } from "@/context/toast-context";
 import API_CONFIG from "@/constants/api-config";
 
 export default function RootLayout() {
@@ -14,6 +15,7 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
+      <ToastProvider>
       <Stack >
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="auth/login" options={{ headerShown: false }} />
@@ -28,6 +30,7 @@ export default function RootLayout() {
         <Stack.Screen name="notifications" options={{ headerShown: false }} />
         <Stack.Screen name="userlogs" options={{ headerShown: false }} />
       </Stack>
+      </ToastProvider>
     </AuthProvider>
 
   )

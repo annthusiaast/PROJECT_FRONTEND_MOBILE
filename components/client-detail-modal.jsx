@@ -43,6 +43,7 @@ const ClientDetailModal = ({ visible, onClose, client, contacts, getUserFullName
 						<InfoRow label="Email" value={client.client_email} />
 						<InfoRow label="Phone" value={client.client_phonenum} />
 						<InfoRow label="Address" value={client.client_address} multiLine />
+						<InfoRow label="Lawyer" value={client.user_id == null ? 'N/A' : getUserFullName(client.user_id)} />
 						<InfoRow label="Created By" value={getUserFullName(client.created_by)} />
 					</View>
 					<View>
