@@ -54,13 +54,16 @@ const ClientContact = () => {
   const fetchData = useCallback(async () => {
     if (!user) return;
     try {
+      // Align with web: Admin and Staff see all contacts and clients; others (e.g., Lawyer) see scoped data
+      const isAdmin = user?.user_role === "Admin";
+      const isStaff = user?.user_role === "Staff";
       const client_contacts_endpoint =
-        user?.user_role === "Admin"
+        (isAdmin || isStaff)
           ? getEndpoint("/client-contacts")
           : getEndpoint(`/a-lawyer-client-contacts/${user.user_id}`);
 
       const clients_endpoint =
-        user?.user_role === "Admin"
+        (isAdmin || isStaff)
           ? getEndpoint("/clients")
           : getEndpoint(`/clients/${user.user_id}`);
 

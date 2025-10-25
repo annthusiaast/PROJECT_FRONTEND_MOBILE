@@ -153,7 +153,7 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
             editable={!isSubmitting}
           />
           <TextInput
-            placeholder="Middle Name(s)"
+            placeholder="Middle Name"
             placeholderTextColor={"#666"}
             value={formData.contact_middlename}
             onChangeText={(text) => handleChange("contact_middlename", text)}

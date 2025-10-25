@@ -19,11 +19,19 @@ import {
 
 const Cases = () => {
   const { user } = useAuth();
+  const isStaff = String(user?.user_role || '').toLowerCase() === 'staff';
   const [caseTab, setcaseTab] = useState("All Cases");
   const [showArchived, setShowArchived] = useState(false); // toggle for archived cases
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedCase, setSelectedCase] = useState(null);
   // Local cases state removed; AllCase handles fetching based on role
+
+  // Ensure Staff defaults to View Clients
+  React.useEffect(() => {
+    if (isStaff && caseTab !== 'View Clients') {
+      setcaseTab('View Clients');
+    }
+  }, [isStaff]);
 
   const handleCasePress = (caseItem) => {
     setSelectedCase(caseItem);
@@ -54,48 +62,50 @@ const Cases = () => {
             </View>
 
             <View style={styles.taskButtonAlignments}>
-              <View style={{ flexDirection: "row", alignItems: 'center' }}>
-                {["All Cases"].map((tab) => (
+              {!isStaff && (
+                <View style={{ flexDirection: "row", alignItems: 'center' }}>
+                  {["All Cases"].map((tab) => (
+                    <TouchableOpacity
+                      key={tab}
+                      style={[
+                        styles.taskButton,
+                        caseTab === tab && styles.taskButtonPressed,
+                        { marginRight: 8 },
+                      ]}
+                      onPress={() => setcaseTab(tab)}
+                      activeOpacity={0.7}
+                    >
+                      <Text
+                        style={[
+                          styles.taskButtonText,
+                          caseTab === tab && styles.taskButtonTextPressed,
+                        ]}
+                      >
+                        {tab}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                  {/* Archive toggle */}
                   <TouchableOpacity
-                    key={tab}
                     style={[
                       styles.taskButton,
-                      caseTab === tab && styles.taskButtonPressed,
+                      showArchived && styles.taskButtonPressed,
                       { marginRight: 8 },
                     ]}
-                    onPress={() => setcaseTab(tab)}
+                    onPress={() => setShowArchived((p) => !p)}
                     activeOpacity={0.7}
                   >
                     <Text
                       style={[
                         styles.taskButtonText,
-                        caseTab === tab && styles.taskButtonTextPressed,
+                        showArchived && styles.taskButtonTextPressed,
                       ]}
                     >
-                      {tab}
+                      {showArchived ? 'Archived' : 'Archive Cases'}
                     </Text>
                   </TouchableOpacity>
-                ))}
-                {/* Archive toggle */}
-                <TouchableOpacity
-                  style={[
-                    styles.taskButton,
-                    showArchived && styles.taskButtonPressed,
-                    { marginRight: 8 },
-                  ]}
-                  onPress={() => setShowArchived((p) => !p)}
-                  activeOpacity={0.7}
-                >
-                  <Text
-                    style={[
-                      styles.taskButtonText,
-                      showArchived && styles.taskButtonTextPressed,
-                    ]}
-                  >
-                    {showArchived ? 'Archived' : 'Archive Cases'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
+                </View>
+              )}
 
               <TouchableOpacity
                 style={[
@@ -117,7 +127,7 @@ const Cases = () => {
             </View>
 
             <View style={{ flex: 1 }}>
-              {caseTab === "All Cases" && (
+              {!isStaff && caseTab === "All Cases" && (
                 <AllCase onCasePress={handleCasePress} user={user} showArchived={showArchived} />
               )}
               {caseTab === "View Clients" && <ViewClients user={user} />}

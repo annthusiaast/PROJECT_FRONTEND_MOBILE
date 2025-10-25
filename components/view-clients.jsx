@@ -47,11 +47,12 @@ const ViewClients = ({ user, navigation }) => {
   const fetchAll = useCallback(async () => {
     if (!user) return;
     try {
+      // Align with web: Admin and Staff use /clients (Admin may toggle /all-clients); others (e.g., Lawyer) use /clients/:user_id
+      const isAdmin = user.user_role === "Admin";
+      const isStaff = user.user_role === "Staff";
       const clients_endpoint =
-        user.user_role === "Admin"
-          ? showAllClients
-            ? getEndpoint("/all-clients")
-            : getEndpoint("/clients")
+        isAdmin || isStaff
+          ? (isAdmin && showAllClients ? getEndpoint("/all-clients") : getEndpoint("/clients"))
           : getEndpoint(`/clients/${user.user_id}`);
 
       const [cRes, uRes, ctRes] = await Promise.all([
@@ -83,13 +84,14 @@ const ViewClients = ({ user, navigation }) => {
     }
   }, [fetchAll, user]);
 
-  const getUserFullName = (createdBy) => {
-    const u = users.find((x) => x.user_id === createdBy);
-    return u
-      ? `${u.user_fname || ""} ${u.user_mname ? u.user_mname[0] + "." : ""} ${
-          u.user_lname || ""
-        }`.trim()
-      : "Unknown";
+  const getUserFullName = (userId) => {
+    const u = users.find((x) => x.user_id === userId);
+    if (!u) return "Unknown";
+    const base = `${u.user_fname || ""} ${u.user_mname ? u.user_mname[0] + "." : ""} ${u.user_lname || ""}`
+      .replace(/\s+/g, " ")
+      .trim();
+    const isAtty = u.user_role === "Admin" || u.user_role === "Lawyer";
+    return isAtty ? `Atty. ${base}` : base;
   };
 
   const filtered = clients.filter(
@@ -136,8 +138,14 @@ const ViewClients = ({ user, navigation }) => {
         <Text style={styles.clientEmail}>{item.client_email}</Text>
         <Text style={styles.clientPhone}>{item.client_phonenum}</Text>
         <Text style={styles.clientAddress}>{item.client_address}</Text>
+        {/* Show assigned lawyer like web: hide in list for Lawyer viewers */}
+        {user?.user_role !== "Lawyer" && (
+          <Text style={styles.clientCreatedBy}>
+            Lawyer: {item.user_id == null ? 'N/A' : getUserFullName(item.user_id)}
+          </Text>
+        )}
         <Text style={styles.clientCreatedBy}>
-          {getUserFullName(item.created_by)}
+          Created By: {getUserFullName(item.created_by)}
         </Text>
       </View>
       <View style={styles.clientActions}>
@@ -223,7 +231,7 @@ const ViewClients = ({ user, navigation }) => {
               activeTab === "contacts" && styles.activeTabText,
             ]}
           >
-            View Contacts
+            Contacts
           </Text>
         </TouchableOpacity>
       </View>
