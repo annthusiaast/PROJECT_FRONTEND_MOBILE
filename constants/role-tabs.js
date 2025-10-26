@@ -1,7 +1,7 @@
 // Centralized role -> tabs mapping used by both TabsLayout and ProtectedRoute.
 // Keep this file free of React / navigation logic for easy reuse.
 
-import { ClipboardList, FileText, Home, Scale, User } from 'lucide-react-native';
+import { ClipboardList, FileText, Home, Scale, User, Users } from 'lucide-react-native';
 
 export const baseTabs = [
   { name: 'home', label: 'Home', icon: Home },
@@ -37,6 +37,7 @@ export function getAllowedTabs(role) {
     case 'staff':
       return [
         tab('home'),
+        { ...tab('cases'), label: 'Clients', icon: Users }, // rename + change icon for Staff only
         tab('tasks'),
         tab('profile'),
       ].filter(Boolean);

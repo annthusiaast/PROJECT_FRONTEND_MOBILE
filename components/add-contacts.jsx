@@ -10,6 +10,8 @@ import {
 import DropDownPicker from "react-native-dropdown-picker";
 import { styles } from "../constants/styles/add-contacts";
 import { getEndpoint } from "../constants/api-config";
+// Use global Toast via useToast
+import { useToast } from "@/context/toast-context";
 
 const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
   // Internal visibility state so Cancel works even if parent does not control "visible" prop
@@ -35,6 +37,7 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
   const [items, setItems] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const { showToast } = useToast();
 
   useEffect(() => {
     setItems(
@@ -61,14 +64,7 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
       return;
     }
 
-    Alert.alert(
-      'Confirm',
-      'Add this contact?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'OK', onPress: () => doSubmit() }
-      ]
-    );
+    Alert.alert('Confirm','Add this contact?',[{ text: 'Cancel', style: 'cancel' },{ text: 'OK', onPress: () => doSubmit() }]);
   };
 
   const doSubmit = async () => {
@@ -97,13 +93,13 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
       }
   let saved = payload;
       try { saved = await res.json(); } catch { }
-      if (onAdd) onAdd(saved);
-      Alert.alert('Success', 'Contact added.');
+  if (onAdd) onAdd(saved);
+  showToast({ message: 'Contact added.', type: 'success' });
   setFormData({ contact_firstname: '', contact_middlename: '', contact_lastname: '', contact_email: '', contact_phone: '', contact_address: '', contact_role: '', client_id: null });
       onClose && onClose();
     } catch (e) {
-      setErrorMsg(e.message);
-      Alert.alert('Error', e.message);
+  setErrorMsg(e.message);
+  showToast({ message: e.message, type: 'error' });
     } finally {
       setIsSubmitting(false);
     }
@@ -117,6 +113,7 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
   };
 
   return (
+    <>
     <Modal
       visible={internalVisible}
       transparent
@@ -127,6 +124,11 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
         <View style={styles.modal}>
           <Text style={styles.title}>Add Client Contact</Text>
 
+          <Text style={{ fontSize: 12, fontWeight: '600', color: '#374151', marginTop: 6, marginBottom: 4 }}>
+            Client {formData.client_id == null ? (
+              <Text style={{ color: '#dc2626' }}>*</Text>
+            ) : null}
+          </Text>
           <DropDownPicker
             open={open}
             value={formData.client_id}
@@ -144,6 +146,11 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
             listMode="SCROLLVIEW"
           />
 
+          <Text style={{ fontSize: 12, fontWeight: '600', color: '#374151', marginTop: 6, marginBottom: 4 }}>
+            First Name {!(formData.contact_firstname || '').trim() ? (
+              <Text style={{ color: '#dc2626' }}>*</Text>
+            ) : null}
+          </Text>
           <TextInput
             placeholder="First Name"
             placeholderTextColor={"#666"}
@@ -152,14 +159,20 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
             style={styles.input}
             editable={!isSubmitting}
           />
+          <Text style={{ fontSize: 12, fontWeight: '600', color: '#374151', marginTop: 6, marginBottom: 4 }}>Middle Name</Text>
           <TextInput
-            placeholder="Middle Name(s)"
+            placeholder="Middle Name"
             placeholderTextColor={"#666"}
             value={formData.contact_middlename}
             onChangeText={(text) => handleChange("contact_middlename", text)}
             style={styles.input}
             editable={!isSubmitting}
           />
+          <Text style={{ fontSize: 12, fontWeight: '600', color: '#374151', marginTop: 6, marginBottom: 4 }}>
+            Last Name {!(formData.contact_lastname || '').trim() ? (
+              <Text style={{ color: '#dc2626' }}>*</Text>
+            ) : null}
+          </Text>
           <TextInput
             placeholder="Last Name"
             placeholderTextColor={"#666"}
@@ -168,6 +181,11 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
             style={styles.input}
             editable={!isSubmitting}
           />
+          <Text style={{ fontSize: 12, fontWeight: '600', color: '#374151', marginTop: 6, marginBottom: 4 }}>
+            Email {!(formData.contact_email || '').trim() ? (
+              <Text style={{ color: '#dc2626' }}>*</Text>
+            ) : null}
+          </Text>
           <TextInput
             placeholder="Email"
             placeholderTextColor={"#666"}
@@ -177,6 +195,11 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
             style={styles.input}
             editable={!isSubmitting}
           />
+          <Text style={{ fontSize: 12, fontWeight: '600', color: '#374151', marginTop: 6, marginBottom: 4 }}>
+            Phone Number {!(formData.contact_phone || '').trim() ? (
+              <Text style={{ color: '#dc2626' }}>*</Text>
+            ) : null}
+          </Text>
           <TextInput
             placeholder="Phone Number"
             placeholderTextColor={"#666"}
@@ -186,6 +209,11 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
             style={styles.input}
             editable={!isSubmitting}
           />
+          <Text style={{ fontSize: 12, fontWeight: '600', color: '#374151', marginTop: 6, marginBottom: 4 }}>
+            Address {!(formData.contact_address || '').trim() ? (
+              <Text style={{ color: '#dc2626' }}>*</Text>
+            ) : null}
+          </Text>
           <TextInput
             placeholder="Address"
             placeholderTextColor={"#666"}
@@ -194,6 +222,11 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
             style={styles.input}
             editable={!isSubmitting}
           />
+          <Text style={{ fontSize: 12, fontWeight: '600', color: '#374151', marginTop: 6, marginBottom: 4 }}>
+            Role (e.g. Manager, Secretary) {!(formData.contact_role || '').trim() ? (
+              <Text style={{ color: '#dc2626' }}>*</Text>
+            ) : null}
+          </Text>
           <TextInput
             placeholder="Role (e.g. Manager, Secretary)"
             placeholderTextColor={"#666"} 
@@ -218,6 +251,7 @@ const AddContact = ({ visible, onAdd, onClose, clients = [] }) => {
         </View>
       </View>
     </Modal>
+    </>
   );
 };
 

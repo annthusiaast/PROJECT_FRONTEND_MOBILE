@@ -54,13 +54,16 @@ const ClientContact = () => {
   const fetchData = useCallback(async () => {
     if (!user) return;
     try {
+      // Align with web: Admin and Staff see all contacts and clients; others (e.g., Lawyer) see scoped data
+      const isAdmin = user?.user_role === "Admin";
+      const isStaff = user?.user_role === "Staff";
       const client_contacts_endpoint =
-        user?.user_role === "Admin"
+        (isAdmin || isStaff)
           ? getEndpoint("/client-contacts")
           : getEndpoint(`/a-lawyer-client-contacts/${user.user_id}`);
 
       const clients_endpoint =
-        user?.user_role === "Admin"
+        (isAdmin || isStaff)
           ? getEndpoint("/clients")
           : getEndpoint(`/clients/${user.user_id}`);
 
@@ -299,6 +302,8 @@ const ClientContact = () => {
           <EditableField
             label="First Name"
             value={editFirstName}
+            required
+            filled={(editFirstName || '').trim().length > 0}
             onChange={(v) => {
               setEditFirstName(v);
               setEditForm(f => ({
@@ -308,7 +313,7 @@ const ClientContact = () => {
             }}
           />
           <EditableField
-            label="Middle Name(s)"
+            label="Middle Name"
             value={editMiddleName}
             onChange={(v) => {
               setEditMiddleName(v);
@@ -321,6 +326,8 @@ const ClientContact = () => {
           <EditableField
             label="Last Name"
             value={editLastName}
+            required
+            filled={(editLastName || '').trim().length > 0}
             onChange={(v) => {
               setEditLastName(v);
               setEditForm(f => ({
@@ -329,7 +336,14 @@ const ClientContact = () => {
               }));
             }}
           />
-          <EditableField label="Email" value={editForm.contact_email} onChange={(v) => setEditForm(f => ({ ...f, contact_email: v }))} keyboardType="email-address" />
+          <EditableField
+            label="Email"
+            value={editForm.contact_email}
+            required
+            filled={(editForm.contact_email || '').trim().length > 0}
+            onChange={(v) => setEditForm(f => ({ ...f, contact_email: v }))}
+            keyboardType="email-address"
+          />
           <EditableField label="Phone" value={editForm.contact_phone} onChange={(v) => setEditForm(f => ({ ...f, contact_phone: v }))} keyboardType="phone-pad" />
           <EditableField label="Address" value={editForm.contact_address} onChange={(v) => setEditForm(f => ({ ...f, contact_address: v }))} />
           <EditableField label="Role" value={editForm.contact_role} onChange={(v) => setEditForm(f => ({ ...f, contact_role: v }))} />
@@ -360,9 +374,11 @@ const ClientContact = () => {
 };
 
 // Lightweight inline editable field component (avoids external file)
-const EditableField = ({ label, value, onChange, keyboardType }) => (
+const EditableField = ({ label, value, onChange, keyboardType, required, filled }) => (
   <View style={{ marginBottom: 8 }}>
-    <Text style={{ fontSize: 12, fontWeight: '600', marginBottom: 2 }}>{label}</Text>
+    <Text style={{ fontSize: 12, fontWeight: '600', marginBottom: 2 }}>
+      {label} {required && !((filled ?? false)) ? (<Text style={{ color: '#dc2626' }}>*</Text>) : null}
+    </Text>
     <TextInput
       value={value}
       onChangeText={onChange}
