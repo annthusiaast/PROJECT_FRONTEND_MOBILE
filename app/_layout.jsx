@@ -27,8 +27,7 @@ export default function RootLayout() {
         <Stack.Screen name="(lawyer)" options={{ headerShown: false }} />
         <Stack.Screen name="(paralegal)" options={{ headerShown: false }} />
         <Stack.Screen name="(staff)" options={{ headerShown: false }} />
-        <Stack.Screen name="notifications" options={{ headerShown: false }} />
-        <Stack.Screen name="userlogs" options={{ headerShown: false }} />
+  {/** Note: Notifications and UserLogs are presented via modals/components, not routes */}
       </Stack>
       </ToastProvider>
     </AuthProvider>
