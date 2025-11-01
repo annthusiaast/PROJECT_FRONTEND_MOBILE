@@ -8,6 +8,7 @@ import ProtectedRoute from "@/components/protected-route";
 import { useAuth } from "@/context/auth-context";
 import { baseTabs, getAllowedTabs } from "@/constants/role-tabs";
 import Notifications from "@/components/notifications";
+import { getEndpoint } from "@/constants/api-config";
 
 function CustomHeader({ title, onPressBell, unreadCount }) {
   const [today, setToday] = useState("");
@@ -84,6 +85,7 @@ export default function TabsLayout() {
   const { user, loading } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [taskCount, setTaskCount] = useState(0);
 
   const role = user?.user_role;
 
@@ -101,6 +103,31 @@ export default function TabsLayout() {
       // console.log(`Redirecting from ${currentTab} to ${filteredTabs[0].name}`);
     }
   }, [currentTab, filteredTabs]);
+
+  // Fetch current (active) task count for the logged in user
+  useEffect(() => {
+    let timer;
+    const fetchTaskCount = async () => {
+      try {
+        if (!user?.user_id) return;
+        const res = await fetch(getEndpoint(`/documents/task/user/${user.user_id}`), { credentials: 'include' });
+        if (!res.ok) throw new Error('Failed to fetch tasks');
+        const data = await res.json();
+        const tasks = Array.isArray(data) ? data : [];
+        const active = tasks.filter((d) => {
+          const s = String(d.doc_status || '').toLowerCase();
+          return s !== 'done' && s !== 'completed';
+        });
+        setTaskCount(active.length);
+      } catch (_) {
+        // Silently ignore; keep previous count
+      }
+    };
+    fetchTaskCount();
+    // Light polling to keep count fresh
+    timer = setInterval(fetchTaskCount, 30000);
+    return () => { if (timer) clearInterval(timer); };
+  }, [user?.user_id]);
 
   return (
     <ProtectedRoute allowedTabs={filteredTabs.map(t => t.name)}>
@@ -158,7 +185,31 @@ export default function TabsLayout() {
                     name={tab.name}
                     options={{
                       title: label,
-                      tabBarIcon: ({ color }) => <IconComp color={color} size={26} />,
+                      tabBarIcon: ({ color }) => (
+                        <View style={{ width: 28, height: 28 }}>
+                          <IconComp color={color} size={26} />
+                          {tab.name === 'tasks' && taskCount > 0 && (
+                            <View
+                              style={{
+                                position: 'absolute',
+                                top: -4,
+                                right: -6,
+                                backgroundColor: '#dc2626',
+                                borderRadius: 10,
+                                minWidth: 18,
+                                height: 18,
+                                paddingHorizontal: 4,
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              <Text style={{ color: '#fff', fontSize: 10, fontWeight: '700' }} numberOfLines={1}>
+                                {taskCount > 99 ? '99+' : taskCount}
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                      ),
                       // Hide from tab bar and deep links if not allowed for the current role
                       href: allowed ? undefined : null,
                     }}
