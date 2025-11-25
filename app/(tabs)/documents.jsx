@@ -11,63 +11,11 @@ import {
   Keyboard,
   Linking,
 } from "react-native";
-import { Calendar, User, Download, Search, ChevronDown } from "lucide-react-native";
-import { CASE_FILTERS, DOC_TYPES } from "@/constants/sample_data";
+import { Calendar, User, Download, Search } from "lucide-react-native";
 import { styles } from "../../constants/styles/(tabs)/documents_styles";
 import { API_CONFIG, getEndpoint } from "@/constants/api-config";
 
-const Dropdown = ({ label, options, value, onSelect, topOffset }) => {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <View style={{ flex: 1, position: 'relative', zIndex: 100 }}>
-      {/* Dropdown Button */}
-      <TouchableOpacity
-        style={[styles.dropdownButton, { flexDirection: "row", alignItems: "center", justifyContent: "space-between" }]}
-        onPress={() => setOpen((prev) => !prev)}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.dropdownText}>{value}</Text>
-        <ChevronDown size={16} color="#114d89" />
-      </TouchableOpacity>
-
-      {/* Absolutely Positioned Dropdown */}
-      {open && (
-        <View
-          style={{
-            position: "absolute",
-            top: topOffset || 40,
-            left: 0,
-            right: 0,
-            backgroundColor: "#fff",
-            borderWidth: 1,
-            borderColor: "#ccc",
-            borderRadius: 6,
-            elevation: 12,
-            zIndex: 1000,
-            shadowColor: '#000',
-            shadowOpacity: 0.2,
-            shadowRadius: 6,
-            shadowOffset: { width: 0, height: 3 },
-          }}
-        >
-          {options.map((opt, idx) => (
-            <TouchableOpacity
-              key={idx}
-              style={{ padding: 10 }}
-              onPress={() => {
-                onSelect(opt);
-                setOpen(false);
-              }}
-            >
-              <Text style={{ fontSize: 16, color: "#114d89" }}>{opt}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
-    </View>
-  );
-};
+// Removed dropdown component (case/type filters) per request
 
 // Helper to format dates: Month day, Year. Hour:Minute AM/PM
 const formatDateTime = (value) => {
@@ -87,9 +35,7 @@ const formatDateTime = (value) => {
 };
 
 const Documents = () => {
-  const [activeTab, setActiveTab] = useState("Recent");
-  const [caseFilter, setCaseFilter] = useState("All Cases");
-  const [typeFilter, setTypeFilter] = useState("All Types");
+  const [activeTab, setActiveTab] = useState("Recent"); // keep Recent vs All toggle
   const [docs, setDocs] = useState([]);
   const [users, setUsers] = useState([]); // for resolving submitter names
   const [loading, setLoading] = useState(false);
@@ -165,13 +111,8 @@ const Documents = () => {
     return u.user_role === 'Staff' ? name : `Atty. ${name}`;
   };
 
-  const filteredDocs = docs.filter(
-    (doc) =>
-      (caseFilter === "All Cases" || doc.caseName === caseFilter) &&
-      (typeFilter === "All Types" || doc.type === typeFilter)
-  );
-
-  const finalDocs = activeTab === "Recent" ? filteredDocs.slice(0, 5) : filteredDocs;
+  // Filters removed: show all docs, only apply Recent tab slicing
+  const finalDocs = activeTab === "Recent" ? docs.slice(0, 5) : docs;
 
   const openUrl = async (url) => {
     if (!url) return;
@@ -193,12 +134,7 @@ const Documents = () => {
             <TextInput style={styles.searchInput} placeholder="Search..." placeholderTextColor="#999" />
           </View>
 
-          {/* Filters */}
-          <View style={{ flexDirection: "row", marginHorizontal: 14, marginTop: 10, zIndex: 200, elevation: 16, position: 'relative' }}>
-            <Dropdown label="Case" options={CASE_FILTERS} value={caseFilter} onSelect={setCaseFilter} topOffset={42} />
-            <View style={{ width: 10 }} />
-            <Dropdown label="Type" options={DOC_TYPES} value={typeFilter} onSelect={setTypeFilter} topOffset={42} />
-          </View>
+          {/* Removed case/type filter dropdowns */}
 
           {/* Tabs */}
           <View style={{ flexDirection: "row", marginHorizontal: 14, marginTop: 15 }}>

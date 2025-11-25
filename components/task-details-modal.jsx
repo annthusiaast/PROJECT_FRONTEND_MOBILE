@@ -15,6 +15,22 @@ function formatDate(value) {
   }
 }
 
+const toArray = (value) => {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) return parsed;
+    } catch {
+      const parts = value.split(',').map((v) => v.trim()).filter(Boolean);
+      if (parts.length) return parts;
+    }
+    return [value];
+  }
+  return [];
+};
+
 export default function TaskDetailsModal({ visible, onClose, task, viewerRole }) {
   if (!task) return null;
   const {
@@ -43,6 +59,27 @@ export default function TaskDetailsModal({ visible, onClose, task, viewerRole })
 
   const origin = String(API_CONFIG.BASE_URL || '').replace('/api', '');
   const fileUrl = raw?.doc_file ? `${origin}${raw.doc_file}` : null;
+  const referenceEntries = toArray(raw?.doc_reference);
+  const referenceDocs = referenceEntries
+    .map((entry, index) => {
+      if (!entry) return null;
+      if (typeof entry === 'string') {
+        const normalized = entry.replace(/\\/g, '/');
+        const url = normalized.startsWith('http') ? normalized : `${origin}${normalized}`;
+        const label = normalized.split('/').pop() || `Reference ${index + 1}`;
+        return { url, label };
+      }
+      if (typeof entry === 'object') {
+        const rawUrl = entry.url || entry.link || entry.path || '';
+        if (!rawUrl) return null;
+        const normalized = String(rawUrl).replace(/\\/g, '/');
+        const url = normalized.startsWith('http') ? normalized : `${origin}${normalized}`;
+        const label = entry.name || entry.label || normalized.split('/').pop() || `Reference ${index + 1}`;
+        return { url, label };
+      }
+      return null;
+    })
+    .filter(Boolean);
 
   const Badge = () => (
     <View style={{ backgroundColor: status === 'done' || status === 'completed' ? '#2d6a4f' : '#1e3a8a', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 }}>
@@ -86,6 +123,34 @@ export default function TaskDetailsModal({ visible, onClose, task, viewerRole })
 
       <Text style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>Description</Text>
       <Text style={{ fontSize: 14, color: '#111827' }}>{description || 'No description provided.'}</Text>
+
+      {referenceDocs.length > 0 && (
+        <View style={{ marginTop: 16 }}>
+          <Text style={{ fontSize: 12, color: '#6b7280', marginBottom: 6 }}>Reference Docs</Text>
+          <View style={{ gap: 8 }}>
+            {referenceDocs.map((ref, idx) => (
+              <TouchableOpacity
+                key={ref.url || idx}
+                onPress={() => Linking.openURL(ref.url).catch(() => {})}
+                style={{
+                  borderWidth: 1,
+                  borderColor: '#1E3A8A',
+                  backgroundColor: '#f8f9fe',
+                  borderRadius: 6,
+                  paddingVertical: 9,
+                  paddingHorizontal: 12,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Text style={{ color: '#0e0e0e', fontWeight: '500', flex: 1 }} numberOfLines={1}>{ref.label}</Text>
+                <FileText size={16} color="#1E3A8A" style={{ marginLeft: 10 }} />
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      )}
 
       {fileUrl ? (
         <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 16 }}>
