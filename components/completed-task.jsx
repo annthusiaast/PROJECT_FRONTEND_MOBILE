@@ -63,7 +63,7 @@ const CompletedTask = ({ user }) => {
     if (!u) return `User ${userId}`;
     const middle = u.user_mname ? `${u.user_mname[0]}.` : '';
     const name = `${u.user_fname || ''} ${middle} ${u.user_lname || ''}`.replace(/\s+/g, ' ').trim();
-    return u.user_role === 'Staff' ? name : `Atty. ${name}`;
+    return (u.user_role === 'Staff' || u.user_role === 'Paralegal') ? name : `Atty. ${name}`;
   };
 
   const viewerRole = String(user?.user_role || '').toLowerCase();
