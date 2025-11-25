@@ -20,7 +20,7 @@ const Dropdown = ({ label, options, value, onSelect, topOffset }) => {
   const [open, setOpen] = useState(false);
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, position: 'relative', zIndex: 100 }}>
       {/* Dropdown Button */}
       <TouchableOpacity
         style={[styles.dropdownButton, { flexDirection: "row", alignItems: "center", justifyContent: "space-between" }]}
@@ -43,8 +43,12 @@ const Dropdown = ({ label, options, value, onSelect, topOffset }) => {
             borderWidth: 1,
             borderColor: "#ccc",
             borderRadius: 6,
-            elevation: 4,
-            zIndex: 9999,
+            elevation: 12,
+            zIndex: 1000,
+            shadowColor: '#000',
+            shadowOpacity: 0.2,
+            shadowRadius: 6,
+            shadowOffset: { width: 0, height: 3 },
           }}
         >
           {options.map((opt, idx) => (
@@ -190,7 +194,7 @@ const Documents = () => {
           </View>
 
           {/* Filters */}
-          <View style={{ flexDirection: "row", marginHorizontal: 14, marginTop: 10, zIndex: 10 }}>
+          <View style={{ flexDirection: "row", marginHorizontal: 14, marginTop: 10, zIndex: 200, elevation: 16, position: 'relative' }}>
             <Dropdown label="Case" options={CASE_FILTERS} value={caseFilter} onSelect={setCaseFilter} topOffset={42} />
             <View style={{ width: 10 }} />
             <Dropdown label="Type" options={DOC_TYPES} value={typeFilter} onSelect={setTypeFilter} topOffset={42} />

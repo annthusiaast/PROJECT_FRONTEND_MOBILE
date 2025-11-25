@@ -5,6 +5,7 @@ import { User, Calendar } from "lucide-react-native";
 import { getPriority, formatDueDate } from "@/constants/sample_data";
 import { styles } from "@/constants/styles/(tabs)/tasksBtn_styles";
 import { getEndpoint } from "@/constants/api-config";
+import TaskDetailsModal from "./task-details-modal";
 
 // NOTE: We accept optional user prop (passed by parent) in case future role-based filtering is needed
 const ActiveTask = ({ user }) => {
@@ -13,6 +14,8 @@ const ActiveTask = ({ user }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [users, setUsers] = useState([]); // for resolving assigner names
   // Fetch task documents for current user, then filter active on client
   const fetchPendingTasks = useCallback(async () => {
     if (!user?.user_id) return;
@@ -52,7 +55,34 @@ const ActiveTask = ({ user }) => {
     assignedTo: d.doc_tasked_to || 'Unassigned',
     dueDate: d.doc_due_date ? String(d.doc_due_date).split('T')[0] : null,
     status: (d.doc_status || '').toLowerCase(),
+    assignedById: d.doc_tasked_by || d.doc_submitted_by || d.doc_created_by || null,
+    raw: d,
   }));
+
+  const viewerRole = String(user?.user_role || '').toLowerCase();
+  // Fetch users list to resolve assigner name (same pattern as documents tab)
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await fetch(getEndpoint('/users'), { credentials: 'include' });
+        if (!res.ok) return;
+        const data = await res.json();
+        setUsers(Array.isArray(data) ? data : []);
+      } catch {
+        setUsers([]);
+      }
+    };
+    fetchUsers();
+  }, []);
+
+  const getUserDisplayName = (userId) => {
+    if (!userId) return 'Unknown';
+    const u = users.find(x => String(x.user_id) === String(userId));
+    if (!u) return `User ${userId}`;
+    const middle = u.user_mname ? `${u.user_mname[0]}.` : '';
+    const name = `${u.user_fname || ''} ${middle} ${u.user_lname || ''}`.replace(/\s+/g, ' ').trim();
+    return u.user_role === 'Staff' ? name : `Atty. ${name}`;
+  };
 
   const filteredTasks = mapped
     .filter(t => t.status !== 'done' && t.status !== 'completed')
@@ -110,24 +140,47 @@ const ActiveTask = ({ user }) => {
         filteredTasks.map((t) => {
           const priority = t.dueDate ? getPriority(t.dueDate) : 'low';
           return (
-            <View key={t.id} style={styles.taskCard}>
+            <TouchableOpacity
+              key={t.id}
+              style={styles.taskCard}
+              activeOpacity={0.9}
+              onPress={() => setSelectedTask({
+                ...t,
+                assignedByName: getUserDisplayName(t.assignedById),
+                assignedToName: t.assignedTo && t.assignedTo !== 'Unassigned' ? getUserDisplayName(t.assignedTo) : 'Unassigned',
+              })}
+            >
               <View style={[styles.priorityBadge, { backgroundColor: priorityColors[priority] }]}>
                 <Text style={styles.priorityBadgeText}>{priority.toUpperCase()}</Text>
               </View>
               <Text style={styles.taskCardTitle}>{t.title}</Text>
               <Text style={styles.taskCardDescription}>{t.description}</Text>
-              <View style={styles.assignedUser}>
-                <User size={16} color="#333" style={{ marginRight: 5 }} />
-                <Text style={styles.assignedUserText}>{t.assignedTo}</Text>
-              </View>
+              {viewerRole !== 'staff' && viewerRole !== 'paralegal' && (
+                <View style={styles.assignedUser}>
+                  <User size={16} color="#333" style={{ marginRight: 5 }} />
+                  <Text style={styles.assignedUserText}>Assigned to: {t.assignedTo && t.assignedTo !== 'Unassigned' ? getUserDisplayName(t.assignedTo) : 'Unassigned'}</Text>
+                </View>
+              )}
+              {viewerRole !== 'lawyer' && viewerRole !== 'admin' && (
+                <View style={styles.assignedUser}>
+                  <User size={16} color="#333" style={{ marginRight: 5 }} />
+                  <Text style={styles.assignedUserText}>Assigned by: {getUserDisplayName(t.assignedById)}</Text>
+                </View>
+              )}
               <View style={styles.dueDate}>
                 <Calendar size={16} color="#333" style={{ marginRight: 5 }} />
                 <Text style={styles.dueDateText}>Due: {t.dueDate ? formatDueDate(t.dueDate) : 'N/A'}</Text>
               </View>
-            </View>
+            </TouchableOpacity>
           );
         })
       )}
+      <TaskDetailsModal
+        visible={!!selectedTask}
+        task={selectedTask}
+        viewerRole={viewerRole}
+        onClose={() => setSelectedTask(null)}
+      />
     </ScrollView>
   );
 };
