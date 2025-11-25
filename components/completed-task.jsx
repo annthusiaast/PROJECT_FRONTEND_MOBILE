@@ -13,17 +13,19 @@ import { User, Calendar, ChevronDown } from "lucide-react-native";
 import { FILTER_OPTIONS } from "@/constants/sample_data"; // retain filter options only
 import { styles } from "@/constants/styles/(tabs)/tasksBtn_styles";
 import { getEndpoint } from "@/constants/api-config";
+import TaskDetailsModal from "./task-details-modal";
 
 const CompletedTask = ({ user }) => {
-  const [filter, setFilter] = useState(7); // default filter: last 7 days
+  const [filter, setFilter] = useState(7); // default range days
   const [modalVisible, setModalVisible] = useState(false);
   const [dropdownTop, setDropdownTop] = useState(0);
   const buttonRef = useRef(null);
-  const [tasks, setTasks] = useState([]); // backend completed tasks
+  const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [users, setUsers] = useState([]);
 
-  // Fetch completed tasks from backend
   const fetchCompleted = useCallback(async () => {
     if (!user?.user_id) return;
     setLoading(true); setError(null);
@@ -41,7 +43,31 @@ const CompletedTask = ({ user }) => {
 
   useEffect(() => { fetchCompleted(); }, [fetchCompleted]);
 
-  /** === FILTER COMPLETED TASKS BASED ON SELECTED RANGE === */
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await fetch(getEndpoint('/users'), { credentials: 'include' });
+        if (!res.ok) return;
+        const data = await res.json();
+        setUsers(Array.isArray(data) ? data : []);
+      } catch {
+        setUsers([]);
+      }
+    };
+    fetchUsers();
+  }, []);
+
+  const getUserDisplayName = (userId) => {
+    if (!userId) return 'Unknown';
+    const u = users.find(x => String(x.user_id) === String(userId));
+    if (!u) return `User ${userId}`;
+    const middle = u.user_mname ? `${u.user_mname[0]}.` : '';
+    const name = `${u.user_fname || ''} ${middle} ${u.user_lname || ''}`.replace(/\s+/g, ' ').trim();
+    return u.user_role === 'Staff' ? name : `Atty. ${name}`;
+  };
+
+  const viewerRole = String(user?.user_role || '').toLowerCase();
+
   const filterTasks = () => {
     const today = new Date();
     return tasks
@@ -59,11 +85,15 @@ const CompletedTask = ({ user }) => {
         title: d.doc_name || d.doc_task || 'Untitled Task',
         description: d.doc_description || d.doc_task || '',
         completedDate: (d.doc_due_date || d.td_date_completed || '').split('T')[0] || null,
-        staff: d.doc_tasked_to || 'Unknown'
+        staff: d.doc_tasked_to || 'Unknown',
+        status: (d.doc_status || '').toLowerCase(),
+        dueDate: d.doc_due_date ? String(d.doc_due_date).split('T')[0] : null,
+        assignedTo: d.doc_tasked_to || 'Unknown',
+        assignedById: d.doc_tasked_by || d.doc_submitted_by || d.doc_created_by || null,
+        raw: d,
       }));
   };
 
-  /** === OPEN DROPDOWN BELOW FILTER BUTTON === */
   const openDropdown = () => {
     const handle = findNodeHandle(buttonRef.current);
     if (handle) {
@@ -74,57 +104,52 @@ const CompletedTask = ({ user }) => {
     }
   };
 
-  /** === RENDER INDIVIDUAL TASK CARD === */
   const renderTaskCard = ({ item }) => (
-    <View style={styles.renderTaskCard}>
+    <TouchableOpacity
+      style={styles.renderTaskCard}
+      activeOpacity={0.9}
+      onPress={() => setSelectedTask({
+        ...item,
+        assignedByName: getUserDisplayName(item.assignedById),
+        assignedToName: item.assignedTo && item.assignedTo !== 'Unknown' ? getUserDisplayName(item.assignedTo) : 'Unknown',
+      })}
+    >
       <View style={styles.completedTexButton}>
         <Text style={styles.priorityBadgeText}>Completed</Text>
       </View>
-
-      <Text style={styles.taskCardTitle}>{item.title || "Untitled Task"}</Text>
-      <Text style={styles.taskCardDescription}>
-        {item.description || "No description available."}
-      </Text>
-
-      <View style={styles.assignedUser}>
-        <User size={16} color="#1b4332" style={{ marginRight: 5 }} />
-        <Text>Assigned to: {item.staff || "Unknown"}</Text>
-      </View>
-
+      <Text style={styles.taskCardTitle}>{item.title || 'Untitled Task'}</Text>
+      <Text style={styles.taskCardDescription}>{item.description || 'No description available.'}</Text>
+      {viewerRole !== 'staff' && viewerRole !== 'paralegal' && (
+        <View style={styles.assignedUser}>
+          <User size={16} color="#1b4332" style={{ marginRight: 5 }} />
+          <Text>Assigned to: {item.assignedTo && item.assignedTo !== 'Unknown' ? getUserDisplayName(item.assignedTo) : 'Unknown'}</Text>
+        </View>
+      )}
+      {viewerRole !== 'lawyer' && viewerRole !== 'admin' && (
+        <View style={styles.assignedUser}>
+          <User size={16} color="#1b4332" style={{ marginRight: 5 }} />
+          <Text>Assigned by: {getUserDisplayName(item.assignedById)}</Text>
+        </View>
+      )}
       <View style={styles.dueDate}>
         <Calendar size={16} color="#114d89" style={{ marginRight: 5 }} />
-        <Text style={styles.dueDateText}>
-          Completed on: {item.completedDate || "N/A"}
-        </Text>
+        <Text style={styles.dueDateText}>Completed on: {item.completedDate || 'N/A'}</Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
-  /** === HEADER CONTAINING DROPDOWN === */
   const renderHeader = () => (
     <>
       <View style={styles.dropdownBox}>
-        <TouchableOpacity
-          ref={buttonRef}
-          style={styles.dropdownBoxOption}
-          onPress={openDropdown}
-        >
-          <Text style={styles.dropdownBoxOptionText}>
-            {FILTER_OPTIONS.find((opt) => opt.value === filter)?.label ||
-              "Filter"}
-          </Text>
+        <TouchableOpacity ref={buttonRef} style={styles.dropdownBoxOption} onPress={openDropdown}>
+          <Text style={styles.dropdownBoxOptionText}>{FILTER_OPTIONS.find(opt => opt.value === filter)?.label || 'Filter'}</Text>
           <ChevronDown size={18} color="#114d89" />
         </TouchableOpacity>
       </View>
-
-      {/* === FILTER DROPDOWN MODAL === */}
       <Modal visible={modalVisible} transparent animationType="fade">
-        <Pressable
-          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.3)" }}
-          onPress={() => setModalVisible(false)}
-        >
+        <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.3)' }} onPress={() => setModalVisible(false)}>
           <View style={[styles.dropdownModalPosition, { top: dropdownTop }]}>
-            {FILTER_OPTIONS.map((option) => (
+            {FILTER_OPTIONS.map(option => (
               <TouchableOpacity
                 key={option.value}
                 style={{ padding: 12 }}
@@ -133,14 +158,7 @@ const CompletedTask = ({ user }) => {
                   setModalVisible(false);
                 }}
               >
-                <Text
-                  style={{
-                    fontSize: 16,
-                    color: filter === option.value ? "#114d89" : "#000",
-                  }}
-                >
-                  {option.label}
-                </Text>
+                <Text style={{ fontSize: 16, color: filter === option.value ? '#114d89' : '#000' }}>{option.label}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -153,25 +171,25 @@ const CompletedTask = ({ user }) => {
 
   return (
     <>
-      {error && (
-        <Text style={{ color: 'red', textAlign: 'center', marginTop: 10 }}>{error}</Text>
-      )}
+      {error && <Text style={{ color: 'red', textAlign: 'center', marginTop: 10 }}>{error}</Text>}
       {loading ? (
         <Text style={{ textAlign: 'center', marginTop: 20 }}>Loading...</Text>
       ) : (
         <FlatList
           data={filtered}
           keyExtractor={(item) => item.id.toString()}
-            renderItem={renderTaskCard}
+          renderItem={renderTaskCard}
           ListHeaderComponent={renderHeader}
           contentContainerStyle={{ padding: 10, paddingBottom: 20 }}
-          ListEmptyComponent={
-            <Text style={{ textAlign: 'center', color: 'gray', marginTop: 20 }}>
-              No tasks found for this date range.
-            </Text>
-          }
+          ListEmptyComponent={<Text style={{ textAlign: 'center', color: 'gray', marginTop: 20 }}>No tasks found for this date range.</Text>}
         />
       )}
+      <TaskDetailsModal
+        visible={!!selectedTask}
+        task={selectedTask}
+        viewerRole={viewerRole}
+        onClose={() => setSelectedTask(null)}
+      />
     </>
   );
 };
