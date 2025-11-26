@@ -29,13 +29,28 @@ const AllCase = ({ onCasePress, user, showArchived = false }) => {
       if (!res.ok) throw new Error('Failed to fetch cases');
       const data = await res.json();
       // Normalize into UI shape expected by existing rendering
-      const mapped = Array.isArray(data) ? data.map(c => ({
-        id: c.case_id || c.id,
-        title: c.case_title || c.ct_name || `Case #${c.case_id}`,
-        description: c.case_remarks || c.case_description || c.description || '',
-        status: (c.case_status || c.status || 'pending').toLowerCase(),
-        assignedTo: c.user_fname ? `${c.user_fname} ${c.user_lname || ''}`.trim() : c.assignedTo || 'Unassigned'
-      })) : [];
+      const mapped = Array.isArray(data) ? data.map(c => {
+        const rawStatus = (c.case_status || c.status || 'pending').toLowerCase();
+        // Normalize archived statuses
+        const isArchived = rawStatus.includes('archived');
+        const normalizedStatus = isArchived ? 'archived' : rawStatus;
+        
+        return {
+          id: c.case_id || c.id,
+          case_id: c.case_id || c.id,
+          title: c.case_title || c.ct_name || `Case #${c.case_id}`,
+          description: c.case_remarks || c.case_description || c.description || '',
+          status: normalizedStatus,
+          rawStatus: c.case_status || c.status || 'pending',
+          assignedTo: c.user_fname ? `${c.user_fname} ${c.user_lname || ''}`.trim() : c.assignedTo || 'Unassigned',
+          client: c.client_fullname || c.client,
+          dateFiled: c.case_date_created || c.dateFiled,
+          lastUpdated: c.case_last_updated || c.lastUpdated,
+          lawyerId: c.user_id,
+          // Pass through all original fields for modal
+          ...c,
+        };
+      }) : [];
       setCases(mapped);
     } catch (e) {
       setError(e.message);
@@ -56,14 +71,19 @@ const AllCase = ({ onCasePress, user, showArchived = false }) => {
     pending: "#656162ff",
     processing: "#3b82f6",
     completed: "#0c8744ff",
+    archived: "#9ca3af",
   };
 
   const filteredCases = cases.filter((t) => {
     if (showArchived) {
-      // assume archived status comes as 'archived' or case_status === 'archived'
-      return (t.status || '').toLowerCase() === 'archived';
+      // Show only archived cases
+      return t.status === 'archived';
     }
-    return statusFilter === 'all' || t.status === statusFilter;
+    // When not showing archived, exclude archived cases from "all"
+    if (statusFilter === 'all') {
+      return t.status !== 'archived';
+    }
+    return t.status === statusFilter;
   });
 
   return (
@@ -77,48 +97,74 @@ const AllCase = ({ onCasePress, user, showArchived = false }) => {
             <ActivityIndicator />
           </View>
         )}
-        {/* Filter Buttons */}
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            marginBottom: 15,
-          }}
-        >
-          {Object.keys(statusColors).map((s) => (
-            <TouchableOpacity
-              key={s}
-              style={[
-                styles.priorityBtn,
-                {
-                  borderColor: statusColors[s],
-                  backgroundColor:
-                    statusFilter === s ? statusColors[s] : "transparent",
-                },
-              ]}
-              onPress={() => setStatusFilter(s)}
-              activeOpacity={0.7}
-            >
-              <Text
+        {/* Filter Buttons - Hide when showing archived */}
+        {!showArchived && (
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              marginBottom: 15,
+            }}
+          >
+            {Object.keys(statusColors).filter(s => s !== 'archived').map((s) => (
+              <TouchableOpacity
+                key={s}
                 style={[
-                  styles.priorityBtnText,
-                  { color: statusFilter === s ? "#fff" : "#000" },
+                  styles.priorityBtn,
+                  {
+                    borderColor: statusColors[s],
+                    backgroundColor:
+                      statusFilter === s ? statusColors[s] : "transparent",
+                  },
                 ]}
+                onPress={() => setStatusFilter(s)}
+                activeOpacity={0.7}
               >
-                {s.toUpperCase()}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+                <Text
+                  style={[
+                    styles.priorityBtnText,
+                    { color: statusFilter === s ? "#fff" : "#000" },
+                  ]}
+                >
+                  {s.toUpperCase()}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+
+        {/* Archived Cases Header with Legend */}
+        {showArchived && (
+          <View style={{ marginBottom: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+            <Text style={{ fontSize: 16, fontWeight: '600', color: '#374151' }}>
+              Archived Cases
+            </Text>
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: '#0c8744ff' }} />
+                <Text style={{ fontSize: 10, color: '#6b7280' }}>Completed</Text>
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: '#9ca3af' }} />
+                <Text style={{ fontSize: 10, color: '#6b7280' }}>Dismissed</Text>
+              </View>
+            </View>
+          </View>
+        )}
 
         {/* Cases List */}
         {filteredCases.length === 0 && !loading ? (
           <Text style={{ textAlign: "center", color: "#777", marginTop: 20 }}>
-            No case found.
+            {showArchived ? 'No archived cases found.' : 'No case found.'}
           </Text>
         ) : (
           filteredCases.map((t) => {
             const status = t.status || "pending";
+            const displayStatus = showArchived && t.rawStatus ? t.rawStatus : status;
+            const statusColor = showArchived 
+              ? (displayStatus.toLowerCase().includes('completed') ? '#0c8744ff' : '#9ca3af')
+              : (statusColors[status] || "#000");
+            
             return (
               <TouchableOpacity
                 key={t.id}
@@ -130,11 +176,11 @@ const AllCase = ({ onCasePress, user, showArchived = false }) => {
                   <View
                     style={[
                       styles.priorityBadge,
-                      { backgroundColor: statusColors[status] || "#000" },
+                      { backgroundColor: statusColor },
                     ]}
                   >
                     <Text style={styles.priorityBadgeText}>
-                      {status.toUpperCase()}
+                      {displayStatus.toUpperCase()}
                     </Text>
                   </View>
 
@@ -144,13 +190,18 @@ const AllCase = ({ onCasePress, user, showArchived = false }) => {
                   {/* Description */}
                   <Text style={styles.taskCardDescription}>{t.description || 'No description provided.'}</Text>
 
-                  {/* Assigned User */}
+                  {/* Assigned User + Client (for archived) */}
                   <View style={styles.assignedUser}>
                     <User size={16} color="#333" style={{ marginRight: 5 }} />
                     <Text style={styles.assignedUserText}>
                       {t.assignedTo || "Unassigned"}
                     </Text>
                   </View>
+                  {showArchived && t.client && (
+                    <Text style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>
+                      Client: {t.client}
+                    </Text>
+                  )}
                 </View>
               </TouchableOpacity>
             );

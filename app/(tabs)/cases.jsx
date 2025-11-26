@@ -24,6 +24,7 @@ const Cases = () => {
   const [showArchived, setShowArchived] = useState(false); // toggle for archived cases
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedCase, setSelectedCase] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0); // key to trigger re-fetch in AllCase
   // Local cases state removed; AllCase handles fetching based on role
 
   // Ensure Staff defaults to View Clients
@@ -39,8 +40,17 @@ const Cases = () => {
   };
 
   const handleSaveCase = (updatedCase) => {
-    // Could trigger a refetch in AllCase if we lift state; for now just update selectedCase for modal display.
+    // Trigger refresh by updating the key
+    setRefreshKey(prev => prev + 1);
     setSelectedCase(updatedCase);
+    // If case was unarchived and we're viewing archived, close modal
+    const wasArchived = String(selectedCase?.status || '').toLowerCase() === 'archived' || 
+                        String(selectedCase?.rawStatus || '').toLowerCase().includes('archived');
+    const isNowNotArchived = !String(updatedCase?.status || '').toLowerCase().includes('archived');
+    if (wasArchived && isNowNotArchived && showArchived) {
+      setModalVisible(false);
+      setSelectedCase(null);
+    }
   };
 
   return (
@@ -101,7 +111,7 @@ const Cases = () => {
                         showArchived && styles.taskButtonTextPressed,
                       ]}
                     >
-                      {showArchived ? 'Archived' : 'Archive Cases'}
+                      {showArchived ? 'Back to All' : 'Archived Cases'}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -128,7 +138,7 @@ const Cases = () => {
 
             <View style={{ flex: 1 }}>
               {!isStaff && caseTab === "All Cases" && (
-                <AllCase onCasePress={handleCasePress} user={user} showArchived={showArchived} />
+                <AllCase onCasePress={handleCasePress} user={user} showArchived={showArchived} key={refreshKey} />
               )}
               {caseTab === "View Clients" && <ViewClients user={user} />}
             </View>
