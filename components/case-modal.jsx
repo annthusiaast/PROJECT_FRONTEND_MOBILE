@@ -549,6 +549,55 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
     );
   };
 
+  // Unarchive action for archived cases
+  const handleUnarchive = async () => {
+    const currentStatus = String(editableCase?.status || editableCase?.rawStatus || '').toLowerCase();
+    if (!currentStatus.includes('archived')) {
+      Alert.alert('Not allowed', 'Only archived cases can be unarchived.');
+      return;
+    }
+
+    Alert.alert(
+      'Unarchive Case',
+      'Are you sure you want to unarchive this case? It will be restored to Completed status.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Confirm',
+          onPress: async () => {
+            const caseId = caseData?.id || caseData?.case_id;
+            if (!caseId) return;
+            try {
+              const res = await fetch(getEndpoint(`/cases/${caseId}`), {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                  case_status: 'Completed',
+                  last_updated_by: user?.user_id || null,
+                }),
+              });
+              const data = await res.json().catch(() => ({}));
+              if (!res.ok) throw new Error(data?.error || 'Failed to unarchive case');
+              // Update local state and close modal
+              setBaseCase((prev) => ({ ...prev, status: 'completed', rawStatus: 'Completed', lastUpdatedBy: user?.user_id ?? prev.lastUpdatedBy }));
+              setEditableCase((prev) => ({ ...prev, status: 'completed', rawStatus: 'Completed', lastUpdatedBy: user?.user_id ?? prev.lastUpdatedBy }));
+              Alert.alert('Success', 'Case unarchived successfully.');
+              // Trigger parent refresh by calling onSave
+              if (onSave) {
+                onSave({ ...editableCase, status: 'completed', case_status: 'Completed' });
+              }
+              // Close modal after short delay
+              setTimeout(() => onClose(), 1000);
+            } catch (e) {
+              Alert.alert('Error', e.message || 'Failed to unarchive case.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <>
     <Modal visible={visible} animationType="slide" transparent>
@@ -955,6 +1004,20 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
                       accessibilityLabel="Dismiss Case"
                     >
                       <Text style={{ color: '#fff', fontWeight: '700' }}>Dismiss Case</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+
+                {/* Unarchive Action (only for Archived cases) */}
+                {(String(editableCase?.status || '').toLowerCase() === 'archived' || 
+                  String(editableCase?.rawStatus || '').toLowerCase().includes('archived')) && (
+                  <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 12 }}>
+                    <TouchableOpacity
+                      onPress={handleUnarchive}
+                      style={{ backgroundColor: '#dc2626', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8 }}
+                      accessibilityLabel="Unarchive Case"
+                    >
+                      <Text style={{ color: '#fff', fontWeight: '700' }}>Unarchive</Text>
                     </TouchableOpacity>
                   </View>
                 )}
