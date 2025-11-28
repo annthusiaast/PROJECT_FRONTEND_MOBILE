@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Modal,
   Pressable,
+  RefreshControl,
   findNodeHandle,
   UIManager,
 } from "react-native";
@@ -15,7 +16,7 @@ import { styles } from "@/constants/styles/(tabs)/tasksBtn_styles";
 import { getEndpoint } from "@/constants/api-config";
 import TaskDetailsModal from "./task-details-modal";
 
-const CompletedTask = ({ user }) => {
+const CompletedTask = ({ user, onRefresh: parentRefresh }) => {
   const [filter, setFilter] = useState(7); // default range days
   const [modalVisible, setModalVisible] = useState(false);
   const [dropdownTop, setDropdownTop] = useState(0);
@@ -23,6 +24,7 @@ const CompletedTask = ({ user }) => {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [users, setUsers] = useState([]);
 
@@ -42,6 +44,14 @@ const CompletedTask = ({ user }) => {
   }, [user?.user_id]);
 
   useEffect(() => { fetchCompleted(); }, [fetchCompleted]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchCompleted().finally(() => {
+      setRefreshing(false);
+      if (parentRefresh) parentRefresh();
+    });
+  }, [fetchCompleted, parentRefresh]);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -182,6 +192,9 @@ const CompletedTask = ({ user }) => {
           ListHeaderComponent={renderHeader}
           contentContainerStyle={{ padding: 10, paddingBottom: 20 }}
           ListEmptyComponent={<Text style={{ textAlign: 'center', color: 'gray', marginTop: 20 }}>No tasks found for this date range.</Text>}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
         />
       )}
       <TaskDetailsModal

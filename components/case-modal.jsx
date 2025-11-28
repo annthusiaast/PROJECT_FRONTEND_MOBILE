@@ -102,6 +102,10 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
         }
         const data = await res.json();
         // Best-effort mapping from backend fields to modal fields
+        const rawStatus = data.case_status || editableCase.status || editableCase.rawStatus || 'Pending';
+        const isArchived = String(rawStatus).toLowerCase().includes('archived');
+        const normalizedStatus = isArchived ? 'archived' : String(rawStatus).toLowerCase();
+        
         const mapped = {
           ...editableCase,
           id: data.case_id ?? editableCase.id,
@@ -123,7 +127,8 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
                 : editableCase.totalPaid),
           description: data.case_remarks || data.case_description || editableCase.description,
           dateFiled: data.case_date_created || editableCase.dateFiled,
-          status: (data.case_status || editableCase.status || 'Pending'),
+          status: normalizedStatus,
+          rawStatus: rawStatus,
           cabinetNo: data.case_cabinet ?? editableCase.cabinetNo,
           drawerNo: data.case_drawer ?? editableCase.drawerNo,
           lastUpdatedAt: data.case_last_updated ?? editableCase.lastUpdatedAt,
@@ -551,6 +556,12 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
 
   // Unarchive action for archived cases
   const handleUnarchive = async () => {
+    // Check if user is admin
+    if (user?.role?.toLowerCase() !== 'admin') {
+      Alert.alert('Access Denied', 'Only administrators can unarchive cases.');
+      return;
+    }
+
     const currentStatus = String(editableCase?.status || editableCase?.rawStatus || '').toLowerCase();
     if (!currentStatus.includes('archived')) {
       Alert.alert('Not allowed', 'Only archived cases can be unarchived.');
@@ -591,6 +602,67 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
               setTimeout(() => onClose(), 1000);
             } catch (e) {
               Alert.alert('Error', e.message || 'Failed to unarchive case.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  // Archive action for completed or dismissed cases
+  const handleArchive = async () => {
+    // Check if user is admin
+    if (user?.role?.toLowerCase() !== 'admin') {
+      Alert.alert('Access Denied', 'Only administrators can archive cases.');
+      return;
+    }
+
+    const currentStatus = String(editableCase?.status || editableCase?.rawStatus || '').toLowerCase();
+    const isCompleted = currentStatus === 'completed';
+    const isDismissed = currentStatus === 'dismissed';
+    
+    if (!isCompleted && !isDismissed) {
+      Alert.alert('Not allowed', 'Only completed or dismissed cases can be archived.');
+      return;
+    }
+
+    const archiveStatus = isCompleted ? 'Archived (Completed)' : 'Archived (Dismissed)';
+
+    Alert.alert(
+      'Archive Case',
+      `Are you sure you want to archive this ${currentStatus} case?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Archive',
+          style: 'destructive',
+          onPress: async () => {
+            const caseId = caseData?.id || caseData?.case_id;
+            if (!caseId) return;
+            try {
+              const res = await fetch(getEndpoint(`/cases/${caseId}`), {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                  case_status: archiveStatus,
+                  last_updated_by: user?.user_id || null,
+                }),
+              });
+              const data = await res.json().catch(() => ({}));
+              if (!res.ok) throw new Error(data?.error || 'Failed to archive case');
+              // Update local state and close modal
+              setBaseCase((prev) => ({ ...prev, status: 'archived', rawStatus: archiveStatus, lastUpdatedBy: user?.user_id ?? prev.lastUpdatedBy }));
+              setEditableCase((prev) => ({ ...prev, status: 'archived', rawStatus: archiveStatus, lastUpdatedBy: user?.user_id ?? prev.lastUpdatedBy }));
+              Alert.alert('Success', 'Case archived successfully.');
+              // Trigger parent refresh by calling onSave
+              if (onSave) {
+                onSave({ ...editableCase, status: 'archived', case_status: archiveStatus });
+              }
+              // Close modal after short delay
+              setTimeout(() => onClose(), 1000);
+            } catch (e) {
+              Alert.alert('Error', e.message || 'Failed to archive case.');
             }
           },
         },
@@ -1008,8 +1080,9 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
                   </View>
                 )}
 
-                {/* Unarchive Action (only for Archived cases) */}
-                {(String(editableCase?.status || '').toLowerCase() === 'archived' || 
+                {/* Unarchive Action (only for Archived cases and Admin users) */}
+                {user?.role?.toLowerCase() === 'admin' && 
+                 (String(editableCase?.status || '').toLowerCase() === 'archived' || 
                   String(editableCase?.rawStatus || '').toLowerCase().includes('archived')) && (
                   <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 12 }}>
                     <TouchableOpacity
@@ -1021,6 +1094,28 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
                     </TouchableOpacity>
                   </View>
                 )}
+
+                {/* Archive Action (only for Completed or Dismissed cases and Admin users) */}
+                {(() => {
+                  const isAdmin = user?.role?.toLowerCase() === 'admin';
+                  const status = String(editableCase?.status || '').toLowerCase();
+                  const rawStatus = String(editableCase?.rawStatus || '').toLowerCase();
+                  const isCompleted = status === 'completed' || rawStatus === 'completed';
+                  const isDismissed = status === 'dismissed' || rawStatus === 'dismissed';
+                  const isNotArchived = !status.includes('archived') && !rawStatus.includes('archived');
+                  
+                  return isAdmin && (isCompleted || isDismissed) && isNotArchived && (
+                    <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 12 }}>
+                      <TouchableOpacity
+                        onPress={handleArchive}
+                        style={{ backgroundColor: '#f59e0b', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8 }}
+                        accessibilityLabel="Archive Case"
+                      >
+                        <Text style={{ color: '#fff', fontWeight: '700' }}>Archive Case</Text>
+                      </TouchableOpacity>
+                    </View>
+                  );
+                })()}
               </ScrollView>
             </View>
           </TouchableWithoutFeedback>

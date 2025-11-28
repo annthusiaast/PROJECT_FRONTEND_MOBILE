@@ -10,6 +10,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Linking,
+  RefreshControl,
 } from "react-native";
 import { Calendar, User, Download, Search } from "lucide-react-native";
 import { styles } from "../../constants/styles/(tabs)/documents_styles";
@@ -39,15 +40,15 @@ const Documents = () => {
   const [docs, setDocs] = useState([]);
   const [users, setUsers] = useState([]); // for resolving submitter names
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Fetch documents from backend
-  useEffect(() => {
-    const fetchDocs = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(getEndpoint('/documents'), {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
+  const fetchDocs = React.useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(getEndpoint('/documents'), {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
         });
         if (!res.ok) throw new Error('Failed to fetch documents');
@@ -81,24 +82,33 @@ const Documents = () => {
       } finally {
         setLoading(false);
       }
-    };
+    }, []);
+
+  useEffect(() => {
     fetchDocs();
-  }, []);
+  }, [fetchDocs]);
 
   // Fetch users to resolve submitter names (web-style client-side join)
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const res = await fetch(getEndpoint('/users'), { credentials: 'include' });
-        if (!res.ok) return;
-        const data = await res.json();
-        setUsers(Array.isArray(data) ? data : []);
-      } catch {
-        setUsers([]);
-      }
-    };
-    fetchUsers();
+  const fetchUsers = React.useCallback(async () => {
+    try {
+      const res = await fetch(getEndpoint('/users'), { credentials: 'include' });
+      if (!res.ok) return;
+      const data = await res.json();
+      setUsers(Array.isArray(data) ? data : []);
+    } catch {
+      setUsers([]);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    await Promise.all([fetchDocs(), fetchUsers()]);
+    setRefreshing(false);
+  }, [fetchDocs, fetchUsers]);
 
   const getSubmitterName = (submittedById) => {
     if (!submittedById) return '-';
@@ -112,7 +122,7 @@ const Documents = () => {
   };
 
   // Filters removed: show all docs, only apply Recent tab slicing
-  const finalDocs = activeTab === "Recent" ? docs.slice(0, 5) : docs;
+  const finalDocs = activeTab === "Recent" ? docs.slice(0, 8) : docs;
 
   const openUrl = async (url) => {
     if (!url) return;
@@ -126,7 +136,12 @@ const Documents = () => {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 25 }}>
+        <ScrollView 
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: 25 }}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
 
           {/* Search */}
           <View style={styles.searchInputContainer}>

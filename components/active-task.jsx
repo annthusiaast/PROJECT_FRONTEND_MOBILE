@@ -8,7 +8,7 @@ import { getEndpoint } from "@/constants/api-config";
 import TaskDetailsModal from "./task-details-modal";
 
 // NOTE: We accept optional user prop (passed by parent) in case future role-based filtering is needed
-const ActiveTask = ({ user }) => {
+const ActiveTask = ({ user, onRefresh: parentRefresh }) => {
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [tasks, setTasks] = useState([]); // backend fetched tasks
   const [loading, setLoading] = useState(false);
@@ -37,8 +37,11 @@ const ActiveTask = ({ user }) => {
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    fetchPendingTasks().finally(() => setRefreshing(false));
-  }, [fetchPendingTasks]);
+    fetchPendingTasks().finally(() => {
+      setRefreshing(false);
+      if (parentRefresh) parentRefresh();
+    });
+  }, [fetchPendingTasks, parentRefresh]);
 
   const priorityColors = {
     all: "#000000",

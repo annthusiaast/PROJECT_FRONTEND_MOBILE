@@ -3,7 +3,7 @@ import { styles } from "@/constants/styles/(tabs)/home_styles";
 import { router } from "expo-router";
 import { Bell, CheckCircle, ClipboardList, FileText, Folder, Logs, Scale, Search, Trash2, User2 } from 'lucide-react-native';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, Platform, RefreshControl, ScrollView, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import { useAuth } from '@/context/auth-context';
 import { getEndpoint } from '@/constants/api-config';
@@ -20,6 +20,7 @@ const Dashboard = () => {
   const [processingCasesCount, setProcessingCasesCount] = useState(0);
   const [archivedCasesCount, setArchivedCasesCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [selectedLog, setSelectedLog] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
 
@@ -38,16 +39,15 @@ const Dashboard = () => {
   );
 
   // Fetch dashboard counts from backend
-  useEffect(() => {
-    const fetchDashboardCounts = async () => {
-      if (!user?.user_id) return;
-      
-      try {
-        // Fetch processing cases count
-        const processingCasesRes = await fetch(getEndpoint('/cases/count/processing'), {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
+  const fetchDashboardCounts = React.useCallback(async () => {
+    if (!user?.user_id) return;
+    
+    try {
+      // Fetch processing cases count
+      const processingCasesRes = await fetch(getEndpoint('/cases/count/processing'), {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         });
         if (processingCasesRes.ok) {
           const data = await processingCasesRes.json();
@@ -113,10 +113,51 @@ const Dashboard = () => {
         console.warn('Dashboard counts fetch failed:', e.message);
         setError('Failed to load dashboard data');
       }
-    };
+    }, [user?.user_id]);
 
+  useEffect(() => {
     fetchDashboardCounts();
-  }, [user?.user_id]);
+  }, [fetchDashboardCounts]);
+
+  // Fetch recent activity from backend when user is available
+  const fetchLogs = React.useCallback(async () => {
+    if (!user?.user_id) return;
+    setLoading(true);
+    try {
+      const endpointPath = user?.user_role === 'Admin' ? `/user-logs` : `/user-logs/${user.user_id}`;
+      const res = await fetch(getEndpoint(endpointPath), {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('Failed to fetch recent activity');
+      const data = await res.json();
+      const mapped = Array.isArray(data)
+        ? data.map((l, idx) => ({
+            id: l.user_log_id || l.log_id || idx,
+            user_log_description: l.user_log_description || l.description || l.user_log_action || 'Activity',
+            user_log_datetime: l.user_log_datetime || l.user_log_time || l.timestamp || l.created_at || new Date().toISOString(),
+            user_log_type: l.user_log_type || l.type,
+            raw: l,
+          }))
+        : [];
+      setRecentActivity(mapped);
+    } catch (e) {
+      console.warn('Recent activity fetch failed:', e.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.user_id, user?.user_role]);
+
+  useEffect(() => {
+    fetchLogs();
+  }, [fetchLogs]);
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    await Promise.all([fetchDashboardCounts(), fetchLogs()]);
+    setRefreshing(false);
+  }, [fetchDashboardCounts, fetchLogs]);
 
 
   // Fetch recent activity from backend when user is available
