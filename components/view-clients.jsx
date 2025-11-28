@@ -6,6 +6,7 @@ import {
   FlatList,
   TextInput,
   ScrollView,
+  RefreshControl,
 } from "react-native";
 import { Pencil, Eye, RefreshCcw } from "lucide-react-native";
 import { styles } from "../constants/styles/view-clients";
@@ -28,6 +29,7 @@ const ViewClients = ({ user, navigation }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showAllClients, setShowAllClients] = useState(false);
   const [error, setError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const [editClient, setEditClient] = useState(null); // <-- edit state
   // Option B: Local split name state for editing (first + last -> recombine to single full name field)
@@ -82,6 +84,11 @@ const ViewClients = ({ user, navigation }) => {
       fetchAll();
     }
   }, [fetchAll, user]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchAll().finally(() => setRefreshing(false));
+  }, [fetchAll]);
 
   const getUserFullName = (userId) => {
     const u = users.find((x) => x.user_id === userId);
@@ -219,6 +226,9 @@ const ViewClients = ({ user, navigation }) => {
               <Text style={styles.emptyText}>No clients found.</Text>
             }
             scrollEnabled={true}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
           />
 
           {/* Pagination removed */}

@@ -19,6 +19,11 @@ import {
 const Tasks = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('active');
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const handleRefresh = () => {
+    setRefreshKey(prev => prev + 1);
+  };
 
   return (
     <KeyboardAvoidingView
@@ -68,8 +73,8 @@ const Tasks = () => {
 
           {/* ==== Content Area of Each Task Button ==== */}
           <View style={{ flex: 1 }}>
-            {activeTab === 'active' && <ActiveTask user={user} />}
-            {activeTab === 'completed' && <CompletedTask user={user} />}
+            {activeTab === 'active' && <ActiveTask user={user} key={refreshKey} onRefresh={handleRefresh} />}
+            {activeTab === 'completed' && <CompletedTask user={user} key={refreshKey} onRefresh={handleRefresh} />}
             {/* {activeTab === 'create' && <CreateTask user={user} />} */}
           </View>
         </View>
