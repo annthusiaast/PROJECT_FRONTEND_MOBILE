@@ -202,6 +202,10 @@ const CompletedTask = ({ user, onRefresh: parentRefresh }) => {
         task={selectedTask}
         viewerRole={viewerRole}
         onClose={() => setSelectedTask(null)}
+        onTaskUpdated={() => {
+          setSelectedTask(null);
+          fetchCompleted();
+        }}
       />
     </>
   );
