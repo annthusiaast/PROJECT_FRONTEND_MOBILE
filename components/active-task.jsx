@@ -183,6 +183,10 @@ const ActiveTask = ({ user, onRefresh: parentRefresh }) => {
         task={selectedTask}
         viewerRole={viewerRole}
         onClose={() => setSelectedTask(null)}
+        onTaskUpdated={() => {
+          setSelectedTask(null);
+          fetchPendingTasks();
+        }}
       />
     </ScrollView>
   );

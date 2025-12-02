@@ -1,8 +1,10 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, Linking } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, Linking, Alert, ActivityIndicator } from 'react-native';
 import ModalWrapper from './common/modal-wrapper';
-import { Calendar, FileText, User, X } from 'lucide-react-native';
+import { Calendar, FileText, User, X, Upload, Trash2 } from 'lucide-react-native';
 import API_CONFIG from '@/constants/api-config';
+import * as DocumentPicker from 'expo-document-picker';
+import { useAuth } from '@/context/auth-context';
 
 function formatDate(value) {
   if (!value) return 'N/A';
@@ -31,7 +33,11 @@ const toArray = (value) => {
   return [];
 };
 
-export default function TaskDetailsModal({ visible, onClose, task, viewerRole }) {
+export default function TaskDetailsModal({ visible, onClose, task, viewerRole, onTaskUpdated }) {
+  const { user } = useAuth();
+  const [uploading, setUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  
   if (!task) return null;
   const {
     title,
@@ -86,6 +92,70 @@ export default function TaskDetailsModal({ visible, onClose, task, viewerRole })
       <Text style={{ color: '#fff', fontWeight: '700', fontSize: 12 }}>{(status || 'ACTIVE').toString().toUpperCase()}</Text>
     </View>
   );
+
+  const handlePickDocument = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'application/pdf',
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled) return;
+
+      if (result.assets && result.assets[0]) {
+        const file = result.assets[0];
+        // Check file size (10MB limit)
+        if (file.size > 10 * 1024 * 1024) {
+          Alert.alert('File Too Large', 'Please select a file smaller than 10MB.');
+          return;
+        }
+        setSelectedFile(file);
+      }
+    } catch (error) {
+      console.error('Error picking document:', error);
+      Alert.alert('Error', 'Failed to pick document.');
+    }
+  };
+
+  const handleUploadDocument = async () => {
+    if (!selectedFile || !task?.raw?.doc_id) return;
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('doc_file', {
+        uri: selectedFile.uri,
+        type: selectedFile.mimeType || 'application/pdf',
+        name: selectedFile.name,
+      });
+      formData.append('doc_status', 'available');
+      formData.append('doc_submitted_by', user?.user_id || '');
+
+      const res = await fetch(`${API_CONFIG.BASE_URL}/documents/${task.raw.doc_id}`, {
+        method: 'PUT',
+        credentials: 'include',
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || 'Upload failed');
+      }
+
+      Alert.alert('Success', 'Document uploaded successfully!');
+      setSelectedFile(null);
+      if (onTaskUpdated) onTaskUpdated();
+    } catch (error) {
+      console.error('Upload error:', error);
+      Alert.alert('Error', error.message || 'Failed to upload document.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeSelectedFile = () => {
+    setSelectedFile(null);
+  };
 
   return (
     <ModalWrapper visible={visible} onClose={onClose} animationType="fade">
@@ -173,6 +243,101 @@ export default function TaskDetailsModal({ visible, onClose, task, viewerRole })
           </TouchableOpacity>
         </View>
       ) : null}
+
+      {/* Upload Section - Only show if task is not completed and user is the assignee */}
+      {(status !== 'done' && status !== 'completed' && 
+        (normalizedRole === 'paralegal' || normalizedRole === 'staff') && 
+        String(task?.assignedTo) === String(user?.user_id)) && (
+        <View style={{ marginTop: 20, paddingTop: 16, borderTopWidth: 1, borderTopColor: '#e5e7eb' }}>
+          <Text style={{ fontSize: 14, fontWeight: '600', color: '#374151', marginBottom: 12 }}>
+            Upload Completed Document
+          </Text>
+
+          {selectedFile ? (
+            <View style={{ 
+              backgroundColor: '#f9fafb', 
+              borderRadius: 8, 
+              padding: 12, 
+              marginBottom: 12,
+              borderWidth: 1,
+              borderColor: '#e5e7eb'
+            }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+                  <FileText size={18} color="#1E3A8A" style={{ marginRight: 8 }} />
+                  <Text style={{ fontSize: 14, color: '#111827', flex: 1 }} numberOfLines={1}>
+                    {selectedFile.name}
+                  </Text>
+                </View>
+                <TouchableOpacity onPress={removeSelectedFile} style={{ marginLeft: 8 }}>
+                  <Trash2 size={18} color="#dc2626" />
+                </TouchableOpacity>
+              </View>
+              <Text style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>
+                {(selectedFile.size / 1024).toFixed(2)} KB
+              </Text>
+            </View>
+          ) : null}
+
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <TouchableOpacity
+              onPress={handlePickDocument}
+              disabled={uploading}
+              style={{
+                flex: 1,
+                backgroundColor: '#f3f4f6',
+                borderWidth: 1,
+                borderColor: '#d1d5db',
+                borderRadius: 8,
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                opacity: uploading ? 0.5 : 1,
+              }}
+            >
+              <Upload size={18} color="#374151" />
+              <Text style={{ color: '#374151', fontWeight: '600', fontSize: 14 }}>
+                {selectedFile ? 'Change File' : 'Select File'}
+              </Text>
+            </TouchableOpacity>
+
+            {selectedFile && (
+              <TouchableOpacity
+                onPress={handleUploadDocument}
+                disabled={uploading}
+                style={{
+                  flex: 1,
+                  backgroundColor: '#1e3a8a',
+                  borderRadius: 8,
+                  paddingVertical: 12,
+                  paddingHorizontal: 16,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  opacity: uploading ? 0.6 : 1,
+                }}
+              >
+                {uploading ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <>
+                    <Upload size={18} color="#fff" />
+                    <Text style={{ color: '#fff', fontWeight: '600', fontSize: 14 }}>Upload</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <Text style={{ fontSize: 12, color: '#6b7280', marginTop: 8 }}>
+            * PDF files only, max 10MB
+          </Text>
+        </View>
+      )}
     </ModalWrapper>
   );
 }
