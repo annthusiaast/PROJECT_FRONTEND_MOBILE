@@ -30,7 +30,7 @@ const formatUserDisplayName = (record) => {
 
 const CaseModal = ({ visible, onClose, caseData, onSave }) => {
   const { user } = useAuth();
-  const isAdmin = user?.user_role === "Admin";
+  const isAdmin = user?.user_role === "admin";
 
   const [isEditing, setIsEditing] = useState(false);
   const [editableCase, setEditableCase] = useState(caseData || {});
@@ -557,7 +557,7 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
   // Unarchive action for archived cases
   const handleUnarchive = async () => {
     // Check if user is admin
-    if (user?.role?.toLowerCase() !== 'admin') {
+    if (String(user?.user_role || '').toLowerCase() !== 'admin') {
       Alert.alert('Access Denied', 'Only administrators can unarchive cases.');
       return;
     }
@@ -612,7 +612,7 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
   // Archive action for completed or dismissed cases
   const handleArchive = async () => {
     // Check if user is admin
-    if (user?.role?.toLowerCase() !== 'admin') {
+    if (String(user?.user_role || '').toLowerCase() !== 'admin') {
       Alert.alert('Access Denied', 'Only administrators can archive cases.');
       return;
     }
@@ -1081,7 +1081,7 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
                 )}
 
                 {/* Unarchive Action (only for Archived cases and Admin users) */}
-                {user?.role?.toLowerCase() === 'admin' && 
+                {String(user?.user_role || '').toLowerCase() === 'admin' && 
                  (String(editableCase?.status || '').toLowerCase() === 'archived' || 
                   String(editableCase?.rawStatus || '').toLowerCase().includes('archived')) && (
                   <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 12 }}>
@@ -1097,7 +1097,7 @@ const CaseModal = ({ visible, onClose, caseData, onSave }) => {
 
                 {/* Archive Action (only for Completed or Dismissed cases and Admin users) */}
                 {(() => {
-                  const isAdmin = user?.role?.toLowerCase() === 'admin';
+                  const isAdmin = String(user?.user_role || '').toLowerCase() === 'admin';
                   const status = String(editableCase?.status || '').toLowerCase();
                   const rawStatus = String(editableCase?.rawStatus || '').toLowerCase();
                   const isCompleted = status === 'completed' || rawStatus === 'completed';
