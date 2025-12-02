@@ -39,6 +39,34 @@ export const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: "#eee",
   },
+  contactCard: {
+    backgroundColor: "#f9fafb",
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+  },
+  contactCardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  contactCardTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#374151",
+  },
+  contactCardField: {
+    fontSize: 14,
+    color: "#1f2937",
+    marginBottom: 4,
+  },
+  contactCardLabel: {
+    fontWeight: "600",
+    color: "#4b5563",
+  },
   saveBtn: {
     backgroundColor: "#2563eb",
     padding: 12,

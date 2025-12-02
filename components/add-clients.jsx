@@ -397,15 +397,18 @@ const AddClient = ({ visible, onClose, onCreated }) => {
 
             {/* Contacts list (non-virtualized to avoid nested VirtualizedList warning) */}
             {contacts.map((item, index) => (
-              <View key={index.toString()} style={styles.contactRow}>
-                <Text style={{ flex: 1 }}>{item.contact_fullname}</Text>
-                <Text style={{ flex: 1 }}>{item.contact_email}</Text>
-                <Text style={{ flex: 1 }}>{item.contact_phone}</Text>
-                <Text style={{ flex: 1 }}>{item.contact_address}</Text>
-                <Text style={{ flex: 1 }}>{item.contact_role}</Text>
-                <TouchableOpacity onPress={() => handleRemoveContact(index)}>
-                  <Icon name="trash-2" size={18} color="red" />
-                </TouchableOpacity>
+              <View key={index.toString()} style={styles.contactCard}>
+                <View style={styles.contactCardHeader}>
+                  <Text style={styles.contactCardTitle}>Contact Person {index + 1}</Text>
+                  <TouchableOpacity onPress={() => handleRemoveContact(index)}>
+                    <Icon name="trash-2" size={18} color="red" />
+                  </TouchableOpacity>
+                </View>
+                <Text style={styles.contactCardField}><Text style={styles.contactCardLabel}>Name:</Text> {item.contact_fullname}</Text>
+                <Text style={styles.contactCardField}><Text style={styles.contactCardLabel}>Email:</Text> {item.contact_email}</Text>
+                <Text style={styles.contactCardField}><Text style={styles.contactCardLabel}>Phone:</Text> {item.contact_phone}</Text>
+                <Text style={styles.contactCardField}><Text style={styles.contactCardLabel}>Address:</Text> {item.contact_address}</Text>
+                <Text style={styles.contactCardField}><Text style={styles.contactCardLabel}>Role:</Text> {item.contact_role}</Text>
               </View>
             ))}
 
