@@ -39,7 +39,11 @@
       "typedRoutes": true
     },
     "extra": {
-      "API_BASE_URL": "http://192.168.1.11:3000/api"
+      "API_BASE_URL": "http://192.168.1.11:3000/api",
+      "router": {},
+      "eas": {
+        "projectId": "71a66906-e2b6-46f9-bc52-7588a9bc9f95"
+      }
     }
   }
 }
